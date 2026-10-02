@@ -20,6 +20,11 @@ SUPPORTED_CACHE_TYPES = ["naive", "radix"]
 class ServerArgs(SchedulerConfig):
     server_host: str = "127.0.0.1"
     server_port: int = 1919
+    settings_file: str = "~/.maxtoken/settings.json"
+    temperature: float | None = None
+    top_k: int | None = None
+    top_p: float | None = None
+    context_length_ceiling: int | None = None
     num_tokenizer: int = 0
     silent_output: bool = False
     # The terminal shell is attached to this server (mt shell --model / mt serve --shell-mode).
@@ -253,6 +258,10 @@ def parse_args(
         return None
 
     parser = argparse.ArgumentParser(prog=prog, description="MaxToken Server Arguments")
+    parser.add_argument("--settings-file", default=os.environ.get("MAXTOKEN_SETTINGS_FILE", ServerArgs.settings_file), help="Persistent web settings file; explicit CLI options take precedence.")
+    parser.add_argument("--temperature", type=float, default=None, help="Default sampling temperature; otherwise use the checkpoint recommendation.")
+    parser.add_argument("--top-k", type=int, default=None, help="Default top-k sampling; -1 disables it.")
+    parser.add_argument("--top-p", type=float, default=None, help="Default nucleus sampling probability.")
 
     parser.add_argument(
         "--model-path",
@@ -680,7 +689,18 @@ def parse_args(
 
     # Parse arguments
     kwargs = parser.parse_args(args).__dict__.copy()
-
+    from .settings import SettingsPatch, saved_startup_values
+    saved = saved_startup_values(kwargs["model_path"], kwargs["settings_file"])
+    for action in parser._actions:
+        action.default = argparse.SUPPRESS
+    explicit = set(vars(parser.parse_args(args)))
+    cache_options = {"moe_cache_size", "moe_cache_rate", "moe_cache_auto"}
+    if explicit & cache_options:
+        saved = {key: value for key, value in saved.items() if key not in cache_options}
+        if "moe_backend" not in explicit and saved.get("moe_backend") == "fused":
+            saved.pop("moe_backend")
+    kwargs.update({key: value for key, value in saved.items() if key not in explicit})
+    SettingsPatch.model_validate({key: kwargs[key] for key in ("temperature", "top_k", "top_p") if kwargs[key] is not None})
     # resolve some arguments
     run_shell |= kwargs.pop("shell_mode")
     kwargs["shell_mode"] = run_shell
@@ -695,19 +715,19 @@ def parse_args(
     # ``max_seq_len`` walks that registry. Pin the override from the HF config so the
     # frontend (context-length metadata, prompt-length guard) works for any mlx-lm-served
     # model.
-    if kwargs["max_seq_len_override"] is None:
-        from maxtoken.utils import cached_load_hf_config
+    from maxtoken.utils import cached_load_hf_config
+    try:
 
-        try:
-            cfg = cached_load_hf_config(kwargs["model_path"]).to_dict()
-        except Exception:  # noqa: BLE001 -- fall through to the registry path
-            cfg = {}
-        text_cfg = cfg.get("text_config") or {}
-        max_pos = cfg.get("max_position_embeddings") or text_cfg.get(
-            "max_position_embeddings"
-        )
-        if max_pos:
-            kwargs["max_seq_len_override"] = int(max_pos)
+        cfg = cached_load_hf_config(kwargs["model_path"]).to_dict()
+    except Exception: # noqa: BLE001 -- fall through to the registry path
+        cfg = {}
+    text_cfg = cfg.get("text_config") or {}
+    max_pos = cfg.get("max_position_embeddings") or text_cfg.get("max_position_embeddings")
+    kwargs["context_length_ceiling"] = int(max_pos) if max_pos else None
+    if kwargs["max_seq_len_override"] is None and max_pos:
+        kwargs["max_seq_len_override"] = int(max_pos)
+    if max_pos and kwargs["max_seq_len_override"] > int(max_pos):
+        parser.error("context window exceeds the checkpoint's trained context length")
 
     if kwargs["served_model_name"] is None:
         kwargs["served_model_name"] = (

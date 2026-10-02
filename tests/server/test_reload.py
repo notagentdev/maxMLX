@@ -67,7 +67,7 @@ def _wire(state):
     launched = []
     failures = []
 
-    def start_backend():
+    def start_backend(config):
         handle = BackendHandle(
             processes=[_FakeProc("scheduler"), _FakeProc("detok")],
             ack_queue=queue.Queue(),

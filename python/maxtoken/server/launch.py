@@ -80,7 +80,7 @@ def launch_server(
     )
     logger = init_logger(__name__, "initializer")
 
-    def start_subprocess() -> "BackendHandle":
+    def start_subprocess(server_args: ServerArgs) -> "BackendHandle":
         import multiprocessing as mp
 
         from .supervisor import BackendHandle

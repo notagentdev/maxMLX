@@ -1,0 +1,5920 @@
+{
+  "n_planned": 231,
+  "n_attempted": 231,
+  "n_scorable": 231,
+  "n_valid": 231,
+  "n_correct": 187,
+  "accuracy": 0.8095238095238095,
+  "coverage": 1.0,
+  "schema_validity": 1.0,
+  "schema_validity_strict": 1.0,
+  "n_renormalized": 0,
+  "operational_success": 1.0,
+  "calibration_n": 231,
+  "brier_mean": 0.29371732082768537,
+  "ece": {
+    "ece": 0.05983306628801091,
+    "n": 231,
+    "bins": [
+      {
+        "lo": 0.0,
+        "hi": 0.1,
+        "n": 0,
+        "mean_confidence": null,
+        "accuracy": null
+      },
+      {
+        "lo": 0.1,
+        "hi": 0.2,
+        "n": 0,
+        "mean_confidence": null,
+        "accuracy": null
+      },
+      {
+        "lo": 0.2,
+        "hi": 0.3,
+        "n": 2,
+        "mean_confidence": 0.29617825150489807,
+        "accuracy": 0.0
+      },
+      {
+        "lo": 0.3,
+        "hi": 0.4,
+        "n": 12,
+        "mean_confidence": 0.37206222116947174,
+        "accuracy": 0.4166666666666667
+      },
+      {
+        "lo": 0.4,
+        "hi": 0.5,
+        "n": 13,
+        "mean_confidence": 0.45891119883610654,
+        "accuracy": 0.6153846153846154
+      },
+      {
+        "lo": 0.5,
+        "hi": 0.6,
+        "n": 24,
+        "mean_confidence": 0.5467412720123926,
+        "accuracy": 0.7083333333333334
+      },
+      {
+        "lo": 0.6,
+        "hi": 0.7,
+        "n": 21,
+        "mean_confidence": 0.6530020492417472,
+        "accuracy": 0.7142857142857143
+      },
+      {
+        "lo": 0.7,
+        "hi": 0.8,
+        "n": 29,
+        "mean_confidence": 0.7539623091960775,
+        "accuracy": 0.7931034482758621
+      },
+      {
+        "lo": 0.8,
+        "hi": 0.9,
+        "n": 28,
+        "mean_confidence": 0.8584817137037005,
+        "accuracy": 0.8214285714285714
+      },
+      {
+        "lo": 0.9,
+        "hi": 1.0,
+        "n": 102,
+        "mean_confidence": 0.9737443783703972,
+        "accuracy": 0.9411764705882353
+      }
+    ]
+  },
+  "ordinal_mae": 0.45029320664212313,
+  "latency": {
+    "n": 231,
+    "p50_s": 0.5129489579994697,
+    "p95_s": 8.17714091650123
+  },
+  "latency_failures": {
+    "n": 0,
+    "p50_s": null,
+    "p95_s": null
+  },
+  "price_per_1000_decisions_usd": null,
+  "cost_basis": [
+    "self_hosted_local_weights"
+  ],
+  "version": "jevbench-v1",
+  "macro_accuracy": 0.8191719085294937,
+  "per_family": {
+    "adequacy": {
+      "n_planned": 12,
+      "n_attempted": 12,
+      "n_scorable": 12,
+      "n_valid": 12,
+      "n_correct": 7,
+      "accuracy": 0.5833333333333334,
+      "coverage": 1.0,
+      "schema_validity": 1.0,
+      "schema_validity_strict": 1.0,
+      "n_renormalized": 0,
+      "operational_success": 1.0,
+      "calibration_n": 12,
+      "brier_mean": 0.5298823438158574,
+      "ece": {
+        "ece": 0.24061269561449683,
+        "n": 12,
+        "bins": [
+          {
+            "lo": 0.0,
+            "hi": 0.1,
+            "n": 0,
+            "mean_confidence": null,
+            "accuracy": null
+          },
+          {
+            "lo": 0.1,
+            "hi": 0.2,
+            "n": 0,
+            "mean_confidence": null,
+            "accuracy": null
+          },
+          {
+            "lo": 0.2,
+            "hi": 0.3,
+            "n": 0,
+            "mean_confidence": null,
+            "accuracy": null
+          },
+          {
+            "lo": 0.3,
+            "hi": 0.4,
+            "n": 0,
+            "mean_confidence": null,
+            "accuracy": null
+          },
+          {
+            "lo": 0.4,
+            "hi": 0.5,
+            "n": 0,
+            "mean_confidence": null,
+            "accuracy": null
+          },
+          {
+            "lo": 0.5,
+            "hi": 0.6,
+            "n": 0,
+            "mean_confidence": null,
+            "accuracy": null
+          },
+          {
+            "lo": 0.6,
+            "hi": 0.7,
+            "n": 3,
+            "mean_confidence": 0.6606295108795166,
+            "accuracy": 0.3333333333333333
+          },
+          {
+            "lo": 0.7,
+            "hi": 0.8,
+            "n": 2,
+            "mean_confidence": 0.7310585975646973,
+            "accuracy": 0.5
+          },
+          {
+            "lo": 0.8,
+            "hi": 0.9,
+            "n": 1,
+            "mean_confidence": 0.851952850818634,
+            "accuracy": 0.0
+          },
+          {
+            "lo": 0.9,
+            "hi": 1.0,
+            "n": 6,
+            "mean_confidence": 0.931898961464564,
+            "accuracy": 0.8333333333333334
+          }
+        ]
+      },
+      "ordinal_mae": null,
+      "latency": {
+        "n": 12,
+        "p50_s": 0.3773082495026756,
+        "p95_s": 0.38645089810088395
+      },
+      "latency_failures": {
+        "n": 0,
+        "p50_s": null,
+        "p95_s": null
+      },
+      "price_per_1000_decisions_usd": null,
+      "cost_basis": [
+        "self_hosted_local_weights"
+      ]
+    },
+    "adversarial": {
+      "n_planned": 6,
+      "n_attempted": 6,
+      "n_scorable": 6,
+      "n_valid": 6,
+      "n_correct": 6,
+      "accuracy": 1.0,
+      "coverage": 1.0,
+      "schema_validity": 1.0,
+      "schema_validity_strict": 1.0,
+      "n_renormalized": 0,
+      "operational_success": 1.0,
+      "calibration_n": 6,
+      "brier_mean": 0.06595624525248138,
+      "ece": {
+        "ece": 0.1667090853055318,
+        "n": 6,
+        "bins": [
+          {
+            "lo": 0.0,
+            "hi": 0.1,
+            "n": 0,
+            "mean_confidence": null,
+            "accuracy": null
+          },
+          {
+            "lo": 0.1,
+            "hi": 0.2,
+            "n": 0,
+            "mean_confidence": null,
+            "accuracy": null
+          },
+          {
+            "lo": 0.2,
+            "hi": 0.3,
+            "n": 0,
+            "mean_confidence": null,
+            "accuracy": null
+          },
+          {
+            "lo": 0.3,
+            "hi": 0.4,
+            "n": 0,
+            "mean_confidence": null,
+            "accuracy": null
+          },
+          {
+            "lo": 0.4,
+            "hi": 0.5,
+            "n": 0,
+            "mean_confidence": null,
+            "accuracy": null
+          },
+          {
+            "lo": 0.5,
+            "hi": 0.6,
+            "n": 0,
+            "mean_confidence": null,
+            "accuracy": null
+          },
+          {
+            "lo": 0.6,
+            "hi": 0.7,
+            "n": 0,
+            "mean_confidence": null,
+            "accuracy": null
+          },
+          {
+            "lo": 0.7,
+            "hi": 0.8,
+            "n": 3,
+            "mean_confidence": 0.7358133991559347,
+            "accuracy": 1.0
+          },
+          {
+            "lo": 0.8,
+            "hi": 0.9,
+            "n": 1,
+            "mean_confidence": 0.8564196228981018,
+            "accuracy": 1.0
+          },
+          {
+            "lo": 0.9,
+            "hi": 1.0,
+            "n": 2,
+            "mean_confidence": 0.9679428339004517,
+            "accuracy": 1.0
+          }
+        ]
+      },
+      "ordinal_mae": 0.09267128258943558,
+      "latency": {
+        "n": 6,
+        "p50_s": 0.8078575204999652,
+        "p95_s": 0.9540740002466919
+      },
+      "latency_failures": {
+        "n": 0,
+        "p50_s": null,
+        "p95_s": null
+      },
+      "price_per_1000_decisions_usd": null,
+      "cost_basis": [
+        "self_hosted_local_weights"
+      ]
+    },
+    "ambiguous": {
+      "n_planned": 7,
+      "n_attempted": 7,
+      "n_scorable": 7,
+      "n_valid": 7,
+      "n_correct": 6,
+      "accuracy": 0.8571428571428571,
+      "coverage": 1.0,
+      "schema_validity": 1.0,
+      "schema_validity_strict": 1.0,
+      "n_renormalized": 0,
+      "operational_success": 1.0,
+      "calibration_n": 7,
+      "brier_mean": 0.2626659930188174,
+      "ece": {
+        "ece": 0.19936645030975342,
+        "n": 7,
+        "bins": [
+          {
+            "lo": 0.0,
+            "hi": 0.1,
+            "n": 0,
+            "mean_confidence": null,
+            "accuracy": null
+          },
+          {
+            "lo": 0.1,
+            "hi": 0.2,
+            "n": 0,
+            "mean_confidence": null,
+            "accuracy": null
+          },
+          {
+            "lo": 0.2,
+            "hi": 0.3,
+            "n": 0,
+            "mean_confidence": null,
+            "accuracy": null
+          },
+          {
+            "lo": 0.3,
+            "hi": 0.4,
+            "n": 0,
+            "mean_confidence": null,
+            "accuracy": null
+          },
+          {
+            "lo": 0.4,
+            "hi": 0.5,
+            "n": 1,
+            "mean_confidence": 0.4610416293144226,
+            "accuracy": 1.0
+          },
+          {
+            "lo": 0.5,
+            "hi": 0.6,
+            "n": 0,
+            "mean_confidence": null,
+            "accuracy": null
+          },
+          {
+            "lo": 0.6,
+            "hi": 0.7,
+            "n": 2,
+            "mean_confidence": 0.6480134427547455,
+            "accuracy": 0.5
+          },
+          {
+            "lo": 0.7,
+            "hi": 0.8,
+            "n": 1,
+            "mean_confidence": 0.792058527469635,
+            "accuracy": 1.0
+          },
+          {
+            "lo": 0.8,
+            "hi": 0.9,
+            "n": 2,
+            "mean_confidence": 0.8468149900436401,
+            "accuracy": 1.0
+          },
+          {
+            "lo": 0.9,
+            "hi": 1.0,
+            "n": 1,
+            "mean_confidence": 0.9537315964698792,
+            "accuracy": 1.0
+          }
+        ]
+      },
+      "ordinal_mae": null,
+      "latency": {
+        "n": 7,
+        "p50_s": 1.6553354999996372,
+        "p95_s": 1.8672022582984935
+      },
+      "latency_failures": {
+        "n": 0,
+        "p50_s": null,
+        "p95_s": null
+      },
+      "price_per_1000_decisions_usd": null,
+      "cost_basis": [
+        "self_hosted_local_weights"
+      ]
+    },
+    "extraction": {
+      "n_planned": 24,
+      "n_attempted": 24,
+      "n_scorable": 24,
+      "n_valid": 24,
+      "n_correct": 24,
+      "accuracy": 1.0,
+      "coverage": 1.0,
+      "schema_validity": 1.0,
+      "schema_validity_strict": 1.0,
+      "n_renormalized": 0,
+      "operational_success": 1.0,
+      "calibration_n": 24,
+      "brier_mean": 0.07067458345268979,
+      "ece": {
+        "ece": 0.13783670092622435,
+        "n": 24,
+        "bins": [
+          {
+            "lo": 0.0,
+            "hi": 0.1,
+            "n": 0,
+            "mean_confidence": null,
+            "accuracy": null
+          },
+          {
+            "lo": 0.1,
+            "hi": 0.2,
+            "n": 0,
+            "mean_confidence": null,
+            "accuracy": null
+          },
+          {
+            "lo": 0.2,
+            "hi": 0.3,
+            "n": 0,
+            "mean_confidence": null,
+            "accuracy": null
+          },
+          {
+            "lo": 0.3,
+            "hi": 0.4,
+            "n": 0,
+            "mean_confidence": null,
+            "accuracy": null
+          },
+          {
+            "lo": 0.4,
+            "hi": 0.5,
+            "n": 1,
+            "mean_confidence": 0.45959702134132385,
+            "accuracy": 1.0
+          },
+          {
+            "lo": 0.5,
+            "hi": 0.6,
+            "n": 2,
+            "mean_confidence": 0.5560390055179596,
+            "accuracy": 1.0
+          },
+          {
+            "lo": 0.6,
+            "hi": 0.7,
+            "n": 3,
+            "mean_confidence": 0.6520174145698547,
+            "accuracy": 1.0
+          },
+          {
+            "lo": 0.7,
+            "hi": 0.8,
+            "n": 0,
+            "mean_confidence": null,
+            "accuracy": null
+          },
+          {
+            "lo": 0.8,
+            "hi": 0.9,
+            "n": 3,
+            "mean_confidence": 0.8403895099957784,
+            "accuracy": 1.0
+          },
+          {
+            "lo": 0.9,
+            "hi": 1.0,
+            "n": 15,
+            "mean_confidence": 0.9762015581130982,
+            "accuracy": 1.0
+          }
+        ]
+      },
+      "ordinal_mae": null,
+      "latency": {
+        "n": 24,
+        "p50_s": 0.3960859580001852,
+        "p95_s": 0.4132099231486791
+      },
+      "latency_failures": {
+        "n": 0,
+        "p50_s": null,
+        "p95_s": null
+      },
+      "price_per_1000_decisions_usd": null,
+      "cost_basis": [
+        "self_hosted_local_weights"
+      ]
+    },
+    "fact": {
+      "n_planned": 12,
+      "n_attempted": 12,
+      "n_scorable": 12,
+      "n_valid": 12,
+      "n_correct": 11,
+      "accuracy": 0.9166666666666666,
+      "coverage": 1.0,
+      "schema_validity": 1.0,
+      "schema_validity_strict": 1.0,
+      "n_renormalized": 0,
+      "operational_success": 1.0,
+      "calibration_n": 12,
+      "brier_mean": 0.09521159553956023,
+      "ece": {
+        "ece": 0.13480174541473386,
+        "n": 12,
+        "bins": [
+          {
+            "lo": 0.0,
+            "hi": 0.1,
+            "n": 0,
+            "mean_confidence": null,
+            "accuracy": null
+          },
+          {
+            "lo": 0.1,
+            "hi": 0.2,
+            "n": 0,
+            "mean_confidence": null,
+            "accuracy": null
+          },
+          {
+            "lo": 0.2,
+            "hi": 0.3,
+            "n": 0,
+            "mean_confidence": null,
+            "accuracy": null
+          },
+          {
+            "lo": 0.3,
+            "hi": 0.4,
+            "n": 0,
+            "mean_confidence": null,
+            "accuracy": null
+          },
+          {
+            "lo": 0.4,
+            "hi": 0.5,
+            "n": 0,
+            "mean_confidence": null,
+            "accuracy": null
+          },
+          {
+            "lo": 0.5,
+            "hi": 0.6,
+            "n": 1,
+            "mean_confidence": 0.562176525592804,
+            "accuracy": 0.0
+          },
+          {
+            "lo": 0.6,
+            "hi": 0.7,
+            "n": 1,
+            "mean_confidence": 0.622459352016449,
+            "accuracy": 1.0
+          },
+          {
+            "lo": 0.7,
+            "hi": 0.8,
+            "n": 2,
+            "mean_confidence": 0.787743330001831,
+            "accuracy": 1.0
+          },
+          {
+            "lo": 0.8,
+            "hi": 0.9,
+            "n": 1,
+            "mean_confidence": 0.8670357465744019,
+            "accuracy": 1.0
+          },
+          {
+            "lo": 0.9,
+            "hi": 1.0,
+            "n": 7,
+            "mean_confidence": 0.9827962602887835,
+            "accuracy": 1.0
+          }
+        ]
+      },
+      "ordinal_mae": null,
+      "latency": {
+        "n": 12,
+        "p50_s": 0.40876918750291225,
+        "p95_s": 0.4194575521949446
+      },
+      "latency_failures": {
+        "n": 0,
+        "p50_s": null,
+        "p95_s": null
+      },
+      "price_per_1000_decisions_usd": null,
+      "cost_basis": [
+        "self_hosted_local_weights"
+      ]
+    },
+    "intent": {
+      "n_planned": 24,
+      "n_attempted": 24,
+      "n_scorable": 24,
+      "n_valid": 24,
+      "n_correct": 23,
+      "accuracy": 0.9583333333333334,
+      "coverage": 1.0,
+      "schema_validity": 1.0,
+      "schema_validity_strict": 1.0,
+      "n_renormalized": 0,
+      "operational_success": 1.0,
+      "calibration_n": 24,
+      "brier_mean": 0.07896045484379965,
+      "ece": {
+        "ece": 0.0835748774309953,
+        "n": 24,
+        "bins": [
+          {
+            "lo": 0.0,
+            "hi": 0.1,
+            "n": 0,
+            "mean_confidence": null,
+            "accuracy": null
+          },
+          {
+            "lo": 0.1,
+            "hi": 0.2,
+            "n": 0,
+            "mean_confidence": null,
+            "accuracy": null
+          },
+          {
+            "lo": 0.2,
+            "hi": 0.3,
+            "n": 0,
+            "mean_confidence": null,
+            "accuracy": null
+          },
+          {
+            "lo": 0.3,
+            "hi": 0.4,
+            "n": 2,
+            "mean_confidence": 0.36477993428707123,
+            "accuracy": 1.0
+          },
+          {
+            "lo": 0.4,
+            "hi": 0.5,
+            "n": 0,
+            "mean_confidence": null,
+            "accuracy": null
+          },
+          {
+            "lo": 0.5,
+            "hi": 0.6,
+            "n": 1,
+            "mean_confidence": 0.563920795917511,
+            "accuracy": 0.0
+          },
+          {
+            "lo": 0.6,
+            "hi": 0.7,
+            "n": 0,
+            "mean_confidence": null,
+            "accuracy": null
+          },
+          {
+            "lo": 0.7,
+            "hi": 0.8,
+            "n": 0,
+            "mean_confidence": null,
+            "accuracy": null
+          },
+          {
+            "lo": 0.8,
+            "hi": 0.9,
+            "n": 0,
+            "mean_confidence": null,
+            "accuracy": null
+          },
+          {
+            "lo": 0.9,
+            "hi": 1.0,
+            "n": 21,
+            "mean_confidence": 0.991836374714261,
+            "accuracy": 1.0
+          }
+        ]
+      },
+      "ordinal_mae": null,
+      "latency": {
+        "n": 24,
+        "p50_s": 0.4874783964987728,
+        "p95_s": 0.5133791999509413
+      },
+      "latency_failures": {
+        "n": 0,
+        "p50_s": null,
+        "p95_s": null
+      },
+      "price_per_1000_decisions_usd": null,
+      "cost_basis": [
+        "self_hosted_local_weights"
+      ]
+    },
+    "judge_hard": {
+      "n_planned": 17,
+      "n_attempted": 17,
+      "n_scorable": 17,
+      "n_valid": 17,
+      "n_correct": 13,
+      "accuracy": 0.7647058823529411,
+      "coverage": 1.0,
+      "schema_validity": 1.0,
+      "schema_validity_strict": 1.0,
+      "n_renormalized": 0,
+      "operational_success": 1.0,
+      "calibration_n": 17,
+      "brier_mean": 0.4790203538989243,
+      "ece": {
+        "ece": 0.27623125034220075,
+        "n": 17,
+        "bins": [
+          {
+            "lo": 0.0,
+            "hi": 0.1,
+            "n": 0,
+            "mean_confidence": null,
+            "accuracy": null
+          },
+          {
+            "lo": 0.1,
+            "hi": 0.2,
+            "n": 0,
+            "mean_confidence": null,
+            "accuracy": null
+          },
+          {
+            "lo": 0.2,
+            "hi": 0.3,
+            "n": 0,
+            "mean_confidence": null,
+            "accuracy": null
+          },
+          {
+            "lo": 0.3,
+            "hi": 0.4,
+            "n": 0,
+            "mean_confidence": null,
+            "accuracy": null
+          },
+          {
+            "lo": 0.4,
+            "hi": 0.5,
+            "n": 0,
+            "mean_confidence": null,
+            "accuracy": null
+          },
+          {
+            "lo": 0.5,
+            "hi": 0.6,
+            "n": 3,
+            "mean_confidence": 0.5311286449432373,
+            "accuracy": 1.0
+          },
+          {
+            "lo": 0.6,
+            "hi": 0.7,
+            "n": 1,
+            "mean_confidence": 0.622459352016449,
+            "accuracy": 1.0
+          },
+          {
+            "lo": 0.7,
+            "hi": 0.8,
+            "n": 2,
+            "mean_confidence": 0.766107439994812,
+            "accuracy": 0.5
+          },
+          {
+            "lo": 0.8,
+            "hi": 0.9,
+            "n": 2,
+            "mean_confidence": 0.8347636759281158,
+            "accuracy": 0.5
+          },
+          {
+            "lo": 0.9,
+            "hi": 1.0,
+            "n": 9,
+            "mean_confidence": 0.9677815900908576,
+            "accuracy": 0.7777777777777778
+          }
+        ]
+      },
+      "ordinal_mae": null,
+      "latency": {
+        "n": 17,
+        "p50_s": 0.9015012079980806,
+        "p95_s": 1.1462217834006878
+      },
+      "latency_failures": {
+        "n": 0,
+        "p50_s": null,
+        "p95_s": null
+      },
+      "price_per_1000_decisions_usd": null,
+      "cost_basis": [
+        "self_hosted_local_weights"
+      ]
+    },
+    "long_policy": {
+      "n_planned": 19,
+      "n_attempted": 19,
+      "n_scorable": 19,
+      "n_valid": 19,
+      "n_correct": 12,
+      "accuracy": 0.631578947368421,
+      "coverage": 1.0,
+      "schema_validity": 1.0,
+      "schema_validity_strict": 1.0,
+      "n_renormalized": 0,
+      "operational_success": 1.0,
+      "calibration_n": 19,
+      "brier_mean": 0.4650659757333015,
+      "ece": {
+        "ece": 0.15279920007053177,
+        "n": 19,
+        "bins": [
+          {
+            "lo": 0.0,
+            "hi": 0.1,
+            "n": 0,
+            "mean_confidence": null,
+            "accuracy": null
+          },
+          {
+            "lo": 0.1,
+            "hi": 0.2,
+            "n": 0,
+            "mean_confidence": null,
+            "accuracy": null
+          },
+          {
+            "lo": 0.2,
+            "hi": 0.3,
+            "n": 0,
+            "mean_confidence": null,
+            "accuracy": null
+          },
+          {
+            "lo": 0.3,
+            "hi": 0.4,
+            "n": 1,
+            "mean_confidence": 0.39948612451553345,
+            "accuracy": 0.0
+          },
+          {
+            "lo": 0.4,
+            "hi": 0.5,
+            "n": 2,
+            "mean_confidence": 0.4299808293581009,
+            "accuracy": 0.5
+          },
+          {
+            "lo": 0.5,
+            "hi": 0.6,
+            "n": 4,
+            "mean_confidence": 0.5395595282316208,
+            "accuracy": 0.5
+          },
+          {
+            "lo": 0.6,
+            "hi": 0.7,
+            "n": 2,
+            "mean_confidence": 0.6517520844936371,
+            "accuracy": 1.0
+          },
+          {
+            "lo": 0.7,
+            "hi": 0.8,
+            "n": 4,
+            "mean_confidence": 0.7547030448913574,
+            "accuracy": 0.5
+          },
+          {
+            "lo": 0.8,
+            "hi": 0.9,
+            "n": 4,
+            "mean_confidence": 0.8511561751365662,
+            "accuracy": 0.75
+          },
+          {
+            "lo": 0.9,
+            "hi": 1.0,
+            "n": 2,
+            "mean_confidence": 0.9572552442550659,
+            "accuracy": 1.0
+          }
+        ]
+      },
+      "ordinal_mae": 0.5714948065578938,
+      "latency": {
+        "n": 19,
+        "p50_s": 8.413030374998925,
+        "p95_s": 11.542267045504559
+      },
+      "latency_failures": {
+        "n": 0,
+        "p50_s": null,
+        "p95_s": null
+      },
+      "price_per_1000_decisions_usd": null,
+      "cost_basis": [
+        "self_hosted_local_weights"
+      ]
+    },
+    "multi_hop": {
+      "n_planned": 18,
+      "n_attempted": 18,
+      "n_scorable": 18,
+      "n_valid": 18,
+      "n_correct": 12,
+      "accuracy": 0.6666666666666666,
+      "coverage": 1.0,
+      "schema_validity": 1.0,
+      "schema_validity_strict": 1.0,
+      "n_renormalized": 0,
+      "operational_success": 1.0,
+      "calibration_n": 18,
+      "brier_mean": 0.394169594282763,
+      "ece": {
+        "ece": 0.12739628222253588,
+        "n": 18,
+        "bins": [
+          {
+            "lo": 0.0,
+            "hi": 0.1,
+            "n": 0,
+            "mean_confidence": null,
+            "accuracy": null
+          },
+          {
+            "lo": 0.1,
+            "hi": 0.2,
+            "n": 0,
+            "mean_confidence": null,
+            "accuracy": null
+          },
+          {
+            "lo": 0.2,
+            "hi": 0.3,
+            "n": 1,
+            "mean_confidence": 0.29588714241981506,
+            "accuracy": 0.0
+          },
+          {
+            "lo": 0.3,
+            "hi": 0.4,
+            "n": 1,
+            "mean_confidence": 0.3745737075805664,
+            "accuracy": 0.0
+          },
+          {
+            "lo": 0.4,
+            "hi": 0.5,
+            "n": 4,
+            "mean_confidence": 0.47968073934316635,
+            "accuracy": 0.5
+          },
+          {
+            "lo": 0.5,
+            "hi": 0.6,
+            "n": 4,
+            "mean_confidence": 0.5527792274951935,
+            "accuracy": 0.5
+          },
+          {
+            "lo": 0.6,
+            "hi": 0.7,
+            "n": 0,
+            "mean_confidence": null,
+            "accuracy": null
+          },
+          {
+            "lo": 0.7,
+            "hi": 0.8,
+            "n": 4,
+            "mean_confidence": 0.7435799837112427,
+            "accuracy": 1.0
+          },
+          {
+            "lo": 0.8,
+            "hi": 0.9,
+            "n": 1,
+            "mean_confidence": 0.8741111755371094,
+            "accuracy": 1.0
+          },
+          {
+            "lo": 0.9,
+            "hi": 1.0,
+            "n": 3,
+            "mean_confidence": 0.940430204073588,
+            "accuracy": 1.0
+          }
+        ]
+      },
+      "ordinal_mae": 0.34679150581359863,
+      "latency": {
+        "n": 18,
+        "p50_s": 7.182198562499252,
+        "p95_s": 8.251314614252623
+      },
+      "latency_failures": {
+        "n": 0,
+        "p50_s": null,
+        "p95_s": null
+      },
+      "price_per_1000_decisions_usd": null,
+      "cost_basis": [
+        "self_hosted_local_weights"
+      ]
+    },
+    "ordinal": {
+      "n_planned": 12,
+      "n_attempted": 12,
+      "n_scorable": 12,
+      "n_valid": 12,
+      "n_correct": 12,
+      "accuracy": 1.0,
+      "coverage": 1.0,
+      "schema_validity": 1.0,
+      "schema_validity_strict": 1.0,
+      "n_renormalized": 0,
+      "operational_success": 1.0,
+      "calibration_n": 12,
+      "brier_mean": 0.1259257700573419,
+      "ece": {
+        "ece": 0.1991964429616928,
+        "n": 12,
+        "bins": [
+          {
+            "lo": 0.0,
+            "hi": 0.1,
+            "n": 0,
+            "mean_confidence": null,
+            "accuracy": null
+          },
+          {
+            "lo": 0.1,
+            "hi": 0.2,
+            "n": 0,
+            "mean_confidence": null,
+            "accuracy": null
+          },
+          {
+            "lo": 0.2,
+            "hi": 0.3,
+            "n": 0,
+            "mean_confidence": null,
+            "accuracy": null
+          },
+          {
+            "lo": 0.3,
+            "hi": 0.4,
+            "n": 1,
+            "mean_confidence": 0.3986893892288208,
+            "accuracy": 1.0
+          },
+          {
+            "lo": 0.4,
+            "hi": 0.5,
+            "n": 1,
+            "mean_confidence": 0.4876583218574524,
+            "accuracy": 1.0
+          },
+          {
+            "lo": 0.5,
+            "hi": 0.6,
+            "n": 2,
+            "mean_confidence": 0.5641207695007324,
+            "accuracy": 1.0
+          },
+          {
+            "lo": 0.6,
+            "hi": 0.7,
+            "n": 0,
+            "mean_confidence": null,
+            "accuracy": null
+          },
+          {
+            "lo": 0.7,
+            "hi": 0.8,
+            "n": 0,
+            "mean_confidence": null,
+            "accuracy": null
+          },
+          {
+            "lo": 0.8,
+            "hi": 0.9,
+            "n": 1,
+            "mean_confidence": 0.8683521151542664,
+            "accuracy": 1.0
+          },
+          {
+            "lo": 0.9,
+            "hi": 1.0,
+            "n": 7,
+            "mean_confidence": 0.9609573313168117,
+            "accuracy": 1.0
+          }
+        ]
+      },
+      "ordinal_mae": 0.27791704071569256,
+      "latency": {
+        "n": 12,
+        "p50_s": 0.4678184579970548,
+        "p95_s": 0.4718688162975013
+      },
+      "latency_failures": {
+        "n": 0,
+        "p50_s": null,
+        "p95_s": null
+      },
+      "price_per_1000_decisions_usd": null,
+      "cost_basis": [
+        "self_hosted_local_weights"
+      ]
+    },
+    "policy": {
+      "n_planned": 12,
+      "n_attempted": 12,
+      "n_scorable": 12,
+      "n_valid": 12,
+      "n_correct": 10,
+      "accuracy": 0.8333333333333334,
+      "coverage": 1.0,
+      "schema_validity": 1.0,
+      "schema_validity_strict": 1.0,
+      "n_renormalized": 0,
+      "operational_success": 1.0,
+      "calibration_n": 12,
+      "brier_mean": 0.2536709500766377,
+      "ece": {
+        "ece": 0.12102318306763966,
+        "n": 12,
+        "bins": [
+          {
+            "lo": 0.0,
+            "hi": 0.1,
+            "n": 0,
+            "mean_confidence": null,
+            "accuracy": null
+          },
+          {
+            "lo": 0.1,
+            "hi": 0.2,
+            "n": 0,
+            "mean_confidence": null,
+            "accuracy": null
+          },
+          {
+            "lo": 0.2,
+            "hi": 0.3,
+            "n": 0,
+            "mean_confidence": null,
+            "accuracy": null
+          },
+          {
+            "lo": 0.3,
+            "hi": 0.4,
+            "n": 0,
+            "mean_confidence": null,
+            "accuracy": null
+          },
+          {
+            "lo": 0.4,
+            "hi": 0.5,
+            "n": 0,
+            "mean_confidence": null,
+            "accuracy": null
+          },
+          {
+            "lo": 0.5,
+            "hi": 0.6,
+            "n": 2,
+            "mean_confidence": 0.5619380176067352,
+            "accuracy": 0.5
+          },
+          {
+            "lo": 0.6,
+            "hi": 0.7,
+            "n": 3,
+            "mean_confidence": 0.6513549089431763,
+            "accuracy": 0.6666666666666666
+          },
+          {
+            "lo": 0.7,
+            "hi": 0.8,
+            "n": 4,
+            "mean_confidence": 0.7519859075546265,
+            "accuracy": 1.0
+          },
+          {
+            "lo": 0.8,
+            "hi": 0.9,
+            "n": 1,
+            "mean_confidence": 0.8807971477508545,
+            "accuracy": 1.0
+          },
+          {
+            "lo": 0.9,
+            "hi": 1.0,
+            "n": 2,
+            "mean_confidence": 0.9143961668014526,
+            "accuracy": 1.0
+          }
+        ]
+      },
+      "ordinal_mae": null,
+      "latency": {
+        "n": 12,
+        "p50_s": 0.4117262289983046,
+        "p95_s": 0.41950098909801453
+      },
+      "latency_failures": {
+        "n": 0,
+        "p50_s": null,
+        "p95_s": null
+      },
+      "price_per_1000_decisions_usd": null,
+      "cost_basis": [
+        "self_hosted_local_weights"
+      ]
+    },
+    "probability": {
+      "n_planned": 10,
+      "n_attempted": 10,
+      "n_scorable": 10,
+      "n_valid": 10,
+      "n_correct": 7,
+      "accuracy": 0.7,
+      "coverage": 1.0,
+      "schema_validity": 1.0,
+      "schema_validity_strict": 1.0,
+      "n_renormalized": 0,
+      "operational_success": 1.0,
+      "calibration_n": 10,
+      "brier_mean": 0.6162380209424502,
+      "ece": {
+        "ece": 0.38285190165042876,
+        "n": 10,
+        "bins": [
+          {
+            "lo": 0.0,
+            "hi": 0.1,
+            "n": 0,
+            "mean_confidence": null,
+            "accuracy": null
+          },
+          {
+            "lo": 0.1,
+            "hi": 0.2,
+            "n": 0,
+            "mean_confidence": null,
+            "accuracy": null
+          },
+          {
+            "lo": 0.2,
+            "hi": 0.3,
+            "n": 0,
+            "mean_confidence": null,
+            "accuracy": null
+          },
+          {
+            "lo": 0.3,
+            "hi": 0.4,
+            "n": 0,
+            "mean_confidence": null,
+            "accuracy": null
+          },
+          {
+            "lo": 0.4,
+            "hi": 0.5,
+            "n": 2,
+            "mean_confidence": 0.4652656465768814,
+            "accuracy": 1.0
+          },
+          {
+            "lo": 0.5,
+            "hi": 0.6,
+            "n": 0,
+            "mean_confidence": null,
+            "accuracy": null
+          },
+          {
+            "lo": 0.6,
+            "hi": 0.7,
+            "n": 2,
+            "mean_confidence": 0.6621421277523041,
+            "accuracy": 1.0
+          },
+          {
+            "lo": 0.7,
+            "hi": 0.8,
+            "n": 2,
+            "mean_confidence": 0.7485018670558929,
+            "accuracy": 0.5
+          },
+          {
+            "lo": 0.8,
+            "hi": 0.9,
+            "n": 3,
+            "mean_confidence": 0.8816566864649454,
+            "accuracy": 0.6666666666666666
+          },
+          {
+            "lo": 0.9,
+            "hi": 1.0,
+            "n": 1,
+            "mean_confidence": 0.9413607716560364,
+            "accuracy": 0.0
+          }
+        ]
+      },
+      "ordinal_mae": null,
+      "latency": {
+        "n": 10,
+        "p50_s": 2.320004125002015,
+        "p95_s": 5.216047906400123
+      },
+      "latency_failures": {
+        "n": 0,
+        "p50_s": null,
+        "p95_s": null
+      },
+      "price_per_1000_decisions_usd": null,
+      "cost_basis": [
+        "self_hosted_local_weights"
+      ]
+    },
+    "routing": {
+      "n_planned": 12,
+      "n_attempted": 12,
+      "n_scorable": 12,
+      "n_valid": 12,
+      "n_correct": 11,
+      "accuracy": 0.9166666666666666,
+      "coverage": 1.0,
+      "schema_validity": 1.0,
+      "schema_validity_strict": 1.0,
+      "n_renormalized": 0,
+      "operational_success": 1.0,
+      "calibration_n": 12,
+      "brier_mean": 0.09103510717051994,
+      "ece": {
+        "ece": 0.14798786491155622,
+        "n": 12,
+        "bins": [
+          {
+            "lo": 0.0,
+            "hi": 0.1,
+            "n": 0,
+            "mean_confidence": null,
+            "accuracy": null
+          },
+          {
+            "lo": 0.1,
+            "hi": 0.2,
+            "n": 0,
+            "mean_confidence": null,
+            "accuracy": null
+          },
+          {
+            "lo": 0.2,
+            "hi": 0.3,
+            "n": 0,
+            "mean_confidence": null,
+            "accuracy": null
+          },
+          {
+            "lo": 0.3,
+            "hi": 0.4,
+            "n": 1,
+            "mean_confidence": 0.39604452252388,
+            "accuracy": 0.0
+          },
+          {
+            "lo": 0.4,
+            "hi": 0.5,
+            "n": 0,
+            "mean_confidence": null,
+            "accuracy": null
+          },
+          {
+            "lo": 0.5,
+            "hi": 0.6,
+            "n": 1,
+            "mean_confidence": 0.5402995347976685,
+            "accuracy": 1.0
+          },
+          {
+            "lo": 0.6,
+            "hi": 0.7,
+            "n": 0,
+            "mean_confidence": null,
+            "accuracy": null
+          },
+          {
+            "lo": 0.7,
+            "hi": 0.8,
+            "n": 0,
+            "mean_confidence": null,
+            "accuracy": null
+          },
+          {
+            "lo": 0.8,
+            "hi": 0.9,
+            "n": 5,
+            "mean_confidence": 0.8576816558837891,
+            "accuracy": 1.0
+          },
+          {
+            "lo": 0.9,
+            "hi": 1.0,
+            "n": 5,
+            "mean_confidence": 0.9582964658737183,
+            "accuracy": 1.0
+          }
+        ]
+      },
+      "ordinal_mae": null,
+      "latency": {
+        "n": 12,
+        "p50_s": 0.471084749995498,
+        "p95_s": 0.5035994921498058
+      },
+      "latency_failures": {
+        "n": 0,
+        "p50_s": null,
+        "p95_s": null
+      },
+      "price_per_1000_decisions_usd": null,
+      "cost_basis": [
+        "self_hosted_local_weights"
+      ]
+    },
+    "routing_hard": {
+      "n_planned": 5,
+      "n_attempted": 5,
+      "n_scorable": 5,
+      "n_valid": 5,
+      "n_correct": 5,
+      "accuracy": 1.0,
+      "coverage": 1.0,
+      "schema_validity": 1.0,
+      "schema_validity_strict": 1.0,
+      "n_renormalized": 0,
+      "operational_success": 1.0,
+      "calibration_n": 5,
+      "brier_mean": 0.003250866240457838,
+      "ece": {
+        "ece": 0.02454686164855957,
+        "n": 5,
+        "bins": [
+          {
+            "lo": 0.0,
+            "hi": 0.1,
+            "n": 0,
+            "mean_confidence": null,
+            "accuracy": null
+          },
+          {
+            "lo": 0.1,
+            "hi": 0.2,
+            "n": 0,
+            "mean_confidence": null,
+            "accuracy": null
+          },
+          {
+            "lo": 0.2,
+            "hi": 0.3,
+            "n": 0,
+            "mean_confidence": null,
+            "accuracy": null
+          },
+          {
+            "lo": 0.3,
+            "hi": 0.4,
+            "n": 0,
+            "mean_confidence": null,
+            "accuracy": null
+          },
+          {
+            "lo": 0.4,
+            "hi": 0.5,
+            "n": 0,
+            "mean_confidence": null,
+            "accuracy": null
+          },
+          {
+            "lo": 0.5,
+            "hi": 0.6,
+            "n": 0,
+            "mean_confidence": null,
+            "accuracy": null
+          },
+          {
+            "lo": 0.6,
+            "hi": 0.7,
+            "n": 0,
+            "mean_confidence": null,
+            "accuracy": null
+          },
+          {
+            "lo": 0.7,
+            "hi": 0.8,
+            "n": 0,
+            "mean_confidence": null,
+            "accuracy": null
+          },
+          {
+            "lo": 0.8,
+            "hi": 0.9,
+            "n": 1,
+            "mean_confidence": 0.8993721008300781,
+            "accuracy": 1.0
+          },
+          {
+            "lo": 0.9,
+            "hi": 1.0,
+            "n": 4,
+            "mean_confidence": 0.994473397731781,
+            "accuracy": 1.0
+          }
+        ]
+      },
+      "ordinal_mae": null,
+      "latency": {
+        "n": 5,
+        "p50_s": 0.9038679580044118,
+        "p95_s": 0.9828447340012644
+      },
+      "latency_failures": {
+        "n": 0,
+        "p50_s": null,
+        "p95_s": null
+      },
+      "price_per_1000_decisions_usd": null,
+      "cost_basis": [
+        "self_hosted_local_weights"
+      ]
+    },
+    "temporal_numeric": {
+      "n_planned": 15,
+      "n_attempted": 15,
+      "n_scorable": 15,
+      "n_valid": 15,
+      "n_correct": 5,
+      "accuracy": 0.3333333333333333,
+      "coverage": 1.0,
+      "schema_validity": 1.0,
+      "schema_validity_strict": 1.0,
+      "n_renormalized": 0,
+      "operational_success": 1.0,
+      "calibration_n": 15,
+      "brier_mean": 0.8423624527747144,
+      "ece": {
+        "ece": 0.3121231993039449,
+        "n": 15,
+        "bins": [
+          {
+            "lo": 0.0,
+            "hi": 0.1,
+            "n": 0,
+            "mean_confidence": null,
+            "accuracy": null
+          },
+          {
+            "lo": 0.1,
+            "hi": 0.2,
+            "n": 0,
+            "mean_confidence": null,
+            "accuracy": null
+          },
+          {
+            "lo": 0.2,
+            "hi": 0.3,
+            "n": 1,
+            "mean_confidence": 0.2964693605899811,
+            "accuracy": 0.0
+          },
+          {
+            "lo": 0.3,
+            "hi": 0.4,
+            "n": 5,
+            "mean_confidence": 0.3565827190876007,
+            "accuracy": 0.2
+          },
+          {
+            "lo": 0.4,
+            "hi": 0.5,
+            "n": 2,
+            "mean_confidence": 0.42416635155677795,
+            "accuracy": 0.0
+          },
+          {
+            "lo": 0.5,
+            "hi": 0.6,
+            "n": 2,
+            "mean_confidence": 0.531088262796402,
+            "accuracy": 1.0
+          },
+          {
+            "lo": 0.6,
+            "hi": 0.7,
+            "n": 2,
+            "mean_confidence": 0.6698474287986755,
+            "accuracy": 0.5
+          },
+          {
+            "lo": 0.7,
+            "hi": 0.8,
+            "n": 2,
+            "mean_confidence": 0.7462601959705353,
+            "accuracy": 0.5
+          },
+          {
+            "lo": 0.8,
+            "hi": 0.9,
+            "n": 0,
+            "mean_confidence": null,
+            "accuracy": null
+          },
+          {
+            "lo": 0.9,
+            "hi": 1.0,
+            "n": 1,
+            "mean_confidence": 0.9840936064720154,
+            "accuracy": 0.0
+          }
+        ]
+      },
+      "ordinal_mae": 1.6231984943151474,
+      "latency": {
+        "n": 15,
+        "p50_s": 1.7787641670001904,
+        "p95_s": 3.147244929402949
+      },
+      "latency_failures": {
+        "n": 0,
+        "p50_s": null,
+        "p95_s": null
+      },
+      "price_per_1000_decisions_usd": null,
+      "cost_basis": [
+        "self_hosted_local_weights"
+      ]
+    },
+    "tool_selection": {
+      "n_planned": 12,
+      "n_attempted": 12,
+      "n_scorable": 12,
+      "n_valid": 12,
+      "n_correct": 12,
+      "accuracy": 1.0,
+      "coverage": 1.0,
+      "schema_validity": 1.0,
+      "schema_validity_strict": 1.0,
+      "n_renormalized": 0,
+      "operational_success": 1.0,
+      "calibration_n": 12,
+      "brier_mean": 3.548812797449403e-05,
+      "ece": {
+        "ece": 0.0037267754475275305,
+        "n": 12,
+        "bins": [
+          {
+            "lo": 0.0,
+            "hi": 0.1,
+            "n": 0,
+            "mean_confidence": null,
+            "accuracy": null
+          },
+          {
+            "lo": 0.1,
+            "hi": 0.2,
+            "n": 0,
+            "mean_confidence": null,
+            "accuracy": null
+          },
+          {
+            "lo": 0.2,
+            "hi": 0.3,
+            "n": 0,
+            "mean_confidence": null,
+            "accuracy": null
+          },
+          {
+            "lo": 0.3,
+            "hi": 0.4,
+            "n": 0,
+            "mean_confidence": null,
+            "accuracy": null
+          },
+          {
+            "lo": 0.4,
+            "hi": 0.5,
+            "n": 0,
+            "mean_confidence": null,
+            "accuracy": null
+          },
+          {
+            "lo": 0.5,
+            "hi": 0.6,
+            "n": 0,
+            "mean_confidence": null,
+            "accuracy": null
+          },
+          {
+            "lo": 0.6,
+            "hi": 0.7,
+            "n": 0,
+            "mean_confidence": null,
+            "accuracy": null
+          },
+          {
+            "lo": 0.7,
+            "hi": 0.8,
+            "n": 0,
+            "mean_confidence": null,
+            "accuracy": null
+          },
+          {
+            "lo": 0.8,
+            "hi": 0.9,
+            "n": 0,
+            "mean_confidence": null,
+            "accuracy": null
+          },
+          {
+            "lo": 0.9,
+            "hi": 1.0,
+            "n": 12,
+            "mean_confidence": 0.9962732245524725,
+            "accuracy": 1.0
+          }
+        ]
+      },
+      "ordinal_mae": null,
+      "latency": {
+        "n": 12,
+        "p50_s": 0.5096063540004252,
+        "p95_s": 0.5136415103028412
+      },
+      "latency_failures": {
+        "n": 0,
+        "p50_s": null,
+        "p95_s": null
+      },
+      "price_per_1000_decisions_usd": null,
+      "cost_basis": [
+        "self_hosted_local_weights"
+      ]
+    },
+    "tradeoff": {
+      "n_planned": 6,
+      "n_attempted": 6,
+      "n_scorable": 6,
+      "n_valid": 6,
+      "n_correct": 5,
+      "accuracy": 0.8333333333333334,
+      "coverage": 1.0,
+      "schema_validity": 1.0,
+      "schema_validity_strict": 1.0,
+      "n_renormalized": 0,
+      "operational_success": 1.0,
+      "calibration_n": 6,
+      "brier_mean": 0.24026082415995523,
+      "ece": {
+        "ece": 0.20949454108874002,
+        "n": 6,
+        "bins": [
+          {
+            "lo": 0.0,
+            "hi": 0.1,
+            "n": 0,
+            "mean_confidence": null,
+            "accuracy": null
+          },
+          {
+            "lo": 0.1,
+            "hi": 0.2,
+            "n": 0,
+            "mean_confidence": null,
+            "accuracy": null
+          },
+          {
+            "lo": 0.2,
+            "hi": 0.3,
+            "n": 0,
+            "mean_confidence": null,
+            "accuracy": null
+          },
+          {
+            "lo": 0.3,
+            "hi": 0.4,
+            "n": 0,
+            "mean_confidence": null,
+            "accuracy": null
+          },
+          {
+            "lo": 0.4,
+            "hi": 0.5,
+            "n": 0,
+            "mean_confidence": null,
+            "accuracy": null
+          },
+          {
+            "lo": 0.5,
+            "hi": 0.6,
+            "n": 1,
+            "mean_confidence": 0.5662806034088135,
+            "accuracy": 1.0
+          },
+          {
+            "lo": 0.6,
+            "hi": 0.7,
+            "n": 2,
+            "mean_confidence": 0.6563043296337128,
+            "accuracy": 0.5
+          },
+          {
+            "lo": 0.7,
+            "hi": 0.8,
+            "n": 2,
+            "mean_confidence": 0.754968672990799,
+            "accuracy": 1.0
+          },
+          {
+            "lo": 0.8,
+            "hi": 0.9,
+            "n": 0,
+            "mean_confidence": null,
+            "accuracy": null
+          },
+          {
+            "lo": 0.9,
+            "hi": 1.0,
+            "n": 1,
+            "mean_confidence": 0.979423463344574,
+            "accuracy": 1.0
+          }
+        ]
+      },
+      "ordinal_mae": null,
+      "latency": {
+        "n": 6,
+        "p50_s": 2.1810965205004322,
+        "p95_s": 2.35466854175138
+      },
+      "latency_failures": {
+        "n": 0,
+        "p50_s": null,
+        "p95_s": null
+      },
+      "price_per_1000_decisions_usd": null,
+      "cost_basis": [
+        "self_hosted_local_weights"
+      ]
+    },
+    "trap": {
+      "n_planned": 8,
+      "n_attempted": 8,
+      "n_scorable": 8,
+      "n_valid": 8,
+      "n_correct": 6,
+      "accuracy": 0.75,
+      "coverage": 1.0,
+      "schema_validity": 1.0,
+      "schema_validity_strict": 1.0,
+      "n_renormalized": 0,
+      "operational_success": 1.0,
+      "calibration_n": 8,
+      "brier_mean": 0.5679546478083557,
+      "ece": {
+        "ece": 0.36218494549393654,
+        "n": 8,
+        "bins": [
+          {
+            "lo": 0.0,
+            "hi": 0.1,
+            "n": 0,
+            "mean_confidence": null,
+            "accuracy": null
+          },
+          {
+            "lo": 0.1,
+            "hi": 0.2,
+            "n": 0,
+            "mean_confidence": null,
+            "accuracy": null
+          },
+          {
+            "lo": 0.2,
+            "hi": 0.3,
+            "n": 0,
+            "mean_confidence": null,
+            "accuracy": null
+          },
+          {
+            "lo": 0.3,
+            "hi": 0.4,
+            "n": 1,
+            "mean_confidence": 0.38347944617271423,
+            "accuracy": 1.0
+          },
+          {
+            "lo": 0.4,
+            "hi": 0.5,
+            "n": 0,
+            "mean_confidence": null,
+            "accuracy": null
+          },
+          {
+            "lo": 0.5,
+            "hi": 0.6,
+            "n": 1,
+            "mean_confidence": 0.5,
+            "accuracy": 1.0
+          },
+          {
+            "lo": 0.6,
+            "hi": 0.7,
+            "n": 0,
+            "mean_confidence": null,
+            "accuracy": null
+          },
+          {
+            "lo": 0.7,
+            "hi": 0.8,
+            "n": 1,
+            "mean_confidence": 0.7950522899627686,
+            "accuracy": 1.0
+          },
+          {
+            "lo": 0.8,
+            "hi": 0.9,
+            "n": 2,
+            "mean_confidence": 0.8585591614246368,
+            "accuracy": 0.5
+          },
+          {
+            "lo": 0.9,
+            "hi": 1.0,
+            "n": 3,
+            "mean_confidence": 0.9529643257459005,
+            "accuracy": 0.6666666666666666
+          }
+        ]
+      },
+      "ordinal_mae": 1.5646223351359367,
+      "latency": {
+        "n": 8,
+        "p50_s": 0.8864833335028379,
+        "p95_s": 1.083670394301953
+      },
+      "latency_failures": {
+        "n": 0,
+        "p50_s": null,
+        "p95_s": null
+      },
+      "price_per_1000_decisions_usd": null,
+      "cost_basis": [
+        "self_hosted_local_weights"
+      ]
+    }
+  },
+  "complete": true,
+  "paraphrase_consistency": {
+    "pairs": 36,
+    "both_valid": 36,
+    "agree": 31,
+    "agreement": 0.8611111111111112,
+    "both_correct_rate_all_pairs": 0.8055555555555556
+  },
+  "model_identities": [
+    "downloads/MiMo-V2.6-Qwen-9B-MTPLX-Optimized-Speed"
+  ],
+  "probability_sources": [
+    "native"
+  ],
+  "splits": {
+    "public": {
+      "n_planned": 231,
+      "n_attempted": 231,
+      "n_scorable": 231,
+      "n_valid": 231,
+      "n_correct": 187,
+      "accuracy": 0.8095238095238095,
+      "coverage": 1.0,
+      "schema_validity": 1.0,
+      "schema_validity_strict": 1.0,
+      "n_renormalized": 0,
+      "operational_success": 1.0,
+      "calibration_n": 231,
+      "brier_mean": 0.29371732082768537,
+      "ece": {
+        "ece": 0.05983306628801091,
+        "n": 231,
+        "bins": [
+          {
+            "lo": 0.0,
+            "hi": 0.1,
+            "n": 0,
+            "mean_confidence": null,
+            "accuracy": null
+          },
+          {
+            "lo": 0.1,
+            "hi": 0.2,
+            "n": 0,
+            "mean_confidence": null,
+            "accuracy": null
+          },
+          {
+            "lo": 0.2,
+            "hi": 0.3,
+            "n": 2,
+            "mean_confidence": 0.29617825150489807,
+            "accuracy": 0.0
+          },
+          {
+            "lo": 0.3,
+            "hi": 0.4,
+            "n": 12,
+            "mean_confidence": 0.37206222116947174,
+            "accuracy": 0.4166666666666667
+          },
+          {
+            "lo": 0.4,
+            "hi": 0.5,
+            "n": 13,
+            "mean_confidence": 0.45891119883610654,
+            "accuracy": 0.6153846153846154
+          },
+          {
+            "lo": 0.5,
+            "hi": 0.6,
+            "n": 24,
+            "mean_confidence": 0.5467412720123926,
+            "accuracy": 0.7083333333333334
+          },
+          {
+            "lo": 0.6,
+            "hi": 0.7,
+            "n": 21,
+            "mean_confidence": 0.6530020492417472,
+            "accuracy": 0.7142857142857143
+          },
+          {
+            "lo": 0.7,
+            "hi": 0.8,
+            "n": 29,
+            "mean_confidence": 0.7539623091960775,
+            "accuracy": 0.7931034482758621
+          },
+          {
+            "lo": 0.8,
+            "hi": 0.9,
+            "n": 28,
+            "mean_confidence": 0.8584817137037005,
+            "accuracy": 0.8214285714285714
+          },
+          {
+            "lo": 0.9,
+            "hi": 1.0,
+            "n": 102,
+            "mean_confidence": 0.9737443783703972,
+            "accuracy": 0.9411764705882353
+          }
+        ]
+      },
+      "ordinal_mae": 0.45029320664212313,
+      "latency": {
+        "n": 231,
+        "p50_s": 0.5129489579994697,
+        "p95_s": 8.17714091650123
+      },
+      "latency_failures": {
+        "n": 0,
+        "p50_s": null,
+        "p95_s": null
+      },
+      "price_per_1000_decisions_usd": null,
+      "cost_basis": [
+        "self_hosted_local_weights"
+      ]
+    }
+  },
+  "ledger_charged_usd": null,
+  "per_task": [
+    {
+      "id": "easy-intent-00",
+      "family": "intent",
+      "labels": [
+        "track_order",
+        "cancel_order",
+        "change_address",
+        "report_damage",
+        "billing_question"
+      ],
+      "expected": "track_order",
+      "probs": [
+        0.9978772401809692,
+        0.0017000035149976611,
+        0.00010209313040832058,
+        0.00031446912907995284,
+        6.131172085588332e-06
+      ]
+    },
+    {
+      "id": "easy-intent-01",
+      "family": "intent",
+      "labels": [
+        "track_order",
+        "cancel_order",
+        "change_address",
+        "report_damage",
+        "billing_question"
+      ],
+      "expected": "cancel_order",
+      "probs": [
+        0.00027796084759756923,
+        0.9994695782661438,
+        0.00015837722457945347,
+        9.024063183460385e-05,
+        3.964897132391343e-06
+      ]
+    },
+    {
+      "id": "easy-intent-02",
+      "family": "intent",
+      "labels": [
+        "track_order",
+        "cancel_order",
+        "change_address",
+        "report_damage",
+        "billing_question"
+      ],
+      "expected": "change_address",
+      "probs": [
+        0.0004872629651799798,
+        0.0010315352119505405,
+        0.9982946515083313,
+        0.000179253940586932,
+        7.398692105198279e-06
+      ]
+    },
+    {
+      "id": "easy-intent-03",
+      "family": "intent",
+      "labels": [
+        "track_order",
+        "cancel_order",
+        "change_address",
+        "report_damage",
+        "billing_question"
+      ],
+      "expected": "report_damage",
+      "probs": [
+        0.0015003848820924759,
+        0.0003563725622370839,
+        8.46459370222874e-05,
+        0.9979684948921204,
+        9.010510257212445e-05
+      ]
+    },
+    {
+      "id": "easy-intent-04",
+      "family": "intent",
+      "labels": [
+        "track_order",
+        "cancel_order",
+        "change_address",
+        "report_damage",
+        "billing_question"
+      ],
+      "expected": "billing_question",
+      "probs": [
+        0.004792449530214071,
+        0.01780610717833042,
+        0.0021266366820782423,
+        0.0030942384619265795,
+        0.9721806049346924
+      ]
+    },
+    {
+      "id": "easy-intent-05",
+      "family": "intent",
+      "labels": [
+        "track_order",
+        "cancel_order",
+        "change_address",
+        "report_damage",
+        "billing_question"
+      ],
+      "expected": "track_order",
+      "probs": [
+        0.9938675761222839,
+        0.004602520260959864,
+        0.0002764028904493898,
+        0.0012387516908347607,
+        1.464881279389374e-05
+      ]
+    },
+    {
+      "id": "easy-intent-06",
+      "family": "intent",
+      "labels": [
+        "set_alarm",
+        "play_music",
+        "weather",
+        "send_message",
+        "turn_off_lights"
+      ],
+      "expected": "set_alarm",
+      "probs": [
+        0.9924330711364746,
+        0.00405584741383791,
+        0.000704800768289715,
+        0.002787540899589658,
+        1.878230250440538e-05
+      ]
+    },
+    {
+      "id": "easy-intent-07",
+      "family": "intent",
+      "labels": [
+        "set_alarm",
+        "play_music",
+        "weather",
+        "send_message",
+        "turn_off_lights"
+      ],
+      "expected": "play_music",
+      "probs": [
+        0.0005524036823771894,
+        0.9987691044807434,
+        0.00024512765230610967,
+        0.00043021238525398076,
+        3.0857004276185762e-06
+      ]
+    },
+    {
+      "id": "easy-intent-08",
+      "family": "intent",
+      "labels": [
+        "set_alarm",
+        "play_music",
+        "weather",
+        "send_message",
+        "turn_off_lights"
+      ],
+      "expected": "weather",
+      "probs": [
+        0.0009103405172936618,
+        0.0004577479849103838,
+        0.998309850692749,
+        0.0003146054514218122,
+        7.398804427793948e-06
+      ]
+    },
+    {
+      "id": "easy-intent-09",
+      "family": "intent",
+      "labels": [
+        "set_alarm",
+        "play_music",
+        "weather",
+        "send_message",
+        "turn_off_lights"
+      ],
+      "expected": "send_message",
+      "probs": [
+        0.001031719264574349,
+        0.00021626018860843033,
+        0.00013962810044176877,
+        0.9984727501869202,
+        0.00013962810044176877
+      ]
+    },
+    {
+      "id": "easy-intent-10",
+      "family": "intent",
+      "labels": [
+        "set_alarm",
+        "play_music",
+        "weather",
+        "send_message",
+        "turn_off_lights"
+      ],
+      "expected": "turn_off_lights",
+      "probs": [
+        0.0012411082861945033,
+        0.001095274114049971,
+        0.0006643171655014157,
+        0.0012411082861945033,
+        0.9957582354545593
+      ]
+    },
+    {
+      "id": "easy-intent-11",
+      "family": "intent",
+      "labels": [
+        "set_alarm",
+        "play_music",
+        "weather",
+        "send_message",
+        "turn_off_lights"
+      ],
+      "expected": "set_alarm",
+      "probs": [
+        0.983410656452179,
+        0.010924706235527992,
+        0.0010816925205290318,
+        0.004554095212370157,
+        2.8826125344494358e-05
+      ]
+    },
+    {
+      "id": "easy-fact-00",
+      "family": "fact",
+      "labels": [
+        "no",
+        "yes"
+      ],
+      "expected": "yes",
+      "probs": [
+        0.022977370768785477,
+        0.977022647857666
+      ]
+    },
+    {
+      "id": "easy-fact-01",
+      "family": "fact",
+      "labels": [
+        "no",
+        "yes"
+      ],
+      "expected": "no",
+      "probs": [
+        0.622459352016449,
+        0.377540647983551
+      ]
+    },
+    {
+      "id": "easy-fact-02",
+      "family": "fact",
+      "labels": [
+        "no",
+        "yes"
+      ],
+      "expected": "yes",
+      "probs": [
+        0.0031726835295557976,
+        0.9968273043632507
+      ]
+    },
+    {
+      "id": "easy-fact-03",
+      "family": "fact",
+      "labels": [
+        "no",
+        "yes"
+      ],
+      "expected": "no",
+      "probs": [
+        0.7772998809814453,
+        0.22270013391971588
+      ]
+    },
+    {
+      "id": "easy-fact-04",
+      "family": "fact",
+      "labels": [
+        "no",
+        "yes"
+      ],
+      "expected": "yes",
+      "probs": [
+        0.020332353189587593,
+        0.9796676635742188
+      ]
+    },
+    {
+      "id": "easy-fact-05",
+      "family": "fact",
+      "labels": [
+        "no",
+        "yes"
+      ],
+      "expected": "no",
+      "probs": [
+        0.8670357465744019,
+        0.13296422362327576
+      ]
+    },
+    {
+      "id": "easy-fact-06",
+      "family": "fact",
+      "labels": [
+        "no",
+        "yes"
+      ],
+      "expected": "yes",
+      "probs": [
+        0.01098694372922182,
+        0.9890130758285522
+      ]
+    },
+    {
+      "id": "easy-fact-07",
+      "family": "fact",
+      "labels": [
+        "no",
+        "yes"
+      ],
+      "expected": "no",
+      "probs": [
+        0.7981867790222168,
+        0.2018132209777832
+      ]
+    },
+    {
+      "id": "easy-fact-08",
+      "family": "fact",
+      "labels": [
+        "no",
+        "yes"
+      ],
+      "expected": "yes",
+      "probs": [
+        0.0017007224960252643,
+        0.9982993006706238
+      ]
+    },
+    {
+      "id": "easy-fact-09",
+      "family": "fact",
+      "labels": [
+        "no",
+        "yes"
+      ],
+      "expected": "no",
+      "probs": [
+        0.9399133324623108,
+        0.06008664891123772
+      ]
+    },
+    {
+      "id": "easy-fact-10",
+      "family": "fact",
+      "labels": [
+        "no",
+        "yes"
+      ],
+      "expected": "yes",
+      "probs": [
+        0.0011695100693032146,
+        0.9988304972648621
+      ]
+    },
+    {
+      "id": "easy-fact-11",
+      "family": "fact",
+      "labels": [
+        "no",
+        "yes"
+      ],
+      "expected": "no",
+      "probs": [
+        0.4378235340118408,
+        0.562176525592804
+      ]
+    },
+    {
+      "id": "easy-extraction-00",
+      "family": "extraction",
+      "labels": [
+        "credit_card",
+        "paypal",
+        "bank_transfer",
+        "cash"
+      ],
+      "expected": "paypal",
+      "probs": [
+        0.0021787816658616066,
+        0.9960183501243591,
+        0.0007073469460010529,
+        0.0010955602629110217
+      ]
+    },
+    {
+      "id": "easy-extraction-01",
+      "family": "extraction",
+      "labels": [
+        "credit_card",
+        "paypal",
+        "bank_transfer",
+        "cash"
+      ],
+      "expected": "cash",
+      "probs": [
+        0.0021810089237987995,
+        0.00037900247843936086,
+        0.00040344594162888825,
+        0.9970365762710571
+      ]
+    },
+    {
+      "id": "easy-extraction-02",
+      "family": "extraction",
+      "labels": [
+        "credit_card",
+        "paypal",
+        "bank_transfer",
+        "cash"
+      ],
+      "expected": "bank_transfer",
+      "probs": [
+        0.0016946682007983327,
+        0.002465727971866727,
+        0.9947454929351807,
+        0.0010941601358354092
+      ]
+    },
+    {
+      "id": "easy-extraction-03",
+      "family": "extraction",
+      "labels": [
+        "low",
+        "medium",
+        "high",
+        "urgent"
+      ],
+      "expected": "high",
+      "probs": [
+        0.0024512645322829485,
+        0.0010877420427277684,
+        0.9889105558395386,
+        0.00755042489618063
+      ]
+    },
+    {
+      "id": "easy-extraction-04",
+      "family": "extraction",
+      "labels": [
+        "low",
+        "medium",
+        "high",
+        "urgent"
+      ],
+      "expected": "low",
+      "probs": [
+        0.9856095910072327,
+        0.004027961287647486,
+        0.000699954922311008,
+        0.009662576951086521
+      ]
+    },
+    {
+      "id": "easy-extraction-05",
+      "family": "extraction",
+      "labels": [
+        "low",
+        "medium",
+        "high",
+        "urgent"
+      ],
+      "expected": "urgent",
+      "probs": [
+        0.000855740625411272,
+        0.00010220363037660718,
+        8.472980698570609e-05,
+        0.9989572763442993
+      ]
+    },
+    {
+      "id": "easy-extraction-06",
+      "family": "extraction",
+      "labels": [
+        "S",
+        "M",
+        "L",
+        "XL"
+      ],
+      "expected": "M",
+      "probs": [
+        0.0009691370069049299,
+        0.9983965754508972,
+        0.00027766244602389634,
+        0.0003565254155546427
+      ]
+    },
+    {
+      "id": "easy-extraction-07",
+      "family": "extraction",
+      "labels": [
+        "S",
+        "M",
+        "L",
+        "XL"
+      ],
+      "expected": "XL",
+      "probs": [
+        0.0033728706184774637,
+        0.0007525891996920109,
+        0.00035549787571653724,
+        0.9955190420150757
+      ]
+    },
+    {
+      "id": "easy-extraction-08",
+      "family": "extraction",
+      "labels": [
+        "monday",
+        "tuesday",
+        "wednesday",
+        "thursday",
+        "friday"
+      ],
+      "expected": "thursday",
+      "probs": [
+        0.005212564021348953,
+        0.0010264143347740173,
+        0.00017836406186688691,
+        0.9933387637138367,
+        0.00024379488604608923
+      ]
+    },
+    {
+      "id": "easy-extraction-09",
+      "family": "extraction",
+      "labels": [
+        "monday",
+        "tuesday",
+        "wednesday",
+        "thursday",
+        "friday"
+      ],
+      "expected": "monday",
+      "probs": [
+        0.9694448113441467,
+        0.01220350619405508,
+        0.0047789630480110645,
+        0.01220350619405508,
+        0.0013691961066797376
+      ]
+    },
+    {
+      "id": "easy-extraction-10",
+      "family": "extraction",
+      "labels": [
+        "monday",
+        "tuesday",
+        "wednesday",
+        "thursday",
+        "friday"
+      ],
+      "expected": "friday",
+      "probs": [
+        0.015697669237852097,
+        0.0042249709367752075,
+        0.001003518351353705,
+        0.007893284782767296,
+        0.9711805582046509
+      ]
+    },
+    {
+      "id": "easy-extraction-11",
+      "family": "extraction",
+      "labels": [
+        "credit_card",
+        "paypal",
+        "bank_transfer",
+        "cash"
+      ],
+      "expected": "credit_card",
+      "probs": [
+        0.9400016665458679,
+        0.017216729000210762,
+        0.00633368082344532,
+        0.03644781559705734
+      ]
+    },
+    {
+      "id": "easy-tool_selection-00",
+      "family": "tool_selection",
+      "labels": [
+        "get_weather",
+        "send_email",
+        "create_calendar_event",
+        "convert_currency",
+        "translate_text"
+      ],
+      "expected": "get_weather",
+      "probs": [
+        0.9939036965370178,
+        0.004061857238411903,
+        0.00033341755624860525,
+        0.0016932340804487467,
+        7.841233127692249e-06
+      ]
+    },
+    {
+      "id": "easy-tool_selection-01",
+      "family": "tool_selection",
+      "labels": [
+        "get_weather",
+        "send_email",
+        "create_calendar_event",
+        "convert_currency",
+        "translate_text"
+      ],
+      "expected": "send_email",
+      "probs": [
+        0.0004304703325033188,
+        0.999367892742157,
+        5.8257814089301974e-05,
+        0.0001397532905684784,
+        3.7242982671159552e-06
+      ]
+    },
+    {
+      "id": "easy-tool_selection-02",
+      "family": "tool_selection",
+      "labels": [
+        "get_weather",
+        "send_email",
+        "create_calendar_event",
+        "convert_currency",
+        "translate_text"
+      ],
+      "expected": "create_calendar_event",
+      "probs": [
+        0.0005880456883460283,
+        0.00029568796162493527,
+        0.9987949132919312,
+        0.00031475830473937094,
+        6.532598945341306e-06
+      ]
+    },
+    {
+      "id": "easy-tool_selection-03",
+      "family": "tool_selection",
+      "labels": [
+        "get_weather",
+        "send_email",
+        "create_calendar_event",
+        "convert_currency",
+        "translate_text"
+      ],
+      "expected": "convert_currency",
+      "probs": [
+        0.0004874235310126096,
+        0.0005879448144696653,
+        8.470150351058692e-05,
+        0.9986236095428467,
+        0.00021629287221003324
+      ]
+    },
+    {
+      "id": "easy-tool_selection-04",
+      "family": "tool_selection",
+      "labels": [
+        "get_weather",
+        "send_email",
+        "create_calendar_event",
+        "convert_currency",
+        "translate_text"
+      ],
+      "expected": "translate_text",
+      "probs": [
+        0.0019149745348840952,
+        0.0033608844969421625,
+        0.00070447992766276,
+        0.002038479084149003,
+        0.9919812679290771
+      ]
+    },
+    {
+      "id": "easy-tool_selection-05",
+      "family": "tool_selection",
+      "labels": [
+        "get_weather",
+        "send_email",
+        "create_calendar_event",
+        "convert_currency",
+        "translate_text"
+      ],
+      "expected": "create_calendar_event",
+      "probs": [
+        0.0005525139858946204,
+        0.0002957393298856914,
+        0.9989684820175171,
+        0.00017937493976205587,
+        3.962909431720618e-06
+      ]
+    },
+    {
+      "id": "easy-tool_selection-06",
+      "family": "tool_selection",
+      "labels": [
+        "search_flights",
+        "book_restaurant",
+        "set_reminder",
+        "get_stock_price",
+        "call_taxi"
+      ],
+      "expected": "search_flights",
+      "probs": [
+        0.993331253528595,
+        0.002313042990863323,
+        0.00027625373331829906,
+        0.004059517756104469,
+        2.00117447093362e-05
+      ]
+    },
+    {
+      "id": "easy-tool_selection-07",
+      "family": "tool_selection",
+      "labels": [
+        "search_flights",
+        "book_restaurant",
+        "set_reminder",
+        "get_stock_price",
+        "call_taxi"
+      ],
+      "expected": "book_restaurant",
+      "probs": [
+        0.0013242642162367702,
+        0.9981036186218262,
+        0.00010870226105907932,
+        0.0004576534265652299,
+        5.7610118346929085e-06
+      ]
+    },
+    {
+      "id": "easy-tool_selection-08",
+      "family": "tool_selection",
+      "labels": [
+        "search_flights",
+        "book_restaurant",
+        "set_reminder",
+        "get_stock_price",
+        "call_taxi"
+      ],
+      "expected": "set_reminder",
+      "probs": [
+        0.0012423023581504822,
+        0.0016980257350951433,
+        0.996716320514679,
+        0.0003343610733281821,
+        8.910419637686573e-06
+      ]
+    },
+    {
+      "id": "easy-tool_selection-09",
+      "family": "tool_selection",
+      "labels": [
+        "search_flights",
+        "book_restaurant",
+        "set_reminder",
+        "get_stock_price",
+        "call_taxi"
+      ],
+      "expected": "get_stock_price",
+      "probs": [
+        0.00043028753134422004,
+        0.00040421757148578763,
+        4.260423520463519e-05,
+        0.9989435076713562,
+        0.00017937045777216554
+      ]
+    },
+    {
+      "id": "easy-tool_selection-10",
+      "family": "tool_selection",
+      "labels": [
+        "search_flights",
+        "book_restaurant",
+        "set_reminder",
+        "get_stock_price",
+        "call_taxi"
+      ],
+      "expected": "call_taxi",
+      "probs": [
+        0.0042982157319784164,
+        0.0037931622937321663,
+        0.0007469179108738899,
+        0.003144642570987344,
+        0.9880170822143555
+      ]
+    },
+    {
+      "id": "easy-tool_selection-11",
+      "family": "tool_selection",
+      "labels": [
+        "search_flights",
+        "book_restaurant",
+        "set_reminder",
+        "get_stock_price",
+        "call_taxi"
+      ],
+      "expected": "set_reminder",
+      "probs": [
+        0.0005522698047570884,
+        0.0007091285660862923,
+        0.9985270500183105,
+        0.00020316863083280623,
+        8.385773980990052e-06
+      ]
+    },
+    {
+      "id": "original-policy-01-0",
+      "family": "policy",
+      "labels": [
+        "no",
+        "yes"
+      ],
+      "expected": "no",
+      "probs": [
+        0.7981867790222168,
+        0.2018132209777832
+      ]
+    },
+    {
+      "id": "original-policy-01-1",
+      "family": "policy",
+      "labels": [
+        "no",
+        "yes"
+      ],
+      "expected": "no",
+      "probs": [
+        0.6513549089431763,
+        0.3486451208591461
+      ]
+    },
+    {
+      "id": "original-policy-02-0",
+      "family": "policy",
+      "labels": [
+        "no",
+        "yes"
+      ],
+      "expected": "yes",
+      "probs": [
+        0.09534946829080582,
+        0.9046505093574524
+      ]
+    },
+    {
+      "id": "original-policy-02-1",
+      "family": "policy",
+      "labels": [
+        "no",
+        "yes"
+      ],
+      "expected": "yes",
+      "probs": [
+        0.2942149341106415,
+        0.7057850360870361
+      ]
+    },
+    {
+      "id": "original-policy-03-0",
+      "family": "policy",
+      "labels": [
+        "no",
+        "yes"
+      ],
+      "expected": "yes",
+      "probs": [
+        0.2018132209777832,
+        0.7981867790222168
+      ]
+    },
+    {
+      "id": "original-policy-03-1",
+      "family": "policy",
+      "labels": [
+        "no",
+        "yes"
+      ],
+      "expected": "yes",
+      "probs": [
+        0.3486451208591461,
+        0.6513549089431763
+      ]
+    },
+    {
+      "id": "original-policy-04-0",
+      "family": "policy",
+      "labels": [
+        "no",
+        "yes"
+      ],
+      "expected": "no",
+      "probs": [
+        0.8807971477508545,
+        0.11920291930437088
+      ]
+    },
+    {
+      "id": "original-policy-04-1",
+      "family": "policy",
+      "labels": [
+        "no",
+        "yes"
+      ],
+      "expected": "no",
+      "probs": [
+        0.3486451208591461,
+        0.6513549089431763
+      ]
+    },
+    {
+      "id": "original-policy-05-0",
+      "family": "policy",
+      "labels": [
+        "no",
+        "yes"
+      ],
+      "expected": "no",
+      "probs": [
+        0.531209409236908,
+        0.46879062056541443
+      ]
+    },
+    {
+      "id": "original-policy-05-1",
+      "family": "policy",
+      "labels": [
+        "no",
+        "yes"
+      ],
+      "expected": "no",
+      "probs": [
+        0.4073334038257599,
+        0.5926666259765625
+      ]
+    },
+    {
+      "id": "original-policy-06-0",
+      "family": "policy",
+      "labels": [
+        "no",
+        "yes"
+      ],
+      "expected": "yes",
+      "probs": [
+        0.07585817575454712,
+        0.9241418242454529
+      ]
+    },
+    {
+      "id": "original-policy-06-1",
+      "family": "policy",
+      "labels": [
+        "no",
+        "yes"
+      ],
+      "expected": "yes",
+      "probs": [
+        0.2942149341106415,
+        0.7057850360870361
+      ]
+    },
+    {
+      "id": "original-intent-01-0",
+      "family": "intent",
+      "labels": [
+        "cancel",
+        "refund",
+        "status",
+        "change_address",
+        "other"
+      ],
+      "expected": "refund",
+      "probs": [
+        0.0018093772232532501,
+        0.9977303147315979,
+        0.0001310708757955581,
+        0.00031442282488569617,
+        1.4705747162224725e-05
+      ]
+    },
+    {
+      "id": "original-intent-01-1",
+      "family": "intent",
+      "labels": [
+        "cancel",
+        "refund",
+        "status",
+        "change_address",
+        "other"
+      ],
+      "expected": "refund",
+      "probs": [
+        0.003578806761652231,
+        0.9923036694526672,
+        0.001491868169978261,
+        0.002170655643567443,
+        0.00045499400584958494
+      ]
+    },
+    {
+      "id": "original-intent-02-0",
+      "family": "intent",
+      "labels": [
+        "cancel",
+        "refund",
+        "status",
+        "change_address",
+        "other"
+      ],
+      "expected": "status",
+      "probs": [
+        0.07959113270044327,
+        0.10219702869653702,
+        0.3567027151584625,
+        0.24515794217586517,
+        0.21635112166404724
+      ]
+    },
+    {
+      "id": "original-intent-02-1",
+      "family": "intent",
+      "labels": [
+        "cancel",
+        "refund",
+        "status",
+        "change_address",
+        "other"
+      ],
+      "expected": "status",
+      "probs": [
+        0.0008016181527636945,
+        0.0009669364662840962,
+        0.9961296319961548,
+        0.00192298274487257,
+        0.00017886518617160618
+      ]
+    },
+    {
+      "id": "original-intent-03-0",
+      "family": "intent",
+      "labels": [
+        "cancel",
+        "refund",
+        "status",
+        "change_address",
+        "other"
+      ],
+      "expected": "change_address",
+      "probs": [
+        0.006649645511060953,
+        0.0021588243544101715,
+        0.003141071181744337,
+        0.986894965171814,
+        0.0011555349919945002
+      ]
+    },
+    {
+      "id": "original-intent-03-1",
+      "family": "intent",
+      "labels": [
+        "cancel",
+        "refund",
+        "status",
+        "change_address",
+        "other"
+      ],
+      "expected": "change_address",
+      "probs": [
+        0.0010312536032870412,
+        0.0005875906790606678,
+        0.00016834758571349084,
+        0.9980220794677734,
+        0.00019076280295848846
+      ]
+    },
+    {
+      "id": "original-intent-04-0",
+      "family": "intent",
+      "labels": [
+        "cancel",
+        "refund",
+        "status",
+        "change_address",
+        "other"
+      ],
+      "expected": "cancel",
+      "probs": [
+        0.9877365827560425,
+        0.005183166358619928,
+        0.001906780293211341,
+        0.0020297563169151545,
+        0.003143749898299575
+      ]
+    },
+    {
+      "id": "original-intent-04-1",
+      "family": "intent",
+      "labels": [
+        "cancel",
+        "refund",
+        "status",
+        "change_address",
+        "other"
+      ],
+      "expected": "cancel",
+      "probs": [
+        0.9936875700950623,
+        0.0031626904383301735,
+        0.0007056916947476566,
+        0.001692865858785808,
+        0.0007512046722695231
+      ]
+    },
+    {
+      "id": "original-intent-05-0",
+      "family": "intent",
+      "labels": [
+        "cancel",
+        "refund",
+        "status",
+        "change_address",
+        "other"
+      ],
+      "expected": "other",
+      "probs": [
+        0.07631836831569672,
+        0.563920795917511,
+        0.02186558023095131,
+        0.03605024889111519,
+        0.3018450438976288
+      ]
+    },
+    {
+      "id": "original-intent-05-1",
+      "family": "intent",
+      "labels": [
+        "cancel",
+        "refund",
+        "status",
+        "change_address",
+        "other"
+      ],
+      "expected": "other",
+      "probs": [
+        0.17612522840499878,
+        0.32904526591300964,
+        0.057179491966962814,
+        0.06479284912347794,
+        0.37285715341567993
+      ]
+    },
+    {
+      "id": "original-intent-06-0",
+      "family": "intent",
+      "labels": [
+        "cancel",
+        "refund",
+        "status",
+        "change_address",
+        "other"
+      ],
+      "expected": "status",
+      "probs": [
+        0.013711279258131981,
+        0.0121001610532403,
+        0.9612350463867188,
+        0.006476750131696463,
+        0.006476750131696463
+      ]
+    },
+    {
+      "id": "original-intent-06-1",
+      "family": "intent",
+      "labels": [
+        "cancel",
+        "refund",
+        "status",
+        "change_address",
+        "other"
+      ],
+      "expected": "status",
+      "probs": [
+        0.0027751235757023096,
+        0.004037780221551657,
+        0.9880121946334839,
+        0.003144626971334219,
+        0.0020303227938711643
+      ]
+    },
+    {
+      "id": "original-ordinal-01-0",
+      "family": "ordinal",
+      "labels": [
+        "0",
+        "1",
+        "2",
+        "3"
+      ],
+      "expected": 0,
+      "probs": [
+        0.3986893892288208,
+        0.35184213519096375,
+        0.18832752108573914,
+        0.0611409954726696
+      ]
+    },
+    {
+      "id": "original-ordinal-01-1",
+      "family": "ordinal",
+      "labels": [
+        "0",
+        "1",
+        "2",
+        "3"
+      ],
+      "expected": 0,
+      "probs": [
+        0.5364028215408325,
+        0.2533787190914154,
+        0.15368196368217468,
+        0.056536443531513214
+      ]
+    },
+    {
+      "id": "original-ordinal-02-0",
+      "family": "ordinal",
+      "labels": [
+        "0",
+        "1",
+        "2",
+        "3"
+      ],
+      "expected": 1,
+      "probs": [
+        0.04684636369347572,
+        0.9409343004226685,
+        0.009224595502018929,
+        0.002994788344949484
+      ]
+    },
+    {
+      "id": "original-ordinal-02-1",
+      "family": "ordinal",
+      "labels": [
+        "0",
+        "1",
+        "2",
+        "3"
+      ],
+      "expected": 1,
+      "probs": [
+        0.059057820588350296,
+        0.9238197803497314,
+        0.01162917260080576,
+        0.005493232049047947
+      ]
+    },
+    {
+      "id": "original-ordinal-03-0",
+      "family": "ordinal",
+      "labels": [
+        "0",
+        "1",
+        "2",
+        "3"
+      ],
+      "expected": 2,
+      "probs": [
+        0.024693777784705162,
+        0.03170742839574814,
+        0.9266270399093628,
+        0.016971765086054802
+      ]
+    },
+    {
+      "id": "original-ordinal-03-1",
+      "family": "ordinal",
+      "labels": [
+        "0",
+        "1",
+        "2",
+        "3"
+      ],
+      "expected": 2,
+      "probs": [
+        0.04898907616734505,
+        0.04898907616734505,
+        0.8683521151542664,
+        0.03366966173052788
+      ]
+    },
+    {
+      "id": "original-ordinal-04-0",
+      "family": "ordinal",
+      "labels": [
+        "0",
+        "1",
+        "2",
+        "3"
+      ],
+      "expected": 3,
+      "probs": [
+        0.003573600435629487,
+        0.002783122705295682,
+        0.002783122705295682,
+        0.990860104560852
+      ]
+    },
+    {
+      "id": "original-ordinal-04-1",
+      "family": "ordinal",
+      "labels": [
+        "0",
+        "1",
+        "2",
+        "3"
+      ],
+      "expected": 3,
+      "probs": [
+        0.0035816736053675413,
+        0.0014026035787537694,
+        0.0019171313615515828,
+        0.9930985569953918
+      ]
+    },
+    {
+      "id": "original-ordinal-05-0",
+      "family": "ordinal",
+      "labels": [
+        "0",
+        "1",
+        "2",
+        "3"
+      ],
+      "expected": 0,
+      "probs": [
+        0.5918387174606323,
+        0.2795647978782654,
+        0.09076140075922012,
+        0.03783498331904411
+      ]
+    },
+    {
+      "id": "original-ordinal-05-1",
+      "family": "ordinal",
+      "labels": [
+        "0",
+        "1",
+        "2",
+        "3"
+      ],
+      "expected": 0,
+      "probs": [
+        0.4876583218574524,
+        0.2957797050476074,
+        0.15831947326660156,
+        0.058242473751306534
+      ]
+    },
+    {
+      "id": "original-ordinal-06-0",
+      "family": "ordinal",
+      "labels": [
+        "0",
+        "1",
+        "2",
+        "3"
+      ],
+      "expected": 2,
+      "probs": [
+        0.010765539482235909,
+        0.015663765370845795,
+        0.9690829515457153,
+        0.004487744532525539
+      ]
+    },
+    {
+      "id": "original-ordinal-06-1",
+      "family": "ordinal",
+      "labels": [
+        "0",
+        "1",
+        "2",
+        "3"
+      ],
+      "expected": 2,
+      "probs": [
+        0.009629921056330204,
+        0.0035426507238298655,
+        0.98227858543396,
+        0.004548852797597647
+      ]
+    },
+    {
+      "id": "original-extraction-01-0",
+      "family": "extraction",
+      "labels": [
+        "courier",
+        "pickup",
+        "post",
+        "unknown"
+      ],
+      "expected": "pickup",
+      "probs": [
+        0.13162504136562347,
+        0.6684471368789673,
+        0.00841450598090887,
+        0.1915132999420166
+      ]
+    },
+    {
+      "id": "original-extraction-01-1",
+      "family": "extraction",
+      "labels": [
+        "courier",
+        "pickup",
+        "post",
+        "unknown"
+      ],
+      "expected": "pickup",
+      "probs": [
+        0.3158760964870453,
+        0.45959702134132385,
+        0.0074286931194365025,
+        0.21709823608398438
+      ]
+    },
+    {
+      "id": "original-extraction-02-0",
+      "family": "extraction",
+      "labels": [
+        "courier",
+        "pickup",
+        "post",
+        "unknown"
+      ],
+      "expected": "unknown",
+      "probs": [
+        0.031207503750920296,
+        0.04007123038172722,
+        0.016704173758625984,
+        0.9120170474052429
+      ]
+    },
+    {
+      "id": "original-extraction-02-1",
+      "family": "extraction",
+      "labels": [
+        "courier",
+        "pickup",
+        "post",
+        "unknown"
+      ],
+      "expected": "unknown",
+      "probs": [
+        0.02831048145890236,
+        0.02498392015695572,
+        0.00919106975197792,
+        0.9375145435333252
+      ]
+    },
+    {
+      "id": "original-extraction-03-0",
+      "family": "extraction",
+      "labels": [
+        "courier",
+        "pickup",
+        "post",
+        "unknown"
+      ],
+      "expected": "courier",
+      "probs": [
+        0.5190333127975464,
+        0.1909416764974594,
+        0.012206493876874447,
+        0.277818500995636
+      ]
+    },
+    {
+      "id": "original-extraction-03-1",
+      "family": "extraction",
+      "labels": [
+        "courier",
+        "pickup",
+        "post",
+        "unknown"
+      ],
+      "expected": "courier",
+      "probs": [
+        0.8421762585639954,
+        0.03700263798236847,
+        0.006844800431281328,
+        0.11397615075111389
+      ]
+    },
+    {
+      "id": "original-extraction-04-0",
+      "family": "extraction",
+      "labels": [
+        "courier",
+        "pickup",
+        "post",
+        "unknown"
+      ],
+      "expected": "post",
+      "probs": [
+        0.029150687158107758,
+        0.029150687158107758,
+        0.8519080877304077,
+        0.0897904559969902
+      ]
+    },
+    {
+      "id": "original-extraction-04-1",
+      "family": "extraction",
+      "labels": [
+        "courier",
+        "pickup",
+        "post",
+        "unknown"
+      ],
+      "expected": "post",
+      "probs": [
+        0.18032598495483398,
+        0.06633823364973068,
+        0.6293995976448059,
+        0.12393612414598465
+      ]
+    },
+    {
+      "id": "original-extraction-05-0",
+      "family": "extraction",
+      "labels": [
+        "courier",
+        "pickup",
+        "post",
+        "unknown"
+      ],
+      "expected": "unknown",
+      "probs": [
+        0.05287371948361397,
+        0.11193365603685379,
+        0.00810844823718071,
+        0.8270841836929321
+      ]
+    },
+    {
+      "id": "original-extraction-05-1",
+      "family": "extraction",
+      "labels": [
+        "courier",
+        "pickup",
+        "post",
+        "unknown"
+      ],
+      "expected": "unknown",
+      "probs": [
+        0.21368804574012756,
+        0.100939080119133,
+        0.027167385444045067,
+        0.658205509185791
+      ]
+    },
+    {
+      "id": "original-extraction-06-0",
+      "family": "extraction",
+      "labels": [
+        "courier",
+        "pickup",
+        "post",
+        "unknown"
+      ],
+      "expected": "courier",
+      "probs": [
+        0.9643325209617615,
+        0.003477927064523101,
+        0.003069259924814105,
+        0.02912031300365925
+      ]
+    },
+    {
+      "id": "original-extraction-06-1",
+      "family": "extraction",
+      "labels": [
+        "courier",
+        "pickup",
+        "post",
+        "unknown"
+      ],
+      "expected": "courier",
+      "probs": [
+        0.5930446982383728,
+        0.11677742004394531,
+        0.04296001419425011,
+        0.2472177892923355
+      ]
+    },
+    {
+      "id": "original-adequacy-01-0",
+      "family": "adequacy",
+      "labels": [
+        "no",
+        "yes"
+      ],
+      "expected": "yes",
+      "probs": [
+        0.047425877302885056,
+        0.9525741338729858
+      ]
+    },
+    {
+      "id": "original-adequacy-01-1",
+      "family": "adequacy",
+      "labels": [
+        "no",
+        "yes"
+      ],
+      "expected": "yes",
+      "probs": [
+        0.08509904146194458,
+        0.9149009585380554
+      ]
+    },
+    {
+      "id": "original-adequacy-02-0",
+      "family": "adequacy",
+      "labels": [
+        "no",
+        "yes"
+      ],
+      "expected": "no",
+      "probs": [
+        0.09534946829080582,
+        0.9046505093574524
+      ]
+    },
+    {
+      "id": "original-adequacy-02-1",
+      "family": "adequacy",
+      "labels": [
+        "no",
+        "yes"
+      ],
+      "expected": "no",
+      "probs": [
+        0.6513549089431763,
+        0.3486451208591461
+      ]
+    },
+    {
+      "id": "original-adequacy-03-0",
+      "family": "adequacy",
+      "labels": [
+        "no",
+        "yes"
+      ],
+      "expected": "no",
+      "probs": [
+        0.32082128524780273,
+        0.6791787147521973
+      ]
+    },
+    {
+      "id": "original-adequacy-03-1",
+      "family": "adequacy",
+      "labels": [
+        "no",
+        "yes"
+      ],
+      "expected": "no",
+      "probs": [
+        0.14804717898368835,
+        0.851952850818634
+      ]
+    },
+    {
+      "id": "original-adequacy-04-0",
+      "family": "adequacy",
+      "labels": [
+        "no",
+        "yes"
+      ],
+      "expected": "yes",
+      "probs": [
+        0.06754668802022934,
+        0.9324532747268677
+      ]
+    },
+    {
+      "id": "original-adequacy-04-1",
+      "family": "adequacy",
+      "labels": [
+        "no",
+        "yes"
+      ],
+      "expected": "yes",
+      "probs": [
+        0.26894140243530273,
+        0.7310585975646973
+      ]
+    },
+    {
+      "id": "original-adequacy-05-0",
+      "family": "adequacy",
+      "labels": [
+        "no",
+        "yes"
+      ],
+      "expected": "no",
+      "probs": [
+        0.3486451208591461,
+        0.6513549089431763
+      ]
+    },
+    {
+      "id": "original-adequacy-05-1",
+      "family": "adequacy",
+      "labels": [
+        "no",
+        "yes"
+      ],
+      "expected": "no",
+      "probs": [
+        0.26894140243530273,
+        0.7310585975646973
+      ]
+    },
+    {
+      "id": "original-adequacy-06-0",
+      "family": "adequacy",
+      "labels": [
+        "no",
+        "yes"
+      ],
+      "expected": "yes",
+      "probs": [
+        0.037326879799366,
+        0.9626730680465698
+      ]
+    },
+    {
+      "id": "original-adequacy-06-1",
+      "family": "adequacy",
+      "labels": [
+        "no",
+        "yes"
+      ],
+      "expected": "yes",
+      "probs": [
+        0.07585817575454712,
+        0.9241418242454529
+      ]
+    },
+    {
+      "id": "original-routing-01-0",
+      "family": "routing",
+      "labels": [
+        "math",
+        "coding",
+        "coding_agent",
+        "document",
+        "tools",
+        "general"
+      ],
+      "expected": "math",
+      "probs": [
+        0.9158427715301514,
+        0.04023931920528412,
+        0.003303045639768243,
+        0.019007708877325058,
+        6.85525155859068e-05,
+        0.02153855748474598
+      ]
+    },
+    {
+      "id": "original-routing-01-1",
+      "family": "routing",
+      "labels": [
+        "math",
+        "coding",
+        "coding_agent",
+        "document",
+        "tools",
+        "general"
+      ],
+      "expected": "math",
+      "probs": [
+        0.8652785420417786,
+        0.05531540513038635,
+        0.020349401980638504,
+        0.015848128125071526,
+        0.00012880591384600848,
+        0.0430796854197979
+      ]
+    },
+    {
+      "id": "original-routing-02-0",
+      "family": "routing",
+      "labels": [
+        "math",
+        "coding",
+        "coding_agent",
+        "document",
+        "tools",
+        "general"
+      ],
+      "expected": "coding",
+      "probs": [
+        0.010609418153762817,
+        0.955029308795929,
+        0.032679300755262375,
+        0.0014358285116031766,
+        0.00010401109466329217,
+        0.00014216627459973097
+      ]
+    },
+    {
+      "id": "original-routing-02-1",
+      "family": "routing",
+      "labels": [
+        "math",
+        "coding",
+        "coding_agent",
+        "document",
+        "tools",
+        "general"
+      ],
+      "expected": "coding",
+      "probs": [
+        0.005538159050047398,
+        0.9313753247261047,
+        0.05954083055257797,
+        0.0020373754668980837,
+        0.000483918993268162,
+        0.0010244568111374974
+      ]
+    },
+    {
+      "id": "original-routing-03-0",
+      "family": "routing",
+      "labels": [
+        "math",
+        "coding",
+        "coding_agent",
+        "document",
+        "tools",
+        "general"
+      ],
+      "expected": "coding_agent",
+      "probs": [
+        0.0005504662403836846,
+        0.00358949089422822,
+        0.9952660799026489,
+        0.0005504662403836846,
+        1.769470145518426e-05,
+        2.57456413237378e-05
+      ]
+    },
+    {
+      "id": "original-routing-03-1",
+      "family": "routing",
+      "labels": [
+        "math",
+        "coding",
+        "coding_agent",
+        "document",
+        "tools",
+        "general"
+      ],
+      "expected": "coding_agent",
+      "probs": [
+        0.00042814473272301257,
+        0.005215870216488838,
+        0.9939688444137573,
+        0.00037783634616062045,
+        2.710035005293321e-06,
+        6.5010340222215746e-06
+      ]
+    },
+    {
+      "id": "original-routing-04-0",
+      "family": "routing",
+      "labels": [
+        "math",
+        "coding",
+        "coding_agent",
+        "document",
+        "tools",
+        "general"
+      ],
+      "expected": "document",
+      "probs": [
+        0.013016452081501484,
+        0.05833569914102554,
+        0.10898541659116745,
+        0.8052994608879089,
+        0.010137221775949001,
+        0.004225824028253555
+      ]
+    },
+    {
+      "id": "original-routing-04-1",
+      "family": "routing",
+      "labels": [
+        "math",
+        "coding",
+        "coding_agent",
+        "document",
+        "tools",
+        "general"
+      ],
+      "expected": "document",
+      "probs": [
+        0.014221476390957832,
+        0.043805237859487534,
+        0.04963783919811249,
+        0.8798516988754272,
+        0.011075695976614952,
+        0.0014081174740567803
+      ]
+    },
+    {
+      "id": "original-routing-05-0",
+      "family": "routing",
+      "labels": [
+        "math",
+        "coding",
+        "coding_agent",
+        "document",
+        "tools",
+        "general"
+      ],
+      "expected": "tools",
+      "probs": [
+        0.009951207786798477,
+        0.04459821805357933,
+        0.009951207786798477,
+        0.039357785135507584,
+        0.8957791328430176,
+        0.00036247260868549347
+      ]
+    },
+    {
+      "id": "original-routing-05-1",
+      "family": "routing",
+      "labels": [
+        "math",
+        "coding",
+        "coding_agent",
+        "document",
+        "tools",
+        "general"
+      ],
+      "expected": "tools",
+      "probs": [
+        0.007286452688276768,
+        0.07833674550056458,
+        0.03700365871191025,
+        0.032655611634254456,
+        0.842199444770813,
+        0.0025181304663419724
+      ]
+    },
+    {
+      "id": "original-routing-06-0",
+      "family": "routing",
+      "labels": [
+        "math",
+        "coding",
+        "coding_agent",
+        "document",
+        "tools",
+        "general"
+      ],
+      "expected": "general",
+      "probs": [
+        0.01848803088068962,
+        0.25521939992904663,
+        0.15479840338230133,
+        0.012706627137959003,
+        0.01848803088068962,
+        0.5402995347976685
+      ]
+    },
+    {
+      "id": "original-routing-06-1",
+      "family": "routing",
+      "labels": [
+        "math",
+        "coding",
+        "coding_agent",
+        "document",
+        "tools",
+        "general"
+      ],
+      "expected": "general",
+      "probs": [
+        0.013551896438002586,
+        0.39604452252388,
+        0.21198734641075134,
+        0.01535631064325571,
+        0.013551896438002586,
+        0.34950804710388184
+      ]
+    },
+    {
+      "id": "hard-opus-a-long_policy-01",
+      "family": "long_policy",
+      "labels": [
+        "deny_vacancy_exclusion",
+        "deny_repeated_seepage",
+        "pay_subject_to_10000_sublimit",
+        "pay_subject_to_15000_sublimit",
+        "pay_full_estimate_less_deductible"
+      ],
+      "expected": "pay_subject_to_15000_sublimit",
+      "probs": [
+        0.19103261828422546,
+        0.029295800253748894,
+        0.04262514039874077,
+        0.6667693853378296,
+        0.07027697563171387
+      ]
+    },
+    {
+      "id": "hard-opus-a-long_policy-04",
+      "family": "long_policy",
+      "labels": [
+        "budget_holder",
+        "department_head",
+        "vp_and_finance_director",
+        "cfo",
+        "executive_committee"
+      ],
+      "expected": "cfo",
+      "probs": [
+        0.004939951468259096,
+        0.013428179547190666,
+        0.23802019655704498,
+        0.7331538200378418,
+        0.01045787613838911
+      ]
+    },
+    {
+      "id": "hard-opus-a-long_policy-08",
+      "family": "long_policy",
+      "labels": [
+        "full_repair_no_charge",
+        "parts_covered_labour_charged",
+        "pro_rata_replacement_credit",
+        "not_covered"
+      ],
+      "expected": "parts_covered_labour_charged",
+      "probs": [
+        0.03772392496466637,
+        0.8585926294326782,
+        0.001139163738116622,
+        0.10254425555467606
+      ]
+    },
+    {
+      "id": "hard-opus-a-long_policy-09",
+      "family": "long_policy",
+      "labels": [
+        "no_license_required",
+        "license_exception_lvs",
+        "license_required",
+        "shipment_prohibited"
+      ],
+      "expected": "license_required",
+      "probs": [
+        0.05067639797925949,
+        0.023937836289405823,
+        0.8982605934143066,
+        0.02712511457502842
+      ]
+    },
+    {
+      "id": "hard-opus-a-long_policy-11",
+      "family": "long_policy",
+      "labels": [
+        "no",
+        "yes"
+      ],
+      "expected": "yes",
+      "probs": [
+        0.22270013391971588,
+        0.7772998809814453
+      ]
+    },
+    {
+      "id": "hard-opus-a-long_policy-13",
+      "family": "long_policy",
+      "labels": [
+        "no",
+        "yes"
+      ],
+      "expected": "yes",
+      "probs": [
+        0.7310585975646973,
+        0.26894140243530273
+      ]
+    },
+    {
+      "id": "hard-opus-a-long_policy-17",
+      "family": "long_policy",
+      "labels": [
+        "security_incident_response",
+        "no_page_ticket_only",
+        "database_oncall",
+        "vendor_support",
+        "platform_oncall"
+      ],
+      "expected": "database_oncall",
+      "probs": [
+        0.017727958038449287,
+        0.010752552188932896,
+        0.967913806438446,
+        0.0023992187343537807,
+        0.0012064031325280666
+      ]
+    },
+    {
+      "id": "hard-opus-a-long_policy-19",
+      "family": "long_policy",
+      "labels": [
+        "no",
+        "yes"
+      ],
+      "expected": "no",
+      "probs": [
+        0.22270013391971588,
+        0.7772998809814453
+      ]
+    },
+    {
+      "id": "hard-opus-a-probability-03",
+      "family": "probability",
+      "labels": [
+        "no",
+        "yes"
+      ],
+      "expected": "yes",
+      "probs": [
+        0.24508501589298248,
+        0.7549149990081787
+      ]
+    },
+    {
+      "id": "hard-opus-a-probability-04",
+      "family": "probability",
+      "labels": [
+        "early",
+        "on_time",
+        "late"
+      ],
+      "expected": "on_time",
+      "probs": [
+        0.1289556622505188,
+        0.1289556622505188,
+        0.7420887351036072
+      ]
+    },
+    {
+      "id": "hard-opus-a-probability-07",
+      "family": "probability",
+      "labels": [
+        "resolved_first_contact",
+        "escalated",
+        "reopened"
+      ],
+      "expected": "escalated",
+      "probs": [
+        0.10550417751073837,
+        0.8833757638931274,
+        0.011120057664811611
+      ]
+    },
+    {
+      "id": "hard-opus-a-probability-08",
+      "family": "probability",
+      "labels": [
+        "no",
+        "yes"
+      ],
+      "expected": "no",
+      "probs": [
+        0.11920291930437088,
+        0.8807971477508545
+      ]
+    },
+    {
+      "id": "hard-opus-a-temporal_numeric-03",
+      "family": "temporal_numeric",
+      "labels": [
+        "no",
+        "yes"
+      ],
+      "expected": "yes",
+      "probs": [
+        0.4378235340118408,
+        0.562176525592804
+      ]
+    },
+    {
+      "id": "hard-opus-a-temporal_numeric-06",
+      "family": "temporal_numeric",
+      "labels": [
+        "no",
+        "yes"
+      ],
+      "expected": "no",
+      "probs": [
+        0.5,
+        0.5
+      ]
+    },
+    {
+      "id": "hard-opus-a-temporal_numeric-07",
+      "family": "temporal_numeric",
+      "labels": [
+        "sep_24",
+        "sep_25",
+        "sep_26",
+        "sep_27",
+        "sep_28"
+      ],
+      "expected": "sep_26",
+      "probs": [
+        0.02691042423248291,
+        0.37148693203926086,
+        0.2553189694881439,
+        0.28931429982185364,
+        0.05696936324238777
+      ]
+    },
+    {
+      "id": "hard-opus-a-temporal_numeric-09",
+      "family": "temporal_numeric",
+      "labels": [
+        "no",
+        "yes"
+      ],
+      "expected": "no",
+      "probs": [
+        0.3486451208591461,
+        0.6513549089431763
+      ]
+    },
+    {
+      "id": "hard-opus-a-temporal_numeric-12",
+      "family": "temporal_numeric",
+      "labels": [
+        "0",
+        "1",
+        "2",
+        "3"
+      ],
+      "expected": 1,
+      "probs": [
+        0.04367060959339142,
+        0.06354035437107086,
+        0.1187090128660202,
+        0.7740800380706787
+      ]
+    },
+    {
+      "id": "hard-opus-b-ambiguous-02",
+      "family": "ambiguous",
+      "labels": [
+        "cannot_determine",
+        "real_incident",
+        "false_positive"
+      ],
+      "expected": "real_incident",
+      "probs": [
+        0.059977855533361435,
+        0.8279687166213989,
+        0.11205336451530457
+      ]
+    },
+    {
+      "id": "hard-opus-b-ambiguous-03",
+      "family": "ambiguous",
+      "labels": [
+        "within_limitation",
+        "time_barred",
+        "insufficient_information"
+      ],
+      "expected": "time_barred",
+      "probs": [
+        0.31032776832580566,
+        0.6569639444351196,
+        0.0327083095908165
+      ]
+    },
+    {
+      "id": "hard-opus-b-ambiguous-07",
+      "family": "ambiguous",
+      "labels": [
+        "within_policy",
+        "over_limit",
+        "insufficient_information"
+      ],
+      "expected": "within_policy",
+      "probs": [
+        0.8656612634658813,
+        0.09124002605676651,
+        0.04309874027967453
+      ]
+    },
+    {
+      "id": "hard-opus-b-ambiguous-09",
+      "family": "ambiguous",
+      "labels": [
+        "legitimate",
+        "compromised",
+        "inconclusive"
+      ],
+      "expected": "legitimate",
+      "probs": [
+        0.23509810864925385,
+        0.6390629410743713,
+        0.12583895027637482
+      ]
+    },
+    {
+      "id": "hard-opus-b-ambiguous-10",
+      "family": "ambiguous",
+      "labels": [
+        "ask_user_which_alex",
+        "send_to_alex_moreno",
+        "send_to_alexandra_lind"
+      ],
+      "expected": "ask_user_which_alex",
+      "probs": [
+        0.4610416293144226,
+        0.40686777234077454,
+        0.13209062814712524
+      ]
+    },
+    {
+      "id": "hard-opus-b-ambiguous-11",
+      "family": "ambiguous",
+      "labels": [
+        "grade_correct",
+        "grade_should_be_higher",
+        "cannot_determine"
+      ],
+      "expected": "cannot_determine",
+      "probs": [
+        0.02880019322037697,
+        0.017468202859163284,
+        0.9537315964698792
+      ]
+    },
+    {
+      "id": "hard-opus-b-ambiguous-13",
+      "family": "ambiguous",
+      "labels": [
+        "cannot_determine",
+        "charge_platform_team",
+        "charge_data_team",
+        "split_50_50"
+      ],
+      "expected": "cannot_determine",
+      "probs": [
+        0.792058527469635,
+        0.07367292046546936,
+        0.012802432291209698,
+        0.12146610021591187
+      ]
+    },
+    {
+      "id": "hard-opus-b-multi_hop-03",
+      "family": "multi_hop",
+      "labels": [
+        "tier1_team_lead",
+        "tier2_department_head",
+        "tier3_cfo",
+        "tier4_board"
+      ],
+      "expected": "tier3_cfo",
+      "probs": [
+        0.08251648396253586,
+        0.07282055169343948,
+        0.474849671125412,
+        0.36981329321861267
+      ]
+    },
+    {
+      "id": "hard-opus-b-multi_hop-04",
+      "family": "multi_hop",
+      "labels": [
+        "no_page_ticket_only",
+        "ana",
+        "bjorn",
+        "chen",
+        "dmitri",
+        "esra"
+      ],
+      "expected": "bjorn",
+      "probs": [
+        0.29588714241981506,
+        0.23043714463710785,
+        0.15837696194648743,
+        0.20336005091667175,
+        0.10885079205036163,
+        0.0030878596007823944
+      ]
+    },
+    {
+      "id": "hard-opus-b-multi_hop-05",
+      "family": "multi_hop",
+      "labels": [
+        "0",
+        "1",
+        "2",
+        "3",
+        "4"
+      ],
+      "expected": 2,
+      "probs": [
+        0.10845157504081726,
+        0.4860462546348572,
+        0.15779611468315125,
+        0.13925457000732422,
+        0.10845157504081726
+      ]
+    },
+    {
+      "id": "hard-opus-b-multi_hop-07",
+      "family": "multi_hop",
+      "labels": [
+        "no_credit",
+        "credit_10_percent",
+        "credit_20_percent",
+        "credit_25_percent",
+        "credit_50_percent",
+        "credit_full_month"
+      ],
+      "expected": "credit_20_percent",
+      "probs": [
+        0.10722144693136215,
+        0.13767506182193756,
+        0.039444565773010254,
+        0.4805332124233246,
+        0.20031602680683136,
+        0.03480971232056618
+      ]
+    },
+    {
+      "id": "hard-opus-b-multi_hop-08",
+      "family": "multi_hop",
+      "labels": [
+        "no",
+        "yes"
+      ],
+      "expected": "no",
+      "probs": [
+        0.7772998809814453,
+        0.22270013391971588
+      ]
+    },
+    {
+      "id": "hard-opus-b-probability-01",
+      "family": "probability",
+      "labels": [
+        "customer_wins",
+        "merchant_wins",
+        "customer_withdraws"
+      ],
+      "expected": "merchant_wins",
+      "probs": [
+        0.34595420956611633,
+        0.44421398639678955,
+        0.20983180403709412
+      ]
+    },
+    {
+      "id": "hard-opus-b-probability-02",
+      "family": "probability",
+      "labels": [
+        "bad_push",
+        "upstream_provider",
+        "database_hardware"
+      ],
+      "expected": "upstream_provider",
+      "probs": [
+        0.9413607716560364,
+        0.036500513553619385,
+        0.0221386831253767
+      ]
+    },
+    {
+      "id": "hard-opus-b-probability-03",
+      "family": "probability",
+      "labels": [
+        "no",
+        "yes"
+      ],
+      "expected": "yes",
+      "probs": [
+        0.11920291930437088,
+        0.8807971477508545
+      ]
+    },
+    {
+      "id": "hard-opus-b-probability-04",
+      "family": "probability",
+      "labels": [
+        "no_show",
+        "late_cancellation",
+        "attended"
+      ],
+      "expected": "attended",
+      "probs": [
+        0.42917346954345703,
+        0.08450926095247269,
+        0.48631730675697327
+      ]
+    },
+    {
+      "id": "hard-opus-b-probability-06",
+      "family": "probability",
+      "labels": [
+        "overturned",
+        "modified",
+        "upheld"
+      ],
+      "expected": "upheld",
+      "probs": [
+        0.2738439440727234,
+        0.06923859566450119,
+        0.6569175124168396
+      ]
+    },
+    {
+      "id": "hard-opus-b-tradeoff-01",
+      "family": "tradeoff",
+      "labels": [
+        "escalate_to_security",
+        "page_oncall",
+        "escalate_to_engineering",
+        "process_refund",
+        "send_kb_article"
+      ],
+      "expected": "escalate_to_engineering",
+      "probs": [
+        0.2876970171928406,
+        0.00984444934874773,
+        0.6901493072509766,
+        0.008687695488333702,
+        0.0036215714644640684
+      ]
+    },
+    {
+      "id": "hard-opus-b-tradeoff-03",
+      "family": "tradeoff",
+      "labels": [
+        "order_a",
+        "order_b",
+        "order_c",
+        "order_d"
+      ],
+      "expected": "order_b",
+      "probs": [
+        0.09302379190921783,
+        0.7788787484169006,
+        0.008652562275528908,
+        0.11944491416215897
+      ]
+    },
+    {
+      "id": "hard-opus-b-tradeoff-06",
+      "family": "tradeoff",
+      "labels": [
+        "no",
+        "yes"
+      ],
+      "expected": "yes",
+      "probs": [
+        0.26894140243530273,
+        0.7310585975646973
+      ]
+    },
+    {
+      "id": "hard-opus-b-tradeoff-07",
+      "family": "tradeoff",
+      "labels": [
+        "out_of_scope",
+        "p3_backlog",
+        "p2_fix_30d",
+        "p1_fix_7d",
+        "p0_fix_24h"
+      ],
+      "expected": "p0_fix_24h",
+      "probs": [
+        0.06763256341218948,
+        0.02195707894861698,
+        0.07663773745298386,
+        0.26749199628829956,
+        0.5662806034088135
+      ]
+    },
+    {
+      "id": "hard-opus-b-tradeoff-08",
+      "family": "tradeoff",
+      "labels": [
+        "no",
+        "yes"
+      ],
+      "expected": "yes",
+      "probs": [
+        0.622459352016449,
+        0.377540647983551
+      ]
+    },
+    {
+      "id": "hard-opus-b-tradeoff-12",
+      "family": "tradeoff",
+      "labels": [
+        "wait_for_inspection",
+        "refund_now",
+        "offer_store_credit",
+        "escalate_to_fraud_team",
+        "deny_refund"
+      ],
+      "expected": "refund_now",
+      "probs": [
+        0.008473672904074192,
+        0.979423463344574,
+        0.004535630811005831,
+        0.005139543209224939,
+        0.002427748404443264
+      ]
+    },
+    {
+      "id": "hard-opus-c-long_policy-02",
+      "family": "long_policy",
+      "labels": [
+        "erase_all",
+        "restrict_all_pending_legal_hold",
+        "erase_but_retain_transaction_records",
+        "reject_unverified_request",
+        "erase_marketing_only"
+      ],
+      "expected": "erase_but_retain_transaction_records",
+      "probs": [
+        0.015201377682387829,
+        0.34598177671432495,
+        0.5034005641937256,
+        0.127279594540596,
+        0.008136711083352566
+      ]
+    },
+    {
+      "id": "hard-opus-c-long_policy-03",
+      "family": "long_policy",
+      "labels": [
+        "eur_0",
+        "eur_150",
+        "eur_200",
+        "eur_300",
+        "eur_400",
+        "eur_600"
+      ],
+      "expected": "eur_400",
+      "probs": [
+        0.1305907517671585,
+        0.025714848190546036,
+        0.012930234894156456,
+        0.3132709264755249,
+        0.45580655336380005,
+        0.06168670207262039
+      ]
+    },
+    {
+      "id": "hard-opus-c-long_policy-04",
+      "family": "long_policy",
+      "labels": [
+        "no",
+        "yes"
+      ],
+      "expected": "yes",
+      "probs": [
+        0.0534033328294754,
+        0.9465966820716858
+      ]
+    },
+    {
+      "id": "hard-opus-c-long_policy-05",
+      "family": "long_policy",
+      "labels": [
+        "0",
+        "1",
+        "2",
+        "3"
+      ],
+      "expected": 1,
+      "probs": [
+        0.39948612451553345,
+        0.1469627171754837,
+        0.1010059118270874,
+        0.35254523158073425
+      ]
+    },
+    {
+      "id": "hard-opus-c-long_policy-08",
+      "family": "long_policy",
+      "labels": [
+        "0",
+        "1",
+        "2",
+        "3"
+      ],
+      "expected": 1,
+      "probs": [
+        0.021115431562066078,
+        0.31028902530670166,
+        0.5796962380409241,
+        0.08889929205179214
+      ]
+    },
+    {
+      "id": "hard-opus-c-long_policy-10",
+      "family": "long_policy",
+      "labels": [
+        "full_credit",
+        "credit_minus_restocking_fee",
+        "repair_or_replace_only",
+        "reject_return"
+      ],
+      "expected": "credit_minus_restocking_fee",
+      "probs": [
+        0.04070509225130081,
+        0.6367347836494446,
+        0.021787863224744797,
+        0.30077219009399414
+      ]
+    },
+    {
+      "id": "hard-opus-c-long_policy-11",
+      "family": "long_policy",
+      "labels": [
+        "no",
+        "yes"
+      ],
+      "expected": "no",
+      "probs": [
+        0.4378235340118408,
+        0.562176525592804
+      ]
+    },
+    {
+      "id": "hard-opus-c-probability-03",
+      "family": "probability",
+      "labels": [
+        "halvorsen_polymer",
+        "ortega_seal_works",
+        "kuznets_technik"
+      ],
+      "expected": "kuznets_technik",
+      "probs": [
+        0.21666225790977478,
+        0.11597093194723129,
+        0.6673667430877686
+      ]
+    },
+    {
+      "id": "hard-opus-c-temporal_numeric-02",
+      "family": "temporal_numeric",
+      "labels": [
+        "no",
+        "yes"
+      ],
+      "expected": "yes",
+      "probs": [
+        0.9840936064720154,
+        0.01590638980269432
+      ]
+    },
+    {
+      "id": "hard-opus-c-temporal_numeric-03",
+      "family": "temporal_numeric",
+      "labels": [
+        "eur_692_00",
+        "eur_617_00",
+        "eur_688_00",
+        "eur_693_90",
+        "eur_812_00"
+      ],
+      "expected": "eur_692_00",
+      "probs": [
+        0.1678238809108734,
+        0.3552832007408142,
+        0.21549013257026672,
+        0.13070137798786163,
+        0.13070137798786163
+      ]
+    },
+    {
+      "id": "hard-opus-c-temporal_numeric-04",
+      "family": "temporal_numeric",
+      "labels": [
+        "usd_2222_50",
+        "usd_2303_01",
+        "usd_2303_33",
+        "usd_2335_00",
+        "usd_2340_00"
+      ],
+      "expected": "usd_2335_00",
+      "probs": [
+        0.165615513920784,
+        0.24096916615962982,
+        0.11382577568292618,
+        0.35060808062553406,
+        0.12898150086402893
+      ]
+    },
+    {
+      "id": "hard-opus-c-temporal_numeric-06",
+      "family": "temporal_numeric",
+      "labels": [
+        "sep_15_office_chair",
+        "sep_16_taxi",
+        "sep_17_parking",
+        "sep_18_book_set",
+        "sep_21_client_dinner",
+        "none_declined"
+      ],
+      "expected": "sep_18_book_set",
+      "probs": [
+        0.14004220068454742,
+        0.17981773614883423,
+        0.14004220068454742,
+        0.08493988960981369,
+        0.15868860483169556,
+        0.2964693605899811
+      ]
+    },
+    {
+      "id": "hard-opus-c-temporal_numeric-08",
+      "family": "temporal_numeric",
+      "labels": [
+        "eur_506_06",
+        "eur_498_81",
+        "eur_513_69",
+        "eur_497_40",
+        "eur_532_01"
+      ],
+      "expected": "eur_498_81",
+      "probs": [
+        0.18067634105682373,
+        0.18067634105682373,
+        0.09670908749103546,
+        0.3824918568134308,
+        0.15944631397724152
+      ]
+    },
+    {
+      "id": "hard-opus-c-temporal_numeric-12",
+      "family": "temporal_numeric",
+      "labels": [
+        "covered",
+        "expired_24_month_term",
+        "expired_30_month_cap"
+      ],
+      "expected": "expired_30_month_cap",
+      "probs": [
+        0.0757230594754219,
+        0.20583659410476685,
+        0.7184403538703918
+      ]
+    },
+    {
+      "id": "hard-sol-a-adversarial-01",
+      "family": "adversarial",
+      "labels": [
+        "grant_access",
+        "deny_missing_approval",
+        "deny_inactive_user",
+        "grant_owner_exception"
+      ],
+      "expected": "deny_missing_approval",
+      "probs": [
+        0.03292929753661156,
+        0.7494673728942871,
+        0.0028773301746696234,
+        0.21472598612308502
+      ]
+    },
+    {
+      "id": "hard-sol-a-adversarial-06",
+      "family": "adversarial",
+      "labels": [
+        "no",
+        "yes"
+      ],
+      "expected": "no",
+      "probs": [
+        0.7549149990081787,
+        0.24508501589298248
+      ]
+    },
+    {
+      "id": "hard-sol-a-adversarial-07",
+      "family": "adversarial",
+      "labels": [
+        "retain_until_2031",
+        "delete_now",
+        "retain_indefinitely",
+        "needs_signature_review"
+      ],
+      "expected": "retain_until_2031",
+      "probs": [
+        0.8564196228981018,
+        0.09026596695184708,
+        0.015685871243476868,
+        0.037628449499607086
+      ]
+    },
+    {
+      "id": "hard-sol-a-adversarial-08",
+      "family": "adversarial",
+      "labels": [
+        "no",
+        "yes"
+      ],
+      "expected": "yes",
+      "probs": [
+        0.017986208200454712,
+        0.9820137619972229
+      ]
+    },
+    {
+      "id": "hard-sol-a-adversarial-09",
+      "family": "adversarial",
+      "labels": [
+        "0",
+        "1",
+        "2",
+        "3"
+      ],
+      "expected": 2,
+      "probs": [
+        0.011363869532942772,
+        0.17776085436344147,
+        0.7030578255653381,
+        0.1078174039721489
+      ]
+    },
+    {
+      "id": "hard-sol-a-adversarial-11",
+      "family": "adversarial",
+      "labels": [
+        "standard_research",
+        "ethics_review",
+        "major_grants",
+        "manual_hold"
+      ],
+      "expected": "standard_research",
+      "probs": [
+        0.9538719058036804,
+        0.02243291772902012,
+        0.0038982564583420753,
+        0.019796978682279587
+      ]
+    },
+    {
+      "id": "hard-sol-a-multi_hop-01",
+      "family": "multi_hop",
+      "labels": [
+        "reject_tier",
+        "accept_s2_dusk",
+        "reject_cutoff",
+        "reroute_s3"
+      ],
+      "expected": "accept_s2_dusk",
+      "probs": [
+        0.04652850702404976,
+        0.727828323841095,
+        0.017116881906986237,
+        0.20852628350257874
+      ]
+    },
+    {
+      "id": "hard-sol-a-multi_hop-02",
+      "family": "multi_hop",
+      "labels": [
+        "heron_q2",
+        "insufficient_information",
+        "security_primary",
+        "executive_bridge"
+      ],
+      "expected": "security_primary",
+      "probs": [
+        0.5280978083610535,
+        0.11783454567193985,
+        0.32030749320983887,
+        0.03376016393303871
+      ]
+    },
+    {
+      "id": "hard-sol-a-multi_hop-05",
+      "family": "multi_hop",
+      "labels": [
+        "pay_manager_approved",
+        "require_finance_board",
+        "reject_category",
+        "require_director"
+      ],
+      "expected": "require_director",
+      "probs": [
+        0.028368158265948296,
+        0.028368158265948296,
+        0.003839213401079178,
+        0.9394245147705078
+      ]
+    },
+    {
+      "id": "hard-sol-a-multi_hop-07",
+      "family": "multi_hop",
+      "labels": [
+        "manual_equivalency",
+        "deny_score",
+        "admit",
+        "deny_prerequisite"
+      ],
+      "expected": "admit",
+      "probs": [
+        0.033365070819854736,
+        0.037807583808898926,
+        0.7593855857849121,
+        0.169441819190979
+      ]
+    },
+    {
+      "id": "hard-sol-a-multi_hop-08",
+      "family": "multi_hop",
+      "labels": [
+        "safety_shutdown",
+        "local_maintenance",
+        "insufficient_log",
+        "central_engineering"
+      ],
+      "expected": "central_engineering",
+      "probs": [
+        0.0073042674921453,
+        0.5802499651908875,
+        0.013646171428263187,
+        0.3987995684146881
+      ]
+    },
+    {
+      "id": "hard-sol-a-multi_hop-09",
+      "family": "multi_hop",
+      "labels": [
+        "confirm_l3",
+        "require_steward",
+        "switch_l4",
+        "reject_capacity"
+      ],
+      "expected": "require_steward",
+      "probs": [
+        0.019631288945674896,
+        0.9458884596824646,
+        0.0092731649056077,
+        0.025207076221704483
+      ]
+    },
+    {
+      "id": "hard-sol-a-multi_hop-10",
+      "family": "multi_hop",
+      "labels": [
+        "deny_sensitive",
+        "needs_field_review",
+        "reduce_to_30_days",
+        "approve_45_days"
+      ],
+      "expected": "approve_45_days",
+      "probs": [
+        0.19265414774417877,
+        0.09100336581468582,
+        0.19265414774417877,
+        0.5236883163452148
+      ]
+    },
+    {
+      "id": "hard-sol-a-multi_hop-12",
+      "family": "multi_hop",
+      "labels": [
+        "wrong_issue_class",
+        "expired",
+        "covered_recurrence",
+        "needs_authentication"
+      ],
+      "expected": "needs_authentication",
+      "probs": [
+        0.004782635718584061,
+        0.024288227781653404,
+        0.26112306118011475,
+        0.7098061442375183
+      ]
+    },
+    {
+      "id": "hard-sol-a-trap-02",
+      "family": "trap",
+      "labels": [
+        "no",
+        "yes"
+      ],
+      "expected": "no",
+      "probs": [
+        0.06008664891123772,
+        0.9399133324623108
+      ]
+    },
+    {
+      "id": "hard-sol-a-trap-04",
+      "family": "trap",
+      "labels": [
+        "no",
+        "yes"
+      ],
+      "expected": "no",
+      "probs": [
+        0.5,
+        0.5
+      ]
+    },
+    {
+      "id": "hard-sol-a-trap-05",
+      "family": "trap",
+      "labels": [
+        "0",
+        "1",
+        "2",
+        "3"
+      ],
+      "expected": 0,
+      "probs": [
+        0.38347944617271423,
+        0.051898293197155,
+        0.18114285171031952,
+        0.38347944617271423
+      ]
+    },
+    {
+      "id": "hard-sol-a-trap-06",
+      "family": "trap",
+      "labels": [
+        "close_confirmed",
+        "keep_open_unresolved",
+        "close_agent_verified",
+        "await_internal_metrics"
+      ],
+      "expected": "keep_open_unresolved",
+      "probs": [
+        0.013965629041194916,
+        0.9790663123130798,
+        0.001146368682384491,
+        0.005821739789098501
+      ]
+    },
+    {
+      "id": "hard-sol-a-trap-08",
+      "family": "trap",
+      "labels": [
+        "on_time",
+        "late",
+        "indeterminate",
+        "canceled"
+      ],
+      "expected": "late",
+      "probs": [
+        0.07662615925073624,
+        0.8238089084625244,
+        0.03194253519177437,
+        0.0676223486661911
+      ]
+    },
+    {
+      "id": "hard-sol-a-trap-10",
+      "family": "trap",
+      "labels": [
+        "ready_one_review",
+        "ready_two_reviews",
+        "blocked_second_review",
+        "blocked_failed_test"
+      ],
+      "expected": "blocked_second_review",
+      "probs": [
+        0.021187428385019302,
+        0.15655507147312164,
+        0.7950522899627686,
+        0.02720518968999386
+      ]
+    },
+    {
+      "id": "hard-sol-a-trap-13",
+      "family": "trap",
+      "labels": [
+        "no",
+        "yes"
+      ],
+      "expected": "no",
+      "probs": [
+        0.9399133324623108,
+        0.06008664891123772
+      ]
+    },
+    {
+      "id": "hard-sol-a-trap-15",
+      "family": "trap",
+      "labels": [
+        "no",
+        "yes"
+      ],
+      "expected": "no",
+      "probs": [
+        0.10669058561325073,
+        0.8933094143867493
+      ]
+    },
+    {
+      "id": "hard-sol-b-judge_hard-01",
+      "family": "judge_hard",
+      "labels": [
+        "no",
+        "yes"
+      ],
+      "expected": "yes",
+      "probs": [
+        0.020332353189587593,
+        0.9796676635742188
+      ]
+    },
+    {
+      "id": "hard-sol-b-judge_hard-02",
+      "family": "judge_hard",
+      "labels": [
+        "no",
+        "yes"
+      ],
+      "expected": "no",
+      "probs": [
+        0.042087726294994354,
+        0.957912266254425
+      ]
+    },
+    {
+      "id": "hard-sol-b-judge_hard-05",
+      "family": "judge_hard",
+      "labels": [
+        "no",
+        "yes"
+      ],
+      "expected": "yes",
+      "probs": [
+        0.03308597579598427,
+        0.9669140577316284
+      ]
+    },
+    {
+      "id": "hard-sol-b-judge_hard-08",
+      "family": "judge_hard",
+      "labels": [
+        "no",
+        "yes"
+      ],
+      "expected": "no",
+      "probs": [
+        0.008577484637498856,
+        0.9914224743843079
+      ]
+    },
+    {
+      "id": "hard-sol-b-judge_hard-10",
+      "family": "judge_hard",
+      "labels": [
+        "no",
+        "yes"
+      ],
+      "expected": "no",
+      "probs": [
+        0.18242552876472473,
+        0.8175745010375977
+      ]
+    },
+    {
+      "id": "hard-sol-b-judge_hard-14",
+      "family": "judge_hard",
+      "labels": [
+        "no",
+        "yes"
+      ],
+      "expected": "no",
+      "probs": [
+        0.977022647857666,
+        0.022977370768785477
+      ]
+    },
+    {
+      "id": "hard-sol-b-judge_hard-15",
+      "family": "judge_hard",
+      "labels": [
+        "no",
+        "yes"
+      ],
+      "expected": "yes",
+      "probs": [
+        0.020332353189587593,
+        0.9796676635742188
+      ]
+    },
+    {
+      "id": "hard-sol-b-judge_hard-18",
+      "family": "judge_hard",
+      "labels": [
+        "no",
+        "yes"
+      ],
+      "expected": "no",
+      "probs": [
+        0.22270013391971588,
+        0.7772998809814453
+      ]
+    },
+    {
+      "id": "hard-sol-b-long_policy-01",
+      "family": "long_policy",
+      "labels": [
+        "approve_all",
+        "approve_meals_only",
+        "approve_lodging_only",
+        "reject_entire_claim"
+      ],
+      "expected": "reject_entire_claim",
+      "probs": [
+        0.1469668596982956,
+        0.3111288547515869,
+        0.028939494863152504,
+        0.5129647850990295
+      ]
+    },
+    {
+      "id": "hard-sol-b-long_policy-02",
+      "family": "long_policy",
+      "labels": [
+        "analytics_owner_only",
+        "privacy_only",
+        "privacy_and_security",
+        "deny_current_export"
+      ],
+      "expected": "deny_current_export",
+      "probs": [
+        0.03643432632088661,
+        0.022098541259765625,
+        0.11222562193870544,
+        0.8292415142059326
+      ]
+    },
+    {
+      "id": "hard-sol-b-long_policy-05",
+      "family": "long_policy",
+      "labels": [
+        "delete_everything",
+        "delete_profile_omar_april_and_table",
+        "delete_only_profile",
+        "delete_nothing"
+      ],
+      "expected": "delete_profile_omar_april_and_table",
+      "probs": [
+        0.02800855226814747,
+        0.06718902289867401,
+        0.8185299634933472,
+        0.08627242594957352
+      ]
+    },
+    {
+      "id": "hard-sol-b-long_policy-06",
+      "family": "long_policy",
+      "labels": [
+        "harbor_neighbors",
+        "east_ward",
+        "river_arts",
+        "no_award"
+      ],
+      "expected": "east_ward",
+      "probs": [
+        0.0901791900396347,
+        0.31475630402565,
+        0.19090934097766876,
+        0.40415510535240173
+      ]
+    },
+    {
+      "id": "hard-sol-b-routing_hard-01",
+      "family": "routing_hard",
+      "labels": [
+        "spreadsheet_formula",
+        "office_file_repair",
+        "data_pipeline",
+        "desktop_support",
+        "finance_review"
+      ],
+      "expected": "office_file_repair",
+      "probs": [
+        0.005880212876945734,
+        0.9888999462127686,
+        0.001021827687509358,
+        0.004041408188641071,
+        0.00015670234279241413
+      ]
+    },
+    {
+      "id": "hard-sol-b-routing_hard-02",
+      "family": "routing_hard",
+      "labels": [
+        "payment_disputes",
+        "ledger_reconciliation",
+        "mobile_app",
+        "customer_support",
+        "fraud_review"
+      ],
+      "expected": "ledger_reconciliation",
+      "probs": [
+        0.004591994918882847,
+        0.9915947318077087,
+        0.0009625345119275153,
+        0.002785186283290386,
+        6.550129182869568e-05
+      ]
+    },
+    {
+      "id": "hard-sol-b-routing_hard-03",
+      "family": "routing_hard",
+      "labels": [
+        "authoritative_dns",
+        "network_dns",
+        "tls_certificates",
+        "api_platform",
+        "endpoint_devices"
+      ],
+      "expected": "network_dns",
+      "probs": [
+        0.006866790354251862,
+        0.8993721008300781,
+        0.00127022888045758,
+        0.018665872514247894,
+        0.07382494956254959
+      ]
+    },
+    {
+      "id": "hard-sol-b-routing_hard-07",
+      "family": "routing_hard",
+      "labels": [
+        "code_signing",
+        "release_notarization",
+        "macos_runtime",
+        "ci_infrastructure",
+        "endpoint_security"
+      ],
+      "expected": "release_notarization",
+      "probs": [
+        0.0011690474348142743,
+        0.9984353184700012,
+        0.00014862771786283702,
+        0.00011575137614272535,
+        0.00013116349873598665
+      ]
+    },
+    {
+      "id": "hard-sol-b-routing_hard-09",
+      "family": "routing_hard",
+      "labels": [
+        "vpn_network",
+        "source_access",
+        "git_client",
+        "repository_admin",
+        "identity_login"
+      ],
+      "expected": "source_access",
+      "probs": [
+        0.0006260773516260087,
+        0.9989635944366455,
+        8.473033813061193e-05,
+        0.0003148114774376154,
+        1.0772255336632952e-05
+      ]
+    },
+    {
+      "id": "hard-sol-b-temporal_numeric-01",
+      "family": "temporal_numeric",
+      "labels": [
+        "before_open",
+        "within_window",
+        "late_by_under_2h",
+        "late_by_2h_or_more"
+      ],
+      "expected": "late_by_under_2h",
+      "probs": [
+        0.19593578577041626,
+        0.28508487343788147,
+        0.19593578577041626,
+        0.3230435252189636
+      ]
+    },
+    {
+      "id": "hard-sol-b-temporal_numeric-02",
+      "family": "temporal_numeric",
+      "labels": [
+        "at_least_100gb_below",
+        "under_100gb_below",
+        "exactly_equal",
+        "over_limit"
+      ],
+      "expected": "over_limit",
+      "probs": [
+        0.13554216921329498,
+        0.11961552500724792,
+        0.05650237947702408,
+        0.6883399486541748
+      ]
+    },
+    {
+      "id": "hard-sol-b-temporal_numeric-03",
+      "family": "temporal_numeric",
+      "labels": [
+        "6_credits",
+        "9_credits",
+        "12_credits",
+        "15_credits"
+      ],
+      "expected": "9_credits",
+      "probs": [
+        0.1511925309896469,
+        0.11774886399507523,
+        0.3200746178627014,
+        0.41098394989967346
+      ]
+    },
+    {
+      "id": "hard-sol-b-temporal_numeric-04",
+      "family": "temporal_numeric",
+      "labels": [
+        "pass",
+        "narrow_fail",
+        "clear_fail"
+      ],
+      "expected": "pass",
+      "probs": [
+        0.1253025084733963,
+        0.43734875321388245,
+        0.43734875321388245
+      ]
+    },
+    {
+      "id": "hard-sol-c-judge_hard-03",
+      "family": "judge_hard",
+      "labels": [
+        "no",
+        "yes"
+      ],
+      "expected": "no",
+      "probs": [
+        0.5,
+        0.5
+      ]
+    },
+    {
+      "id": "hard-sol-c-judge_hard-05",
+      "family": "judge_hard",
+      "labels": [
+        "no",
+        "yes"
+      ],
+      "expected": "yes",
+      "probs": [
+        0.14804717898368835,
+        0.851952850818634
+      ]
+    },
+    {
+      "id": "hard-sol-c-judge_hard-07",
+      "family": "judge_hard",
+      "labels": [
+        "no",
+        "yes"
+      ],
+      "expected": "no",
+      "probs": [
+        0.9149009585380554,
+        0.08509904146194458
+      ]
+    },
+    {
+      "id": "hard-sol-c-judge_hard-08",
+      "family": "judge_hard",
+      "labels": [
+        "no",
+        "yes"
+      ],
+      "expected": "no",
+      "probs": [
+        0.531209409236908,
+        0.46879062056541443
+      ]
+    },
+    {
+      "id": "hard-sol-c-judge_hard-09",
+      "family": "judge_hard",
+      "labels": [
+        "no",
+        "yes"
+      ],
+      "expected": "yes",
+      "probs": [
+        0.24508501589298248,
+        0.7549149990081787
+      ]
+    },
+    {
+      "id": "hard-sol-c-judge_hard-10",
+      "family": "judge_hard",
+      "labels": [
+        "no",
+        "yes"
+      ],
+      "expected": "yes",
+      "probs": [
+        0.377540647983551,
+        0.622459352016449
+      ]
+    },
+    {
+      "id": "hard-sol-c-judge_hard-11",
+      "family": "judge_hard",
+      "labels": [
+        "no",
+        "yes"
+      ],
+      "expected": "no",
+      "probs": [
+        0.9959298968315125,
+        0.004070138093084097
+      ]
+    },
+    {
+      "id": "hard-sol-c-judge_hard-13",
+      "family": "judge_hard",
+      "labels": [
+        "no",
+        "yes"
+      ],
+      "expected": "no",
+      "probs": [
+        0.562176525592804,
+        0.4378235340118408
+      ]
+    },
+    {
+      "id": "hard-sol-c-judge_hard-15",
+      "family": "judge_hard",
+      "labels": [
+        "no",
+        "yes"
+      ],
+      "expected": "yes",
+      "probs": [
+        0.0534033328294754,
+        0.9465966820716858
+      ]
+    },
+    {
+      "id": "hard-sol-c-multi_hop-07",
+      "family": "multi_hop",
+      "labels": [
+        "reject_draw",
+        "release_draw",
+        "partial_release",
+        "programme_review"
+      ],
+      "expected": "programme_review",
+      "probs": [
+        0.05588005483150482,
+        0.05588005483150482,
+        0.014128689654171467,
+        0.8741111755371094
+      ]
+    },
+    {
+      "id": "hard-sol-c-multi_hop-09",
+      "family": "multi_hop",
+      "labels": [
+        "bus_substitution",
+        "call_fen_cross",
+        "pass_fen_cross",
+        "terminate_oakmere"
+      ],
+      "expected": "bus_substitution",
+      "probs": [
+        0.47729381918907166,
+        0.09398472309112549,
+        0.05700461193919182,
+        0.37171679735183716
+      ]
+    },
+    {
+      "id": "hard-sol-c-multi_hop-11",
+      "family": "multi_hop",
+      "labels": [
+        "documentation_needed",
+        "coverage_confirmed",
+        "coverage_excluded",
+        "adjuster_referral"
+      ],
+      "expected": "coverage_excluded",
+      "probs": [
+        0.09470706433057785,
+        0.3745737075805664,
+        0.3745737075805664,
+        0.15614554286003113
+      ]
+    },
+    {
+      "id": "hard-sol-c-multi_hop-12",
+      "family": "multi_hop",
+      "labels": [
+        "digital_copy_only",
+        "conservation_hold",
+        "deny_request",
+        "supervised_delivery"
+      ],
+      "expected": "conservation_hold",
+      "probs": [
+        0.03701939806342125,
+        0.5790808200836182,
+        0.03266950696706772,
+        0.3512302339076996
+      ]
+    },
+    {
+      "id": "hard-sol-c-multi_hop-13",
+      "family": "multi_hop",
+      "labels": [
+        "scrap_lot",
+        "normal_release",
+        "rework",
+        "engineering_review"
+      ],
+      "expected": "normal_release",
+      "probs": [
+        0.013351001776754856,
+        0.9359776377677917,
+        0.0040718261152505875,
+        0.04659958556294441
+      ]
+    }
+  ]
+}

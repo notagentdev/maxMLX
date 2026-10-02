@@ -329,6 +329,7 @@ class MlxScheduler:
         explicit_budget = (
             getattr(config, "moe_cache_size", 0) > 0
             or getattr(config, "moe_cache_rate", None)
+            or getattr(config, "moe_cache_auto", False)
         )
         if not explicit_budget:
             # Default offload on MLX: the zero-copy mmapped expert store. Serving

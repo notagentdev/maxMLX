@@ -7,12 +7,12 @@
 <style>
   :root {
     color-scheme: dark;
-    --bg: #0b0f16; --panel: #10151f; --panel-2: #141b28; --border: #1e2634;
-    --text-1: #e8ecf4; --text-2: #9aa3b5; --text-3: #5c6577;
-    --warning: #fab219;
-    --accent: #4c8dff; --accent-dim: #4c8dff22;
-    --good: #31c48d; --good-dim: #31c48d1a;
-    --bad: #ef4a4a; --bad-dim: #ef4a4a1a;
+    --bg: #18181b; --panel: #202023; --panel-2: #29292e; --border: #35353c;
+    --text-1: #f4f4f5; --text-2: #b2b2bd; --text-3: #92929f;
+    --warning: #e8b45d;
+    --accent: #b6c3ed; --accent-dim: #b6c3ed12;
+    --good: #83c5a3; --good-dim: #83c5a312;
+    --bad: #ee9393; --bad-dim: #ee939312;
     --mono: "SF Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
   }
   * { box-sizing: border-box; margin: 0; }
@@ -23,115 +23,163 @@
     display: flex; flex-direction: column;
   }
 
-  /* ---------- titlebar ---------- */
+  /* ---------- navigation and layout ---------- */
+  [hidden] { display: none !important; }
+  button, input, textarea, select { font: inherit; }
+  button { color: inherit; }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
   #titlebar {
-    display: flex; align-items: center; gap: 10px;
-    padding: 9px 16px; border-bottom: 1px solid var(--border);
-    font: 11.5px var(--mono); color: var(--text-2);
+    display: flex; align-items: center; justify-content: space-between; gap: 20px;
+    padding: 18px 32px; border-bottom: 1px solid var(--border); background: var(--panel);
   }
-  #titlebar .brand { display: flex; align-items: center; gap: 7px; margin: 0 auto 0 0; }
-  #titlebar .brand::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--accent); }
-  .pill {
-    display: inline-flex; align-items: center; gap: 6px;
-    border: 1px solid var(--border); border-radius: 999px;
-    padding: 3px 10px; font: 11px var(--mono); color: var(--text-2);
-    background: var(--panel);
-  }
-  .pill .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--text-3); }
-  .pill.green { color: var(--good); border-color: #31c48d44; background: var(--good-dim); }
-  .pill.green .dot { background: var(--good); }
-  .pill.blue { color: var(--accent); border-color: #4c8dff44; background: var(--accent-dim); }
-
-  /* ---------- shell ---------- */
-  #shell { flex: 1; display: flex; min-height: 0; }
-  #sidebar {
-    width: 190px; border-right: 1px solid var(--border);
-    display: flex; flex-direction: column; padding: 14px 10px 10px;
-  }
-  .nav {
-    display: flex; align-items: center; gap: 9px;
-    padding: 8px 12px; border-radius: 9px; cursor: pointer;
-    color: var(--text-2); font-size: 13px; user-select: none;
-  }
-  .nav svg { width: 15px; height: 15px; stroke: currentColor; fill: none; stroke-width: 1.7; }
-  .nav:hover { background: var(--panel); }
+  .brand { display: flex; align-items: center; gap: 12px; font-size: 18px; font-weight: 700; }
+  .brand-mark { display: grid; place-items: center; width: 32px; height: 32px; border-radius: 9px; background: var(--text-1); color: var(--bg); font: 700 14px var(--mono); }
+  .brand small { font-size: 12px; font-weight: 400; color: var(--text-3); }
+  #navigation { display: flex; gap: 4px; padding: 4px; border-radius: 999px; background: var(--bg); }
+  .nav { display: flex; align-items: center; justify-content: center; gap: 8px; padding: 9px 18px; border: 0; border-radius: 999px; background: transparent; color: var(--text-2); cursor: pointer; }
+  .nav svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 1.7; }
+  .nav:hover { color: var(--text-1); }
   .nav.active { background: var(--panel-2); color: var(--text-1); }
-  .nav.active svg { stroke: var(--accent); }
-  #sidebar .grow { flex: 1; }
-  #sysbox {
-    border-top: 1px solid var(--border); padding: 12px 8px 4px;
-    font: 10.5px var(--mono); color: var(--text-3);
-  }
-  #sysbox .bar-row { display: flex; justify-content: space-between; margin-bottom: 3px; color: var(--text-2); }
-  .bar { height: 3px; border-radius: 2px; background: var(--panel-2); margin-bottom: 10px; overflow: hidden; }
-  .bar i { display: block; height: 100%; background: var(--accent); border-radius: 2px; transition: width .6s; }
-  #sysbox .ver { margin-top: 6px; text-align: right; }
-
-  #content { flex: 1; overflow-y: auto; padding: 22px 26px; min-width: 0; }
-  .view { display: none; max-width: 980px; margin: 0 auto; }
+  .header-status { display: flex; align-items: center; gap: 10px; }
+  #version { font-size: 11px; color: var(--text-3); }
+  .pill { display: inline-flex; align-items: center; gap: 7px; border: 1px solid var(--border); border-radius: 999px; padding: 5px 10px; font-size: 11px; color: var(--text-2); background: var(--panel); }
+  .pill .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--text-3); }
+  .pill.green { color: var(--good); background: var(--good-dim); }
+  .pill.green .dot { background: var(--good); }
+  .pill.blue { color: var(--accent); background: var(--accent-dim); }
+  #shell { flex: 1; display: flex; min-height: 0; }
+  #content { flex: 1; overflow-y: auto; padding: 36px 32px; min-width: 0; }
+  .view { display: none; max-width: 1120px; margin: 0 auto; }
   .view.active { display: block; }
-
-  /* ---------- console view ---------- */
-  .head { display: flex; align-items: flex-start; margin-bottom: 18px; }
-  .head h1 { font-size: 21px; font-weight: 700; letter-spacing: .2px; }
-  .head .sub { color: var(--text-2); font-size: 12.5px; margin-top: 3px; }
-  .head .spacer { flex: 1; }
-
-  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
-  .card {
-    background: var(--panel); border: 1px solid var(--border);
-    border-radius: 12px; padding: 15px 17px;
+  .eyebrow { font-size: 10px; font-weight: 600; letter-spacing: 1.7px; text-transform: uppercase; color: var(--text-3); margin-bottom: 6px; }
+  .section-heading { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin: 28px 0 12px; }
+  .section-heading h2 { font-size: 14px; font-weight: 600; }
+  .resource-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+  .resource { padding: 20px; border: 1px solid var(--border); border-radius: 14px; background: var(--panel); }
+  .resource .label { color: var(--text-3); font-size: 12px; }
+  .resource .value { margin: 10px 0; color: var(--text-1); font: 500 14px var(--mono); overflow-wrap: anywhere; }
+  .resource .sub { color: var(--text-3); font-size: 11px; }
+  .bar { height: 4px; border-radius: 3px; background: var(--panel-2); overflow: hidden; }
+  .bar i { display: block; height: 100%; background: var(--accent); border-radius: 3px; transition: width .6s; }
+  .table-scroll { overflow-x: auto; }
+  details > summary { cursor: pointer; color: var(--text-2); }
+  details > summary:hover { color: var(--text-1); }
+  .logs-panel > summary { padding: 18px 20px; font-weight: 600; }
+  .panelcard.logs-panel { padding: 0; }
+  .logs-panel .table-scroll { padding: 0 10px 10px; }
+  .settings-note { padding: 12px 16px; border: 1px solid var(--border); border-radius: 10px; color: var(--text-3); font-size: 12px; }
+  .settings-section { padding: 24px; }
+  .settings-section h2 { font-size: 16px; font-weight: 600; }
+  .setting-line { display: grid; grid-template-columns: minmax(160px, 1fr) minmax(160px, 320px); column-gap: 28px; row-gap: 4px; padding: 18px 0; border-bottom: 1px solid var(--border); }
+  .setting-line:last-child { border-bottom: 0; }
+  .setting-line label { grid-column: 1; grid-row: 1; color: var(--text-1); font-size: 13px; }
+  .setting-line .hint { grid-column: 1; grid-row: 2; color: var(--text-3); font-size: 12px; line-height: 1.6; }
+  .setting-line > input, .setting-line > select, .setting-line > .settings-control { grid-column: 2; grid-row: 1 / span 2; align-self: center; width: 100%; min-width: 0; }
+  .settings-control input { width: 100%; }
+  .setting-line > input[type=number] { width: 140px; justify-self: end; }
+  .settings-tabs { display: flex; gap: 6px; overflow-x: auto; margin: 0 0 24px; padding-bottom: 4px; }
+  .settings-tab { border: 0; border-radius: 999px; padding: 9px 18px; background: transparent; color: var(--text-3); cursor: pointer; white-space: nowrap; }
+  .settings-tab.active { color: var(--text-1); background: var(--panel-2); }
+  .settings-panel { display: none; }
+  .settings-panel.active { display: block; }
+  .settings-section > .title { background: var(--panel-2); padding: 16px 24px; margin: -24px -24px 6px; border-bottom: 1px solid var(--border); border-radius: 14px 14px 0 0; }
+  .settings-section > .title h2 { font-size: 12px; text-transform: uppercase; letter-spacing: .8px; }
+  .settings-section.sliderrow .top { display: grid; grid-template-columns: 1fr auto; gap: 5px 24px; margin-top: 16px; }
+  .settings-section .top .lbl { grid-column: 1; grid-row: 1; }
+  .settings-section .top .hint { grid-column: 1; grid-row: 2; line-height: 1.6; }
+  .settings-section .top .val { grid-column: 2; grid-row: 1 / span 2; align-self: center; }
+  .settings-section input[type=text] { width: 100%; background: var(--bg); color: var(--text-1); border: 1px solid var(--border); border-radius: 8px; padding: 8px 10px; }
+  .settings-section input[type=checkbox] { appearance: none; width: 38px; height: 22px; border: 0; border-radius: 20px; background: var(--border); justify-self: end; cursor: pointer; position: relative; }
+  .settings-section input[type=checkbox]::before { content: ""; position: absolute; width: 16px; height: 16px; border-radius: 50%; top: 3px; left: 3px; background: var(--text-1); }
+  .settings-section input[type=checkbox]:checked { background: #7685b5; }
+  .settings-section input[type=checkbox]:checked::before { left: 19px; }
+  .settings-section .actions { padding-top: 18px; border-top: 1px solid var(--border); }
+  .settings-section.dirty { border-color: #6f7792; }
+  .badge { margin-left: auto; border-radius: 5px; padding: 3px 7px; font-size: 10px; font-weight: 500; color: var(--warning); background: #e8b45d12; white-space: nowrap; }
+  .badge.live { color: var(--good); background: var(--good-dim); }
+  .settings-save { display: flex; align-items: center; justify-content: flex-end; gap: 16px; padding: 20px 0; margin-top: 24px; border-top: 1px solid var(--border); }
+  .settings-save .feedback { flex: 1; }
+  .settings-file { margin-top: 18px; color: var(--text-3); font-size: 11px; overflow-wrap: anywhere; }
+  #restartNotice { border-color: #e8b45d40; margin-bottom: 16px; }
+  #restartNotice button { margin-left: 8px; }
+  @media (max-width: 600px) {
+    .setting-line { grid-template-columns: 1fr; gap: 8px; }
+    .setting-line > input, .setting-line > select, .setting-line > .settings-control { grid-column: 1; grid-row: 3; }
+    .settings-section .setting-line > input[type=number] { width: 100%; justify-self: stretch; }
+    .settings-section .top .val { grid-column: 1; grid-row: 3; justify-self: start; margin-left: 0; }
+    .settings-section > .title { flex-wrap: wrap; }
+    .settings-section .scale { gap: 10px; font-size: 9px; }
   }
-  .card.hero { border-color: #31c48d3d; background: linear-gradient(180deg, #31c48d0d, var(--panel)); }
-  .card .label { font: 11px var(--mono); color: var(--text-2); }
-  .card .big { font: 600 26px/1.25 var(--mono); margin-top: 6px; }
-  .card.hero .big { color: var(--good); }
-  .card .sub { font: 11px var(--mono); color: var(--text-3); margin-top: 5px; }
-  .card .right { float: right; text-align: right; font: 11px var(--mono); color: var(--text-3); line-height: 1.7; }
+  input[type=number], select { background: var(--bg); color: var(--text-1); border: 1px solid var(--border); border-radius: 8px; padding: 7px 10px; }
+  input[type=number] { width: 120px; }
+  .actions { display: flex; align-items: center; gap: 12px; margin-top: 18px; flex-wrap: wrap; }
+  .feedback { font-size: 12px; color: var(--text-3); }
+  @media (max-width: 760px) {
+    #titlebar { flex-wrap: wrap; padding: 14px 18px; gap: 14px; }
+    #navigation { order: 3; width: 100%; }
+    .nav { flex: 1; padding: 9px 12px; }
+    .brand small, #version { display: none; }
+    #content { padding: 24px 18px; }
+    .resource-grid { grid-template-columns: 1fr; }
+    .head { flex-wrap: wrap; gap: 12px; }
+    .sliderrow .hint { flex-basis: 100%; }
+    .apirow { flex-wrap: wrap; }
+    .apirow .apilbl { flex-basis: 100%; }
+    .apirow code { min-width: 0; }
+  }
+
+  /* ---------- dashboard ---------- */
+  .head { display: flex; align-items: center; gap: 16px; margin-bottom: 24px; }
+  .head h1 { font-size: 27px; font-weight: 650; letter-spacing: -.7px; }
+  .head .sub { color: var(--text-3); font-size: 13px; margin-top: 6px; }
+  .head .spacer { flex: 1; }
+  .cards { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; }
+  .card { background: var(--panel); border: 1px solid var(--border); border-radius: 14px; padding: 24px; }
+  .card .label { font-size: 11px; color: var(--text-3); text-transform: uppercase; letter-spacing: .7px; }
+  .card .big { font-size: 30px; font-weight: 600; letter-spacing: -.8px; margin-top: 14px; font-variant-numeric: tabular-nums; }
+  .card .sub { font-size: 11px; color: var(--text-3); margin-top: 7px; }
+  @media (max-width: 900px) { .cards { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  @media (max-width: 400px) { .card { padding: 16px; } .card .big { font-size: 25px; } }
 
   .modelrow {
     display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
     background: var(--panel); border: 1px solid var(--border);
-    border-radius: 12px; padding: 13px 17px; margin-top: 12px;
+    border-radius: 14px; padding: 20px; margin-top: 0;
   }
   .avatar {
     width: 36px; height: 36px; border-radius: 10px; flex: none;
     background: var(--accent-dim); color: var(--accent);
     display: flex; align-items: center; justify-content: center; font: 700 15px var(--mono);
   }
-  .modelrow .name { font-weight: 650; font-size: 14.5px; }
-  .modelrow .meta { font: 11px var(--mono); color: var(--text-3); margin-top: 2px; }
+  .model-info { min-width: 0; flex: 1; }
+  .modelrow .name { font-weight: 600; font-size: 14px; overflow-wrap: anywhere; }
+  .modelrow .meta { font-size: 12px; color: var(--text-3); margin-top: 4px; }
   .modelrow .spacer { flex: 1; }
-  .stat { text-align: right; min-width: 74px; }
-  .stat .k { font: 10px var(--mono); color: var(--text-3); letter-spacing: .8px; }
-  .stat .v { font: 600 17px var(--mono); margin-top: 1px; }
+  .model-actions { display: flex; gap: 8px; }
   .btn {
-    border: 1px solid #4c8dff55; background: var(--accent-dim); color: var(--accent);
-    border-radius: 9px; padding: 7px 16px; font: 600 12.5px/1 inherit; cursor: pointer;
+    border: 1px solid transparent; background: var(--text-1); color: var(--bg);
+    border-radius: 8px; padding: 8px 14px; font-size: 12px; font-weight: 600; cursor: pointer;
   }
-  .btn:hover:not(:disabled) { background: #4c8dff33; border-color: var(--accent); }
+  .btn:hover:not(:disabled) { background: #d8d8df; }
   .btn.ghost { background: transparent; color: var(--text-2); border-color: var(--border); }
   .btn.ghost:hover:not(:disabled) { background: var(--panel-2); border-color: var(--text-3); }
-  .btn.danger { background: transparent; color: var(--bad); border-color: #ef4a4a55; }
+  .btn.danger { background: transparent; color: var(--bad); border-color: #ee939340; }
   .btn.danger:hover:not(:disabled) { background: var(--bad-dim); border-color: var(--bad); }
   .btn:disabled { opacity: .4; cursor: default; }
 
   .panelcard {
     background: var(--panel); border: 1px solid var(--border);
-    border-radius: 12px; padding: 17px; margin-top: 12px;
+    border-radius: 14px; padding: 24px; margin-top: 18px;
   }
   .panelcard .title { display: flex; align-items: center; gap: 8px; font-weight: 650; font-size: 14px; }
-  .tag {
-    font: 10px var(--mono); padding: 2px 7px; border-radius: 5px;
-    background: var(--accent-dim); color: var(--accent); border: 1px solid #4c8dff33;
-  }
-  .tag.teal { background: #31c48d14; color: var(--good); border-color: #31c48d33; }
+  .tag { font-size: 10px; padding: 3px 7px; border-radius: 5px; background: var(--panel-2); color: var(--text-2); border: 1px solid var(--border); }
+  .tag.teal { background: var(--good-dim); color: var(--good); }
   .panelcard .desc { font-size: 12px; color: var(--text-3); margin-top: 3px; }
   .panelcard .synced { margin-left: auto; font: 11px var(--mono); color: var(--text-3); }
 
   .presets-label { font: 11px var(--mono); color: var(--text-3); margin: 16px 0 8px; }
   .presets { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; }
-  .preset {
+  .preset { text-align: left; font: inherit;
     background: var(--panel-2); border: 1px solid var(--border); border-radius: 10px;
     padding: 11px 13px; cursor: pointer; user-select: none;
   }
@@ -140,7 +188,7 @@
   .preset .p-name { font-weight: 650; font-size: 13px; }
   .preset .p-desc { font-size: 11.5px; color: var(--text-3); margin-top: 3px; line-height: 1.45; }
   .sliderrow { margin-top: 18px; }
-  .sliderrow .top { display: flex; align-items: baseline; gap: 10px; }
+  .sliderrow .top { display: flex; align-items: baseline; flex-wrap: wrap; gap: 10px; }
   .sliderrow .lbl { font-weight: 600; font-size: 13px; }
   .sliderrow .hint { font-size: 11.5px; color: var(--text-3); }
   .apirow { display: flex; align-items: center; gap: 10px; margin-top: 9px; }
@@ -152,16 +200,24 @@
   .sliderrow .val { margin-left: auto; font: 600 13px var(--mono); }
   input[type=range] { width: 100%; margin: 12px 0 4px; accent-color: var(--accent); }
   .sliderrow .scale { display: flex; justify-content: space-between; font: 10px var(--mono); color: var(--text-3); }
-  #cacheApply { margin-top: 12px; }
-  #cacheMsg { font: 11.5px var(--mono); color: var(--text-3); margin-left: 10px; }
 
   /* ---------- chat view ---------- */
-  #chatView { display: none; flex-direction: column; height: calc(100vh - 120px); max-width: 980px; margin: 0 auto; }
+  #chatView { display: none; flex-direction: column; height: 100%; min-height: 460px; max-width: 820px; margin: 0 auto; }
   #chatView.active { display: flex; }
-  #messages { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; padding: 4px 2px 12px; }
-  .msg { max-width: 84%; border-radius: 12px; padding: 10px 14px; white-space: pre-wrap; overflow-wrap: anywhere; }
-  .msg.user { align-self: flex-end; background: var(--accent-dim); border: 1px solid #4c8dff3d; }
-  .msg.assistant { align-self: flex-start; background: var(--panel); border: 1px solid var(--border); }
+  #chatView .head { margin-bottom: 18px; }
+  .prompt-panel { border: 1px solid var(--border); border-radius: 10px; padding: 12px 16px; margin-bottom: 12px; }
+  .prompt-panel summary { font-size: 12px; }
+  .prompt-panel label { display: block; margin-top: 12px; color: var(--text-3); font-size: 12px; }
+  #messages { flex: 1; min-height: 140px; overflow-y: auto; display: flex; flex-direction: column; gap: 20px; padding: 12px 2px 24px; }
+  #chatEmpty { margin: auto; text-align: center; max-width: 360px; padding: 32px 16px; }
+  #chatEmpty h2 { font-size: 23px; font-weight: 600; letter-spacing: -.4px; margin-bottom: 8px; }
+  #chatEmpty p { font-size: 13px; color: var(--text-3); line-height: 1.8; }
+  .msg { max-width: 90%; border-radius: 14px; padding: 14px 18px; white-space: pre-wrap; overflow-wrap: anywhere; line-height: 1.75; }
+  .msg.user { align-self: flex-end; background: var(--panel-2); border: 1px solid var(--border); }
+  .msg.assistant { align-self: flex-start; padding-left: 4px; background: transparent; }
+  .msg::before { display: block; font-size: 10px; font-weight: 600; letter-spacing: .8px; color: var(--text-3); margin-bottom: 7px; }
+  .msg.user::before { content: "YOU"; }
+  .msg.assistant::before { content: "MAXTOKEN"; }
   .msg .think { color: var(--text-3); font-size: 12px; border-left: 3px solid var(--border); padding-left: 9px; margin-bottom: 8px; white-space: pre-wrap; }
   .msg .meta { font: 10.5px var(--mono); color: var(--text-3); margin-top: 8px; }
   .msg .meta b { color: var(--text-2); }
@@ -177,16 +233,16 @@
   }
   @keyframes spin { to { transform: rotate(360deg); } }
   @media (prefers-reduced-motion: reduce) { .spinner { animation-duration: 2.4s; } }
-  #composer { display: flex; gap: 8px; padding-top: 12px; border-top: 1px solid var(--border); }
+  #composer { display: flex; align-items: flex-end; gap: 8px; padding: 10px; border: 1px solid var(--border); border-radius: 16px; background: var(--panel); }
   #composer textarea {
-    flex: 1; resize: none; background: var(--panel); color: var(--text-1);
-    border: 1px solid var(--border); border-radius: 10px; padding: 10px 13px;
+    flex: 1; min-width: 0; resize: none; background: transparent; color: var(--text-1);
+    border: 0; border-radius: 8px; padding: 9px 6px;
     font: inherit; min-height: 44px; max-height: 150px;
   }
+  #composer .btn { margin-bottom: 3px; }
   #chatOpts { display: flex; gap: 16px; align-items: center; padding: 8px 2px 0; font: 11px var(--mono); color: var(--text-3); flex-wrap: wrap; }
-  #chatOpts input[type=number] { width: 70px; background: var(--panel); border: 1px solid var(--border); color: var(--text-1); border-radius: 6px; padding: 3px 6px; font: 11px var(--mono); }
-  #chatOpts input[type=range] { width: 110px; margin: 0; }
-  #sysPrompt { width: 100%; background: var(--panel); border: 1px solid var(--border); color: var(--text-2); border-radius: 8px; padding: 7px 10px; font: 12px/1.4 inherit; resize: vertical; height: 40px; margin-bottom: 8px; }
+  #chatOpts { justify-content: space-between; font: 11px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+  #sysPrompt { width: 100%; background: var(--panel); border: 1px solid var(--border); color: var(--text-2); border-radius: 8px; padding: 7px 10px; font-size: 12px; line-height: 1.6; resize: vertical; min-height: 80px; margin-top: 8px; }
 
   /* ---------- logs view ---------- */
   table { width: 100%; border-collapse: collapse; font: 12px var(--mono); }
@@ -198,49 +254,33 @@
 </head>
 <body>
 
-<div id="titlebar">
-  <span class="brand">MaxToken Console</span>
-  <span class="pill"><span class="dot" id="apiDot"></span>API <span id="apiPort">:1919</span></span>
-</div>
-
-<div id="shell">
-  <nav id="sidebar">
-    <div class="nav active" data-view="consoleView">
-      <svg viewBox="0 0 24 24"><path d="M4 19V5m0 14h16M8 15v-4m4 4V8m4 7v-6"/></svg>Console
-    </div>
-    <div class="nav" data-view="chatView">
-      <svg viewBox="0 0 24 24"><path d="M21 12a8 8 0 0 1-8 8H4l2-3a8 8 0 1 1 15-5z"/></svg>Chat
-    </div>
-    <div class="nav" data-view="logsView">
-      <svg viewBox="0 0 24 24"><path d="M5 4h14M5 9h14M5 14h9M5 19h6"/></svg>Logs
-    </div>
-    <div class="grow"></div>
-    <div id="sysbox">
-      <div class="bar-row"><span>Engine memory</span><span id="memTxt">–</span></div>
-      <div class="bar"><i id="memBar" style="width:0%"></i></div>
-      <div id="kvRow" hidden>
-        <div class="bar-row"><span>KV pages</span><span id="pfxTxt">–</span></div>
-        <div class="bar"><i id="pfxBar" style="width:0%"></i></div>
-      </div>
-      <div id="diskRow" hidden>
-        <div class="bar-row"><span>Prefix cache · SSD</span><span id="diskTxt">–</span></div>
-        <div class="bar"><i id="diskBar" style="width:0%"></i></div>
-      </div>
-      <div class="ver" id="version"></div>
-    </div>
+<header id="titlebar">
+  <div class="brand"><span class="brand-mark" aria-hidden="true">M</span>MaxToken <small>Local inference</small></div>
+  <nav id="navigation" aria-label="Main navigation">
+    <button type="button" class="nav active" data-view="dashboardView" aria-controls="dashboardView" aria-current="page">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19V5m0 14h16M8 15v-4m4 4V8m4 7v-6"/></svg>Dashboard
+    </button>
+    <button type="button" class="nav" data-view="settingsView" aria-controls="settingsView">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 17h16"/><circle cx="9" cy="7" r="3"/><circle cx="15" cy="17" r="3"/></svg>Settings
+    </button>
+    <button type="button" class="nav" data-view="chatView" aria-controls="chatView">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12a8 8 0 0 1-8 8H4l2-3a8 8 0 1 1 15-5z"/></svg>Chat
+    </button>
   </nav>
-
-  <div id="content">
-
-    <!-- ================= CONSOLE ================= -->
-    <div class="view active" id="consoleView">
+  <div class="header-status"><span id="version"></span><span class="pill"><span class="dot" id="apiDot"></span>API <span id="apiPort">:1919</span></span></div>
+</header>
+<div id="shell">
+  <main id="content">
+    <!-- ================= DASHBOARD ================= -->
+    <section class="view active" id="dashboardView" aria-labelledby="dashboardTitle">
       <div class="head">
         <div>
-          <h1>Console</h1>
-          <div class="sub" id="headSub">connecting…</div>
+          <div class="eyebrow">Overview</div>
+  <h1 id="dashboardTitle">Dashboard</h1>
+  <div class="sub" id="headSub">Connecting to your local engine…</div>
         </div>
         <div class="spacer"></div>
-        <span class="pill green"><span class="dot"></span>Live · 2s refresh</span>
+        <span class="pill">Refreshes every 2 seconds</span>
       </div>
 
       <div class="cards">
@@ -250,118 +290,211 @@
           <div class="sub" id="cTokensSub">– in · – out</div>
         </div>
         <div class="card">
-          <div class="right" id="cLaunchRight"></div>
-          <div class="label">This launch</div>
-          <div class="big" id="cReq">–</div>
-          <div class="sub">requests served</div>
-        </div>
-      </div>
-
-      <div class="modelrow">
-        <div class="avatar" id="avatar">FT</div>
-        <div>
+          <div class="label">Requests served</div>
+      <div class="big" id="cReq">–</div>
+      <div class="sub" id="cLaunchRight">This engine launch</div>
+    </div>
+    <div class="card">
+      <div class="label">Generation speed</div>
+      <div class="big" id="mTps">–</div>
+      <div class="sub">tokens / second · live</div>
+    </div>
+    <div class="card">
+      <div class="label">Time to first token</div>
+      <div class="big" id="mTtft">–</div>
+      <div class="sub">Recent request average</div>
+    </div>
+  </div>
+  <div class="section-heading"><h2>Active model</h2></div>
+  <div class="modelrow">
+        <div class="avatar" id="avatar">MT</div>
+  <div class="model-info">
           <div class="name" id="mName">–</div>
           <div class="meta" id="mMeta">–</div>
         </div>
-        <span class="pill green" id="runPill"><span class="dot"></span><span id="runTxt">loading…</span></span>
-        <div class="spacer"></div>
-        <div class="stat"><div class="k">TOKENS/S</div><div class="v" id="mTps">–</div></div>
-        <div class="stat"><div class="k">REQUESTS</div><div class="v" id="mReq">–</div></div>
-        <div class="stat"><div class="k">TTFT</div><div class="v" id="mTtft">–</div></div>
-        <button class="btn" onclick="showView('chatView')">Chat</button>
+        <span class="pill" id="runPill"><span class="dot" id="runDot"></span><span id="runTxt">Connecting…</span></span>
+      <div class="model-actions">
+        <button class="btn ghost" onclick="showView('settingsView')">Configure</button>
+        <button class="btn" onclick="showView('chatView')">Open chat</button>
         <button class="btn danger" id="stopBtnTop" disabled onclick="aborter&&aborter.abort()">Stop</button>
       </div>
-
-      <div class="panelcard">
-        <div class="title">Cache config
+    </div>
+    <div class="section-heading"><h2>Memory &amp; cache</h2><span class="feedback">Current engine footprint</span></div>
+    <div class="resource-grid">
+      <div class="resource">
+        <div class="label">Engine memory</div><div class="value" id="memTxt">–</div>
+        <div class="sub">Allocated memory · mapped expert pages excluded</div>
+      </div>
+      <div class="resource" id="kvRow" hidden>
+        <div class="label">KV cache pages</div><div class="value" id="pfxTxt">–</div>
+        <div class="bar"><i id="pfxBar" style="width:0%"></i></div>
+      </div>
+      <div class="resource" id="diskRow" hidden>
+        <div class="label">Prefix cache · SSD</div><div class="value" id="diskTxt">–</div>
+        <div class="bar"><i id="diskBar" style="width:0%"></i></div>
+      </div>
+    </div>
+    <details class="panelcard logs-panel" id="requestLog">
+      <summary>Recent requests</summary>
+      <div class="table-scroll">
+        <table aria-label="Recent API requests">
+          <thead><tr><th>TIME</th><th>KIND</th><th>MODEL</th><th>IN</th><th>OUT</th><th>TTFT</th><th>STATUS</th></tr></thead>
+          <tbody id="logRows"><tr><td colspan="7">No requests yet</td></tr></tbody>
+        </table>
+      </div>
+    </details>
+  </section>
+  <!-- ================= SETTINGS ================= -->
+  <section class="view" id="settingsView" aria-labelledby="settingsTitle">
+    <div class="head">
+      <div><div class="eyebrow">Configuration</div><h1 id="settingsTitle">Settings</h1><div class="sub">Tune the loaded model without leaving your browser.</div></div>
+      <div class="spacer"></div><span class="pill" id="syncTxt" role="status">Synced</span>
+    </div>
+    <nav class="settings-tabs" aria-label="Settings categories">
+    <button type="button" class="settings-tab active" data-settings-tab="modelSettings" aria-controls="modelSettings" aria-pressed="true">Model</button>
+    <button type="button" class="settings-tab" data-settings-tab="memorySettings" aria-controls="memorySettings" aria-pressed="false">Memory &amp; performance</button>
+    <button type="button" class="settings-tab" data-settings-tab="serverSettings" aria-controls="serverSettings" aria-pressed="false">Server</button>
+    <button type="button" class="settings-tab" data-settings-tab="integrationSettings" aria-controls="integrationSettings" aria-pressed="false">Integrations</button>
+  </nav>
+  <div class="settings-note" id="settingsNote" role="status">Connecting to the settings service…</div>
+  <div class="settings-note" id="restartNotice" hidden><span id="restartSummary"></span><button class="btn ghost" onclick="showSettingsTab('serverSettings')">Review &amp; restart</button></div>
+  <div class="settings-panel" id="memorySettings">
+    <div class="panelcard settings-section" data-settings-group="performance">
+      <div class="title"><h2>Serving &amp; performance</h2><span class="badge">Engine restart</span></div>
+      <div class="setting-line"><label for="servingMode">Expert serving mode</label><span class="hint">Mapped weights borrow reclaimable memory; slot cache enforces an expert budget.</span><select id="servingMode"><option value="mapped">Zero-copy mapped</option><option value="slots">Expert slot cache</option><option value="automatic">Automatic slot budget</option><option value="resident">Fully resident</option></select></div>
+      <div class="setting-line" id="fractionRow" hidden><label for="moeFraction">Expert residency</label><span class="hint">Percent of experts kept in the slot cache.</span><input id="moeFraction" type="number" required min="1" max="100" step="1"></div>
+      <div class="setting-line"><label for="memoryRatio">Memory budget (%)</label><span class="hint">Budget ratio used by automatic cache sizing. Mapped pages remain OS-managed.</span><input id="memoryRatio" type="number" required min="1" max="100" step="1"></div>
+      <div class="setting-line"><label for="maxRequests">Parallel requests</label><span class="hint">Maximum admitted requests. Batching depends on the serving and draft path.</span><input id="maxRequests" type="number" required min="1" max="256" step="1"></div>
+      <div class="setting-line"><label for="prefillTokens">Prefill chunk size</label><span class="hint">Scheduler prefill limit in tokens; offload uses its own chunk planning.</span><input id="prefillTokens" type="number" required min="1" step="1"></div>
+      <div class="setting-line"><label for="draftMode">Speculative decoding</label><span class="hint">Native MTP requires a compatible checkpoint with an MTP head.</span><select id="draftMode"><option value="off">Off</option><option value="mtp">Native MTP head</option><option value="model">Draft model / MTP sidecar</option></select></div>
+      <div class="setting-line" id="draftPathRow" hidden><label for="draftPath">Draft model or sidecar</label><span class="hint">Local path or HuggingFace model ID; vocabulary must match.</span><input id="draftPath" type="text" maxlength="4096"></div>
+      <div class="setting-line" id="draftDepthRow" hidden><label for="draftTokens">Draft tokens</label><span class="hint">Proposals per verify step. The engine clamps unsupported windows.</span><input id="draftTokens" type="number" required min="1" max="7" step="1"></div>
+      <div class="actions"><button class="btn ghost" data-discard="performance">Discard</button></div>
+    </div>
+    <div class="panelcard settings-section" data-settings-group="disk">
+      <div class="title"><h2>Prefix cache</h2><span class="badge">Engine restart</span></div>
+      <div class="setting-line"><label for="cacheStrategy">Prefix reuse</label><span class="hint">Reuse matching prompts across requests, including hybrid model state.</span><select id="cacheStrategy"><option value="radix">Enabled</option><option value="naive">Disabled</option></select></div>
+      <div class="setting-line"><label for="diskPath">SSD cache directory</label><span class="hint">Local snapshots survive engine and server restarts.</span><input id="diskPath" type="text" maxlength="4096" required></div>
+      <div class="setting-line"><label for="diskBudget">SSD cache limit (GiB)</label><span class="hint">Set to 0 to disable the disk tier. The slot-offload path does not use this tier.</span><input id="diskBudget" type="number" required min="0" step="1"></div>
+      <div class="setting-line"><label for="cacheReport">Report cached tokens</label><span class="hint">Include cache hits in API response usage.</span><input id="cacheReport" type="checkbox" role="switch"></div>
+      <div class="actions"><button class="btn ghost" data-discard="disk">Discard</button></div>
+    </div>
+  <div class="panelcard settings-section" data-settings-group="cache">
+      <div class="title"><h2>Current expert cache</h2><span class="badge live">Live</span>
           <span class="tag" id="tagMoe" hidden>MoE</span>
           <span class="tag teal" id="tagMode">mapped</span>
-          <span class="synced" id="syncTxt">Synced</span>
-        </div>
+
+            </div>
         <div class="desc" id="cacheDesc">–</div>
         <div id="presetBox" hidden>
-          <div class="presets-label">Presets</div>
+          <div class="presets-label">Memory presets</div>
           <div class="presets">
-            <div class="preset" data-preset="minimum">
+            <button type="button" class="preset" data-preset="minimum" aria-pressed="false">
               <div class="p-name">Minimum</div>
-              <div class="p-desc">MoE ¼ of slots · lean, gives memory back to the system</div>
-            </div>
-            <div class="preset" data-preset="chat">
+              <div class="p-desc">Small footprint · ¼ of expert slots</div>
+  </button>
+            <button type="button" class="preset" data-preset="chat" aria-pressed="false">
               <div class="p-name">Chat</div>
-              <div class="p-desc">MoE ½ of slots · balanced speed vs. footprint</div>
-            </div>
-            <div class="preset" data-preset="agent">
+              <div class="p-desc">Balanced · ½ of expert slots</div>
+  </button>
+            <button type="button" class="preset" data-preset="agent" aria-pressed="false">
               <div class="p-name">Agent</div>
-              <div class="p-desc">MoE maxed · best hit-rate for agent long-context</div>
-            </div>
+              <div class="p-desc">Maximum residency · all expert slots</div>
+  </button>
           </div>
         </div>
         <div class="sliderrow" id="moeSlider" hidden>
           <div class="top">
-            <span class="lbl">MoE expert cache</span>
+            <label class="lbl" for="moeRange">Resident expert slots</label>
             <span class="hint">Expert slots resident in memory, across all MoE layers</span>
             <span class="val"><span id="moeVal">–</span><span id="moeSep"> / </span><span id="moeMax">–</span>
               <span class="pill blue" id="moeGib" style="margin-left:8px" hidden>– GiB</span></span>
           </div>
           <input type="range" id="moeRange" min="16" max="1024" step="16">
           <div class="scale"><span id="moeMin">16</span><span>elastic — applies live, no restart</span><span id="moeMaxLbl">–</span></div>
-          <button class="btn ghost" id="cacheApply">Apply</button><span id="cacheMsg"></span>
+          <div class="actions"><button class="btn ghost" data-discard="cache">Discard</button></div>
         </div>
-        <div class="sliderrow" id="ctxSlider" hidden>
+        </div>
+  </div>
+  <div class="settings-panel active" id="modelSettings">
+  <div class="panelcard settings-section sliderrow" id="ctxSlider" data-settings-group="context" hidden>
+    <div class="title"><h2>Context window</h2><span class="badge live">Live</span></div>
           <div class="top">
-            <span class="lbl">Context window</span>
-            <span class="hint">Serving ceiling for prompt + output — smaller keeps per-request KV memory predictable</span>
+            <label class="lbl" for="ctxRange">Context window</label>
+            <span class="hint">Prompt and output share this window. Lower limits reduce per-request memory.</span>
             <span class="val"><span id="ctxVal">–</span><span> / </span><span id="ctxMax">–</span></span>
           </div>
           <input type="range" id="ctxRange" min="0" max="8" step="1">
           <div class="scale"><span id="ctxMinLbl">1k</span><span>applies live — clients re-read it from /v1/models</span><span id="ctxMaxLbl">–</span></div>
-          <button class="btn ghost" id="ctxApply">Apply</button><span id="ctxMsg"></span>
-        </div>
-        <div class="sliderrow" id="genRow">
+          <div class="actions"><button class="btn ghost" data-discard="context">Discard</button></div>
+    </div>
+  <div class="panelcard settings-section sliderrow" id="genRow" data-settings-group="generation">
+  <div class="title"><h2>Generation defaults</h2><span class="badge live">Live</span></div>
           <div class="top">
-            <span class="lbl">Generation</span>
-            <span class="hint">Defaults for every request that leaves them unset — the chat here, agents, SDKs. A request's own values still win.</span>
+            <label class="lbl" for="genTemp">Temperature</label>
+  <span class="hint">Shared by chat, agents and SDKs unless a request overrides them.</span>
             <span class="val"><span id="genTempVal">–</span> · <span id="genMaxVal">–</span> tokens</span>
           </div>
-          <input type="range" id="genTemp" min="0" max="2" step="0.05">
+          <input type="range" id="genTemp" min="0" max="2" step="any">
           <div class="scale"><span>0 · greedy</span><span>temperature — the checkpoint recommends <span id="genTempRec">–</span></span><span>2</span></div>
-          <div style="display:flex; align-items:center; gap:10px; margin-top:8px; flex-wrap:wrap">
-            <span class="lbl" style="font-size:12px">Max output tokens</span>
-            <input type="number" id="genMax" min="1" step="1024" style="width:110px; background:var(--bg-2, #14161c); color:inherit; border:1px solid var(--border, #2a2d36); border-radius:6px; padding:4px 8px; font:12px var(--mono)">
-            <span class="hint">the cap per answer, thinking included — 32k leaves room for a long reasoning block plus a file</span>
-          </div>
-          <div style="display:flex; align-items:center; gap:10px; margin-top:8px; flex-wrap:wrap">
-            <span class="lbl" style="font-size:12px">Thinking</span>
-            <select id="genThink" style="background:var(--bg-2, #14161c); color:inherit; border:1px solid var(--border, #2a2d36); border-radius:6px; padding:4px 8px; font:12px var(--mono)">
+          <div class="setting-line"><label for="genTopP">Top-P</label><span class="hint">Nucleus sampling probability. 1 disables nucleus filtering.</span><input id="genTopP" type="number" required min="0.000001" max="1" step="any"></div>
+  <div class="setting-line"><label for="genTopK">Top-K</label><span class="hint">Candidate count. -1 disables top-k filtering.</span><input id="genTopK" type="number" required min="-1" step="1"></div>
+  <div class="setting-line">
+    <label for="genMax">Max output tokens</label>
+    <input type="number" required id="genMax" min="1" step="1">
+    <span class="hint">Per-answer limit, including thinking.</span>
+  </div>
+          <div class="setting-line">
+  <label for="genThink">Thinking</label>
+  <select id="genThink">
               <option value="model">checkpoint default</option>
               <option value="on">on</option>
               <option value="off">off</option>
             </select>
-            <span class="hint">whether a request that sets no thinking flag reasons before answering — Qwen3.5 / Ornith default to on; a request's own enable_thinking / reasoning_effort still wins</span>
-            <button class="btn ghost" id="genApply">Apply</button><span id="genMsg"></span>
-          </div>
-        </div>
-        <div class="sliderrow" id="reloadRow">
+            <span class="hint">Model support determines whether thinking is available.</span>
+      </div>
+      <div class="actions"><button class="btn ghost" data-discard="generation">Discard</button><button class="btn ghost" id="genReset">Model defaults</button></div>
+    </div>
+  <div class="panelcard settings-section sliderrow" id="thinkSlider" data-settings-group="reasoning">
+  <div class="title"><h2>Reasoning budget</h2><span class="badge live">Live</span></div>
           <div class="top">
-            <span class="lbl">Engine</span>
-            <span class="hint">Restart the model workers with the same checkpoint and flags — every cache is dropped, running requests are aborted</span>
-          </div>
-          <button class="btn danger" id="reloadBtn">Reload model</button><span id="reloadMsg"></span>
-        </div>
-        <div class="sliderrow" id="thinkSlider">
-          <div class="top">
-            <span class="lbl">Reasoning budget</span>
-            <span class="hint">Cap on thinking tokens per request — a request that keeps thinking is stopped there; answer tokens never count. "no cap" does not turn thinking off: that is the Thinking switch in the Generation row.</span>
+            <label class="lbl" for="thinkRange">Reasoning budget</label>
+  <span class="hint">Limits thinking tokens only. "no cap" leaves thinking enabled; use the Thinking setting to turn it off.</span>
             <span class="val"><span id="thinkVal">no cap</span></span>
           </div>
           <input type="range" id="thinkRange" min="0" max="8" step="1">
           <div class="scale"><span>no cap</span><span>applies to the next request — no engine work</span><span>32k</span></div>
-          <button class="btn ghost" id="thinkApply">Apply</button><span id="thinkMsg"></span>
-        </div>
-      </div>
-
-      <div class="panelcard">
-        <div class="title">API access
+          <div class="actions"><button class="btn ghost" data-discard="reasoning">Discard</button></div>
+  </div>
+  <div class="panelcard settings-section" data-settings-group="model">
+    <div class="title"><h2>Model &amp; parsers</h2><span class="badge">Engine restart</span></div>
+    <div class="setting-line"><label for="modelAlias">API model name</label><span class="hint">Name advertised to OpenAI and Anthropic clients. Blank restores the checkpoint name.</span><input id="modelAlias" type="text" maxlength="256"></div>
+    <div class="setting-line"><label for="toolParser">Tool-call parser</label><span class="hint">Match the format produced by this model.</span><select id="toolParser"><option>auto</option><option>llama3</option><option>qwen</option><option>qwen25</option><option>qwen3_coder</option><option>mistral</option><option>deepseekv32</option><option>gemma4</option><option>glm47</option><option>minimax</option><option>minimax_m3</option><option>muse_glimmer</option><option>gpt_oss</option></select></div>
+    <div class="setting-line"><label for="reasoningParser">Reasoning parser</label><span class="hint">Separate thinking from the visible answer.</span><select id="reasoningParser"><option>auto</option><option>off</option><option>deepseekv32</option><option>gpt_oss</option><option>qwen3</option><option>glm</option><option>minimax</option><option>minimax_m3</option><option>muse_glimmer</option><option>gemma4</option></select></div>
+    <div class="actions"><button class="btn ghost" data-discard="model">Discard</button></div>
+  </div>
+  </div>
+  <div class="settings-panel" id="serverSettings">
+  <div class="panelcard settings-section" data-settings-group="server">
+    <div class="title"><h2>Network</h2><span class="badge">Server restart</span></div>
+    <div class="setting-line"><label for="serverHost">Listen address</label><span class="hint">Local-only options: this inference server does not implement API-key authentication.</span><select id="serverHost"><option value="127.0.0.1">127.0.0.1 · local IPv4</option><option value="::1">::1 · local IPv6</option><option value="localhost">localhost</option></select></div>
+    <div class="setting-line"><label for="serverPort">Port</label><span class="hint">Changes take effect on the next full server start, not a worker reload.</span><input id="serverPort" type="number" required min="1" max="65535" step="1"></div>
+    <div class="actions"><button class="btn ghost" data-discard="server">Discard</button></div>
+  </div>
+  <div class="panelcard settings-section" id="reloadRow">
+    <div class="title"><h2>Restart engine</h2><span class="badge">Disruptive</span></div>
+  <div class="desc">Activate saved engine settings for the same checkpoint. Clears caches and aborts running requests. Network changes require a full server restart.</div>
+  <div class="actions"><button class="btn danger" id="reloadBtn">Apply saved settings &amp; restart</button><span class="feedback" id="reloadMsg" role="status"></span></div>
+  </div>
+  </div>
+  <div class="settings-panel" id="integrationSettings">
+  <div class="panelcard settings-section">
+    <div class="title"><h2>Coding agents</h2></div>
+    <div class="setting-line"><label for="agentChoice">Agent</label><span class="hint">Run this command in your terminal. mt launch configures the agent for this server.</span><select id="agentChoice"><option value="codex">Codex</option><option value="claude">Claude Code</option><option value="opencode">OpenCode</option><option value="openclaw">OpenClaw</option><option value="hermes">Hermes</option><option value="dsh">DeepSeek Harness</option></select></div>
+    <div class="apirow"><span class="apilbl">Launch command</span><code id="apiAgent">–</code><button class="btn ghost copybtn" data-copy="apiAgent">Copy</button></div>
+  </div>
+  <div class="panelcard settings-section">
+      <div class="title">API access
           <span class="tag teal">OpenAI + Anthropic</span>
           <span class="synced" id="apiCopyMsg"></span>
         </div>
@@ -372,35 +505,35 @@
         <div class="apirow"><span class="apilbl">Model name</span><code id="apiModel">–</code><button class="btn ghost copybtn" data-copy="apiModel">Copy</button></div>
         <div class="apirow"><span class="apilbl">Claude Code</span><code id="apiClaude">–</code><button class="btn ghost copybtn" data-copy="apiClaude">Copy</button></div>
         <div class="apirow"><span class="apilbl">OpenAI SDK</span><code id="apiSdk">–</code><button class="btn ghost copybtn" data-copy="apiSdk">Copy</button></div>
-      </div>
     </div>
-
-    <!-- ================= CHAT ================= -->
-    <div class="view" id="chatView">
-      <textarea id="sysPrompt" placeholder="System prompt (optional)"></textarea>
-      <div id="messages"></div>
+  </div>
+  <div class="settings-save" id="settingsSaveBar"><span class="feedback" id="settingsSaveMsg" role="status"></span><button type="button" class="btn" id="settingsSave">Save</button></div>
+  <div class="settings-file" id="settingsFile"></div>
+  </section>
+  <!-- ================= CHAT ================= -->
+  <section class="view" id="chatView" aria-labelledby="chatTitle">
+    <div class="head">
+      <div><div class="eyebrow">Playground</div><h1 id="chatTitle">Chat</h1><div class="sub" id="chatModel">Connecting to your model…</div></div>
+      <div class="spacer"></div><button class="btn ghost" onclick="showView('settingsView')">Settings</button>
+    </div>
+    <details class="prompt-panel">
+      <summary>System prompt <span class="feedback">· optional</span></summary>
+      <label for="sysPrompt">Instructions sent before your messages</label>
+      <textarea id="sysPrompt" placeholder="You are a helpful assistant."></textarea>
+    </details>
+    <div id="messages" role="log" aria-label="Conversation">
+      <div id="chatEmpty"><div class="eyebrow">Local &amp; private</div><h2>What would you like to explore?</h2><p>Talk directly to the loaded model.<br>Generation defaults are managed in Settings.</p></div>
+    </div>
       <div id="composer">
-        <textarea id="input" placeholder="Message the model…  (Enter to send, Shift+Enter for newline)"></textarea>
+        <textarea id="input" aria-label="Message" placeholder="Message your model…"></textarea>
         <button class="btn" id="sendBtn">Send</button>
         <button class="btn danger" id="stopBtn" disabled>Stop</button>
       </div>
       <div id="chatOpts">
-        <span id="chatHint"></span>
+        <span>Enter to send · Shift+Enter for a new line</span><span id="chatHint">This conversation is not saved.</span>
       </div>
-    </div>
-
-    <!-- ================= LOGS ================= -->
-    <div class="view" id="logsView">
-      <div class="head"><div><h1>Logs</h1><div class="sub">recent requests</div></div></div>
-      <div class="panelcard" style="margin-top:0; overflow-x:auto">
-        <table>
-          <thead><tr><th>TIME</th><th>KIND</th><th>MODEL</th><th>IN</th><th>OUT</th><th>TTFT</th><th>STATUS</th></tr></thead>
-          <tbody id="logRows"><tr><td colspan="7" style="color:var(--text-3)">no requests yet</td></tr></tbody>
-        </table>
-      </div>
-    </div>
-
-  </div>
+    </section>
+  </main>
 </div>
 
 <script>
@@ -411,12 +544,210 @@ const human = n => n == null ? "–" : n >= 1e6 ? (n/1e6).toFixed(1)+"M" : n >= 
 $("apiPort").textContent = ":" + (location.port || "80");
 
 /* ---------------- view switching ---------------- */
-function showView(id) {
+const VIEW_HASHES = { dashboardView: "#dashboard", settingsView: "#settings", chatView: "#chat" };
+function showView(id, updateHash = true) {
+  if (!Object.hasOwn(VIEW_HASHES, id)) id = "dashboardView";
   document.querySelectorAll(".view").forEach(v => v.classList.toggle("active", v.id === id));
-  document.querySelectorAll(".nav").forEach(n => n.classList.toggle("active", n.dataset.view === id));
-  if (id === "logsView") pollLogs();
+  document.querySelectorAll(".nav").forEach(n => {
+    const active = n.dataset.view === id;
+    n.classList.toggle("active", active);
+    if (active) n.setAttribute("aria-current", "page");
+    else n.removeAttribute("aria-current");
+  });
+  if (updateHash && location.hash !== VIEW_HASHES[id]) history.pushState(null, "", VIEW_HASHES[id]);
+  if (id === "dashboardView" && $("requestLog").open) pollLogs();
+}
+function viewFromHash() {
+  const id = Object.keys(VIEW_HASHES).find(key => VIEW_HASHES[key] === location.hash) || "dashboardView";
+  showView(id, false);
+  if (location.hash === "#logs") {
+    $("requestLog").open = true;
+    pollLogs();
+  }
 }
 document.querySelectorAll(".nav").forEach(n => n.onclick = () => showView(n.dataset.view));
+window.addEventListener("hashchange", viewFromHash);
+$("requestLog").addEventListener("toggle", () => { if ($("requestLog").open) pollLogs(); });
+
+/* ---------------- settings drafts and persistence ---------------- */
+const dirtySettings = new Set(), busySettings = new Set(), changedSettingsFields = new Set();
+const settingsRevisions = {};
+let latestSettings = null, settingsOnline = false, settingsEpoch = 0, settingsFetchVersion = 0;
+const SETTINGS_GROUPS = {
+  generation: {fields: {genTemp: "temperature", genTopP: "top_p", genTopK: "top_k", genMax: "max_output_tokens", genThink: "thinking"}},
+  context: {},
+  reasoning: {},
+  cache: {},
+  performance: {fields: {memoryRatio: "memory_ratio", maxRequests: "max_running_req", prefillTokens: "max_extend_tokens", draftTokens: "draft_tokens"}},
+  disk: {fields: {cacheStrategy: "cache_type", diskPath: "prefix_cache_dir", diskBudget: "prefix_cache_disk_gb", cacheReport: "enable_cache_report"}},
+  model: {fields: {modelAlias: "served_model_name", toolParser: "tool_call_parser", reasoningParser: "reasoning_parser"}},
+  server: {fields: {serverHost: "server_host", serverPort: "server_port"}},
+};
+function showSettingsTab(id) {
+  document.querySelectorAll(".settings-panel").forEach(panel => panel.classList.toggle("active", panel.id === id));
+  document.querySelectorAll(".settings-tab").forEach(button => {
+    const active = button.dataset.settingsTab === id;
+    button.classList.toggle("active", active);
+    button.setAttribute("aria-pressed", String(active));
+  });
+}
+document.querySelectorAll(".settings-tab").forEach(button => button.onclick = () => showSettingsTab(button.dataset.settingsTab));
+function updateSettingsStatus() {
+  $("syncTxt").textContent = !settingsOnline ? "Unavailable" : dirtySettings.size ? "Unsaved changes" : latestSettings?.pending_restart?.length ? "Restart required" : "Saved";
+  $("settingsSave").disabled = !settingsOnline || !dirtySettings.size || busySettings.size > 0;
+  $("settingsSave").textContent = busySettings.has("save") ? "Saving…" : "Save";
+  for (const group of Object.keys(SETTINGS_GROUPS)) {
+    const section = document.querySelector(`[data-settings-group="${group}"]`);
+    section.classList.toggle("dirty", dirtySettings.has(group));
+    section.querySelectorAll("input, select").forEach(input => input.disabled = !settingsOnline);
+    section.querySelectorAll(".preset").forEach(button => button.disabled = !settingsOnline || busySettings.has(group));
+    section.querySelectorAll("[data-discard]").forEach(button => button.disabled = !dirtySettings.has(group) || busySettings.size > 0);
+  }
+  $("genReset").disabled = !settingsOnline || busySettings.size > 0;
+  $("reloadBtn").disabled = !settingsOnline || dirtySettings.size > 0 || busySettings.size > 0;
+}
+function markSettingsDirty(group, field = null) {
+  if (field) changedSettingsFields.add(field);
+  dirtySettings.add(group);
+  settingsRevisions[group] = (settingsRevisions[group] || 0) + 1;
+  updateSettingsStatus();
+}
+function updatePerformanceVisibility() {
+  $("fractionRow").hidden = $("servingMode").value !== "slots";
+  $("draftPathRow").hidden = $("draftMode").value !== "model";
+  $("draftPath").required = $("draftMode").value === "model";
+  $("draftDepthRow").hidden = $("draftMode").value === "off";
+}
+document.querySelectorAll("[data-settings-group] input, [data-settings-group] select").forEach(input => {
+  const changed = () => { markSettingsDirty(input.closest("[data-settings-group]").dataset.settingsGroup, input.id); updatePerformanceVisibility(); };
+  input.addEventListener("input", changed);
+  input.addEventListener("change", changed);
+});
+function fillSettings(doc) {
+  latestSettings = doc;
+  const values = doc.values;
+  for (const [group, controls] of Object.entries(SETTINGS_GROUPS)) {
+    if (dirtySettings.has(group)) continue;
+    for (const [id, key] of Object.entries(controls.fields || {})) {
+      const input = $(id);
+      if (input.type === "checkbox") input.checked = !!values[key];
+      else input.value = key === "memory_ratio" ? Math.round(values[key] * 100) : (values[key] ?? "");
+    }
+  }
+  if (!dirtySettings.has("generation")) updateGenRow(values);
+  if (!dirtySettings.has("performance")) {
+    $("servingMode").value = values.moe_backend === "fused" ? "resident" : values.moe_cache_auto ? "automatic" : (values.moe_cache_size > 0 || values.moe_cache_rate > 0) ? "slots" : "mapped";
+    const total = (cacheGeom?.num_experts || 0) * (cacheGeom?.num_moe_layers || 0);
+    $("moeFraction").value = Math.round((values.moe_cache_rate || (total && values.moe_cache_size ? values.moe_cache_size / total : 0.25)) * 100);
+    $("draftMode").value = !values.draft_model ? "off" : values.draft_model === "mtp" ? "mtp" : "model";
+    $("draftPath").value = values.draft_model && values.draft_model !== "mtp" ? values.draft_model : "";
+  }
+  $("genTempRec").textContent = doc.model_defaults?.temperature ?? "–";
+  $("settingsNote").textContent = "Model settings are saved per model; network settings are global. Live options apply immediately. Explicit CLI flags override saved values on server startup.";
+  $("settingsFile").textContent = "Stored locally in " + doc.settings_file;
+  const pending = doc.pending_restart || [];
+  $("restartNotice").hidden = !pending.length;
+  $("restartSummary").textContent = pending.some(key => key === "server_host" || key === "server_port")
+    ? "Saved changes are waiting. Network options require a full server restart."
+: "Saved engine settings are waiting for an engine restart.";
+  updatePerformanceVisibility();
+  updateSettingsStatus();
+}
+async function pollSettings() {
+  const version = ++settingsFetchVersion;
+  try {
+    const response = await fetch("/admin/settings");
+    if (!response.headers.get("content-type")?.includes("application/json")) throw new Error("The settings API is not available in the static preview.");
+    const doc = await response.json();
+    if (version !== settingsFetchVersion) return;
+    if (!response.ok || !doc.values) throw new Error(doc.error || "Settings service unavailable");
+    settingsOnline = true;
+    fillSettings(doc);
+  } catch (error) {
+    if (version !== settingsFetchVersion) return;
+    settingsOnline = false;
+    $("settingsNote").textContent = "A running inference server is required to edit and save settings. " + error.message;
+    updateSettingsStatus();
+  }
+}
+function settingsPayload(group) {
+  const number = id => Number($(id).value);
+  if (group === "generation") return {temperature: number("genTemp"), top_p: number("genTopP"), top_k: number("genTopK"), max_output_tokens: number("genMax"), thinking: $("genThink").value};
+  if (group === "context") return {max_seq_len_override: ctxSteps[+$("ctxRange").value]};
+  if (group === "reasoning") return {max_reasoning_tokens: THINK_STEPS[+$("thinkRange").value]};
+  if (group === "cache") return {moe_cache_size: number("moeRange")};
+  if (group === "disk") return {cache_type: $("cacheStrategy").value, prefix_cache_dir: $("diskPath").value.trim(), prefix_cache_disk_gb: number("diskBudget"), enable_cache_report: $("cacheReport").checked};
+  if (group === "model") return {served_model_name: $("modelAlias").value.trim() || null, tool_call_parser: $("toolParser").value, reasoning_parser: $("reasoningParser").value};
+  if (group === "server") return {server_host: $("serverHost").value, server_port: number("serverPort")};
+  const mode = $("servingMode").value, draft = $("draftMode").value;
+  const keepSlots = mode === "slots" && latestSettings?.values.moe_cache_size > 0 && !changedSettingsFields.has("servingMode") && !changedSettingsFields.has("moeFraction");
+  return {moe_backend: mode === "resident" ? "fused" : "offload", moe_cache_size: keepSlots ? latestSettings.values.moe_cache_size : 0, moe_cache_rate: mode === "slots" && !keepSlots ? number("moeFraction") / 100 : null, moe_cache_auto: mode === "automatic", memory_ratio: number("memoryRatio") / 100, max_running_req: number("maxRequests"), max_extend_tokens: number("prefillTokens"), draft_model: draft === "off" ? null : draft === "mtp" ? "mtp" : $("draftPath").value.trim(), draft_tokens: number("draftTokens")};
+}
+async function saveSettings() {
+  if (!settingsOnline || !dirtySettings.size || busySettings.size) return;
+  const groups = Object.keys(SETTINGS_GROUPS).filter(group => dirtySettings.has(group));
+  const revisions = Object.fromEntries(groups.map(group => [group, settingsRevisions[group] || 0]));
+  const payload = {};
+  for (const group of groups) {
+    const section = document.querySelector(`[data-settings-group="${group}"]`);
+    for (const input of section.querySelectorAll("input, select")) {
+      if (input.closest("[hidden]")) continue;
+      if (!input.checkValidity()) {
+        showSettingsTab(section.closest(".settings-panel").id);
+        input.reportValidity();
+        $("settingsSaveMsg").textContent = "Check the highlighted setting before saving.";
+        return;
+      }
+    }
+    Object.assign(payload, settingsPayload(group));
+  }
+  if (groups.includes("cache") && groups.includes("performance")) {
+    if ($("servingMode").value !== "slots") {
+      $("settingsSaveMsg").textContent = "Discard the current slot-cache edit before switching to another serving mode.";
+      return;
+    }
+    Object.assign(payload, {moe_cache_size: Number($("moeRange").value), moe_cache_rate: null, moe_cache_auto: false});
+  }
+  ++settingsEpoch; ++settingsFetchVersion;
+  busySettings.add("save"); updateSettingsStatus();
+  $("settingsSaveMsg").textContent = "Saving…";
+  try {
+    const response = await fetch("/admin/settings", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(payload)});
+    const result = await response.json();
+    if (!response.ok) {
+      if (result.settings) fillSettings(result.settings);
+      throw new Error((result.applied === false ? "Saved; applying live changes failed: " : "Not saved: ") + (typeof result.error === "string" ? result.error : result.error?.message || JSON.stringify(result.detail || result)));
+    }
+    for (const group of groups) {
+      if ((settingsRevisions[group] || 0) !== revisions[group]) continue;
+      dirtySettings.delete(group);
+      document.querySelector(`[data-settings-group="${group}"]`).querySelectorAll("input, select").forEach(input => changedSettingsFields.delete(input.id));
+    }
+    fillSettings(result.settings);
+    const pending = result.settings.pending_restart || [];
+    $("settingsSaveMsg").textContent = dirtySettings.size ? "Saved earlier values; newer edits remain unsaved." : pending.some(key => key === "server_host" || key === "server_port") ? "Saved · server restart required" : pending.length ? "Saved · engine restart required" : "Saved and applied";
+    ++settingsEpoch;
+    await pollCache();
+  } catch (error) { $("settingsSaveMsg").textContent = error.message; }
+  finally { busySettings.delete("save"); updateSettingsStatus(); }
+}
+$("settingsSave").onclick = saveSettings;
+document.querySelectorAll("[data-discard]").forEach(button => button.onclick = async () => {
+  const group = button.dataset.discard;
+  dirtySettings.delete(group); settingsRevisions[group] = (settingsRevisions[group] || 0) + 1;
+  document.querySelector(`[data-settings-group="${group}"]`).querySelectorAll("input, select").forEach(input => changedSettingsFields.delete(input.id));
+  if (latestSettings) fillSettings(latestSettings);
+  $("settingsSaveMsg").textContent = "";
+  await pollCache();
+});
+$("genReset").onclick = () => {
+  if (!latestSettings) return;
+  for (const [id, key] of Object.entries(SETTINGS_GROUPS.generation.fields)) $(id).value = latestSettings.model_defaults[key];
+  markSettingsDirty("generation");
+  $("genTempVal").textContent = "temp " + Number($("genTemp").value).toFixed(2);
+  $("genMaxVal").textContent = fmtTok(Number($("genMax").value));
+};
+updatePerformanceVisibility();
 
 /* ---------------- polling ---------------- */
 let health = {}, stats = {};
@@ -424,18 +755,23 @@ let health = {}, stats = {};
 async function pollHealth() {
   try {
     health = await (await fetch("/health")).json();
-    $("apiDot").style.background = health.maintenance === "serving" ? "var(--good)" : "var(--warning, #fab219)";
+    const color = health.status === "error" || health.maintenance === "failed" ? "var(--bad)" : health.maintenance === "serving" ? "var(--good)" : "var(--warning)";
+    $("apiDot").style.background = color;
+    $("runDot").style.background = color;
     // While the engine loads, /health carries status "loading" and the phase instead of
     // a maintenance state — after a reload as much as at boot.
     const stateTxt = health.status === "loading" ? "loading " + (health.phase || "") : health.status === "error" ? "error" : (health.maintenance === "serving" ? "Running" : health.maintenance);
     $("runTxt").textContent = stateTxt + " · " + upStr(health.uptime_s);
     if ($("reloadMsg").textContent === "workers relaunched — loading" && health.maintenance === "serving") $("reloadMsg").textContent = "reloaded";
     $("mName").textContent = health.model || "–";
-    $("avatar").textContent = (health.model || "FT").slice(0, 2).toUpperCase();
+    $("avatar").textContent = (health.model || "MT").slice(0, 2).toUpperCase();
+    $("chatModel").textContent = health.model || "Waiting for a model…";
     $("version").textContent = "v" + (health.version || "?");
   } catch {
     $("apiDot").style.background = "var(--bad)";
-    $("runTxt").textContent = "unreachable";
+    $("runDot").style.background = "var(--bad)";
+    $("runTxt").textContent = "Unreachable";
+    $("chatModel").textContent = "Engine unreachable";
   }
 }
 const upStr = s => !s ? "0m" : (s >= 3600 ? Math.floor(s/3600) + "h " : "") + Math.floor(s % 3600 / 60) + "m";
@@ -450,7 +786,9 @@ function fillApiCard() {
     `ANTHROPIC_BASE_URL=${base} ANTHROPIC_API_KEY=local claude`;
   $("apiSdk").textContent =
     `client = OpenAI(base_url="${base}/v1", api_key="local")  # model="${model}"`;
+  $("apiAgent").textContent = `mt launch ${$("agentChoice").value} --server ${base}`;
 }
+$("agentChoice").onchange = fillApiCard;
 document.querySelectorAll(".copybtn").forEach(b => b.onclick = async () => {
   try {
     await navigator.clipboard.writeText($(b.dataset.copy).textContent);
@@ -475,9 +813,9 @@ async function pollStats() {
     $("cTokens").textContent = human(tin + tout);
     $("cTokensSub").textContent = human(tin) + " in · " + human(tout) + " out";
     $("cReq").textContent = r.completed ?? "–";
-    $("cLaunchRight").innerHTML = "Input " + human(tin) + "<br>Output " + human(tout);
+    $("cLaunchRight").textContent = (r.active ?? 0) + " active · this launch";
     $("mTps").textContent = fmt(t.decode_tps);
-    $("mReq").textContent = r.completed ?? "–";
+
     $("mTtft").textContent = r.ttft_mean_ms ? fmt(r.ttft_mean_ms/1000, 1) + "s" : "–";
     $("headSub").textContent = (health.model || "–") + " · up " + upStr(stats.uptime_s) + " · " + (r.completed ?? 0) + " requests total";
     const m = stats.model || {};
@@ -486,7 +824,7 @@ async function pollStats() {
     $("tagMoe").hidden = !isMoe;
     const gib = (stats.vram_bytes || 0) / 2**30;
     $("memTxt").textContent = fmt(gib) + " GiB";
-    $("memBar").style.width = Math.min(100, gib / 24 * 100) + "%";
+    $("kvRow").hidden = !stats.kv?.total_pages;
     if (stats.kv && stats.kv.total_pages) {
       $("kvRow").hidden = false;
       $("pfxTxt").textContent = stats.kv.used_pages + " / " + stats.kv.total_pages;
@@ -497,8 +835,10 @@ async function pollStats() {
 
 let cacheGeom = null;
 async function pollCache() {
+  const epoch = settingsEpoch;
   try {
     const resp = await (await fetch("/admin/cache/status")).json();
+    if (epoch !== settingsEpoch) return;
     cacheGeom = resp.geometry || resp;
     updateGenRow(resp.generation);
     const size = cacheGeom.moe_cache_size || 0;
@@ -510,7 +850,7 @@ async function pollCache() {
       $("moeSlider").hidden = false;
       $("presetBox").hidden = false;
       $("moeRange").max = total; $("moeMaxLbl").textContent = total.toLocaleString();
-      if (document.activeElement !== $("moeRange")) $("moeRange").value = size;
+      if (!dirtySettings.has("cache") && document.activeElement !== $("moeRange")) $("moeRange").value = size;
       $("moeVal").textContent = $("moeRange").value;
       $("moeSep").hidden = known <= 0;
       $("moeMax").textContent = known > 0 ? known.toLocaleString() : " slots";
@@ -529,6 +869,7 @@ async function pollCache() {
     updateCtxSlider(resp.context);
     updateThinkSlider(resp.reasoning_budget);
     updateDiskRow(resp.prefix_disk);
+    if (latestSettings && !dirtySettings.has("performance")) fillSettings(latestSettings);
   } catch { /* endpoint optional */ }
 }
 
@@ -546,7 +887,7 @@ function updateDiskRow(d) {
 const THINK_STEPS = [0, 256, 512, 1024, 2048, 4096, 8192, 16384, 32768];
 function updateThinkSlider(current) {
   const v = current || 0;
-  if (document.activeElement === $("thinkRange")) return;
+  if (dirtySettings.has("reasoning") || document.activeElement === $("thinkRange")) return;
   let idx = THINK_STEPS.findIndex(s => s >= v);
   if (idx < 0) idx = THINK_STEPS.length - 1;
   $("thinkRange").value = idx;
@@ -555,73 +896,44 @@ function updateThinkSlider(current) {
 $("thinkRange").oninput = () => {
   const v = THINK_STEPS[+$("thinkRange").value];
   $("thinkVal").textContent = v ? fmtTok(v) : "no cap";
-  $("syncTxt").textContent = "Modified";
-};
-$("thinkApply").onclick = async () => {
-  const v = THINK_STEPS[+$("thinkRange").value];
-  $("thinkMsg").textContent = "applying…";
-  try {
-    const r = await (await fetch("/admin/cache/rebuild", {
-      method: "POST", headers: {"Content-Type": "application/json"},
-      body: JSON.stringify({ max_reasoning_tokens: v }),
-    })).json();
-    $("thinkMsg").textContent = r.status === "ok"
-      ? (v ? "budget " + fmtTok(v) : "no cap")
-      : (r.error || r.status);
-    $("syncTxt").textContent = r.status === "ok" ? "Synced" : "Failed";
-    pollCache();
-  } catch { $("thinkMsg").textContent = "request failed"; }
+  updateSettingsStatus();
 };
 
-/* Generation defaults: temperature + max output tokens, server-wide. */
-let genRecTemp = null;
+
+/* Generation defaults remain server-wide, including top-k and top-p. */
 function updateGenRow(gen) {
-  if (!gen) return;
-  if (genRecTemp === null) { genRecTemp = gen.temperature; $("genTempRec").textContent = String(gen.temperature); }
-  if (document.activeElement !== $("genTemp")) {
-    $("genTemp").value = gen.temperature;
-    $("genTempVal").textContent = "temp " + Number(gen.temperature).toFixed(2);
-  }
-  if (document.activeElement !== $("genMax")) {
-    $("genMax").value = gen.max_output_tokens;
-    $("genMaxVal").textContent = fmtTok(gen.max_output_tokens);
-  }
-  if (document.activeElement !== $("genThink") && gen.thinking) $("genThink").value = gen.thinking;
+  if (!gen || dirtySettings.has("generation")) return;
+  $("genTemp").value = gen.temperature;
+  $("genTempVal").textContent = "temp " + Number(gen.temperature).toFixed(2);
+  $("genMax").value = gen.max_output_tokens;
+  $("genMaxVal").textContent = fmtTok(gen.max_output_tokens);
+  $("genTopP").value = gen.top_p ?? 1;
+  $("genTopK").value = gen.top_k ?? -1;
+  if (gen.thinking) $("genThink").value = gen.thinking;
 }
-$("genThink").onchange = () => { $("syncTxt").textContent = "Modified"; };
+
 $("genTemp").oninput = () => {
   $("genTempVal").textContent = "temp " + Number($("genTemp").value).toFixed(2);
-  $("syncTxt").textContent = "Modified";
+  updateSettingsStatus();
 };
 $("genMax").oninput = () => {
   $("genMaxVal").textContent = fmtTok(parseInt($("genMax").value, 10) || 0);
-  $("syncTxt").textContent = "Modified";
-};
-$("genApply").onclick = async () => {
-  const body = { temperature: parseFloat($("genTemp").value), max_output_tokens: parseInt($("genMax").value, 10) || 0,
-                 thinking: $("genThink").value };
-  $("genMsg").textContent = "applying…";
-  try {
-    const r = await (await fetch("/admin/cache/rebuild", {
-      method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(body),
-    })).json();
-    $("genMsg").textContent = r.status === "ok"
-      ? "temp " + body.temperature.toFixed(2) + " · " + (body.max_output_tokens ? fmtTok(body.max_output_tokens) : "default") + " tokens · thinking " + body.thinking
-      : (r.error || r.status);
-    $("syncTxt").textContent = r.status === "ok" ? "Synced" : "Failed";
-    pollCache();
-  } catch { $("genMsg").textContent = "request failed"; }
+  updateSettingsStatus();
 };
 
+
 $("reloadBtn").onclick = async () => {
-  if (!confirm("Reload the model? Every cache is dropped and running requests are aborted.")) return;
-  $("reloadMsg").textContent = "restarting…";
-  $("reloadBtn").disabled = true;
+  if (dirtySettings.size || !confirm("Apply saved engine settings and restart? Caches are cleared and running requests are aborted.")) return;
+  $("reloadMsg").textContent = "Restarting…";
+  busySettings.add("reload"); updateSettingsStatus();
   try {
-    const r = await (await fetch("/admin/reload", { method: "POST" })).json();
-    $("reloadMsg").textContent = r.status === "ok" ? "workers relaunched — loading" : (r.error || r.status);
-  } catch { $("reloadMsg").textContent = "request failed"; }
-  finally { $("reloadBtn").disabled = false; }
+    const response = await fetch("/admin/reload", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({apply_saved: true})});
+    const result = await response.json();
+    if (!response.ok) throw new Error(result.error || result.status);
+    $("reloadMsg").textContent = "workers relaunched — loading";
+    await pollSettings();
+  } catch (error) { $("reloadMsg").textContent = "Restart failed: " + error.message; }
+  finally { busySettings.delete("reload"); updateSettingsStatus(); }
   pollHealth();
 };
 
@@ -645,7 +957,7 @@ function updateCtxSlider(ctx) {
   }
   $("ctxSlider").hidden = false;
   const current = ctx.current || ceiling;
-  if (document.activeElement !== $("ctxRange")) {
+  if (!dirtySettings.has("context") && document.activeElement !== $("ctxRange")) {
     let idx = ctxSteps.findIndex(v => v >= current);
     $("ctxRange").value = idx < 0 ? ctxSteps.length - 1 : idx;
     $("ctxVal").textContent = fmtTok(ctxSteps[+$("ctxRange").value]);
@@ -653,24 +965,9 @@ function updateCtxSlider(ctx) {
 }
 $("ctxRange").oninput = () => {
   $("ctxVal").textContent = fmtTok(ctxSteps[+$("ctxRange").value] || 0);
-  $("syncTxt").textContent = "Modified";
+  updateSettingsStatus();
 };
-$("ctxApply").onclick = async () => {
-  const v = ctxSteps[+$("ctxRange").value];
-  if (!v) return;
-  $("ctxMsg").textContent = "applying…";
-  try {
-    const r = await (await fetch("/admin/cache/rebuild", {
-      method: "POST", headers: {"Content-Type": "application/json"},
-      body: JSON.stringify({ max_seq_len: v }),
-    })).json();
-    $("ctxMsg").textContent = r.status === "ok"
-      ? "context ceiling now " + fmtTok(r.max_seq_len || v)
-      : (r.error || r.status);
-    $("syncTxt").textContent = r.status === "ok" ? "Synced" : "Failed";
-    pollCache();
-  } catch { $("ctxMsg").textContent = "request failed"; }
-};
+
 /* presets: fractions of the slider ceiling, snapped to 16-slot steps */
 const PRESETS = { minimum: 0.25, chat: 0.5, agent: 1.0 };
 function presetTarget(name) {
@@ -680,33 +977,26 @@ function presetTarget(name) {
 }
 function markPreset() {
   const v = parseInt($("moeRange").value, 10);
-  document.querySelectorAll(".preset").forEach(p =>
-    p.classList.toggle("selected", presetTarget(p.dataset.preset) === v));
+  document.querySelectorAll(".preset").forEach(p => {
+    const selected = presetTarget(p.dataset.preset) === v;
+    p.classList.toggle("selected", selected);
+    p.setAttribute("aria-pressed", String(selected));
+  });
 }
 document.querySelectorAll(".preset").forEach(p => p.onclick = () => {
   $("moeRange").value = presetTarget(p.dataset.preset);
   sliderChanged();
 });
 function sliderChanged() {
+  markSettingsDirty("cache");
   $("moeVal").textContent = $("moeRange").value;
   const per = cacheGeom?.unit_bytes?.moe_per_expert || 0;
   if (per) $("moeGib").textContent = fmt($("moeRange").value * per / 2**30, 1) + " GiB";
-  $("syncTxt").textContent = "Modified";
+  updateSettingsStatus();
   markPreset();
 }
 $("moeRange").oninput = sliderChanged;
-$("cacheApply").onclick = async () => {
-  $("cacheMsg").textContent = "applying…";
-  try {
-    const r = await (await fetch("/admin/cache/rebuild", {
-      method: "POST", headers: {"Content-Type": "application/json"},
-      body: JSON.stringify({ moe_cache_size: parseInt($("moeRange").value, 10) }),
-    })).json();
-    $("cacheMsg").textContent = r.status === "ok" ? "resized to " + r.moe_cache_size + " slots" : (r.error || r.status);
-    $("syncTxt").textContent = r.status === "ok" ? "Synced" : "Failed";
-    pollCache();
-  } catch { $("cacheMsg").textContent = "request failed"; }
-};
+
 
 async function pollLogs() {
   try {
@@ -732,6 +1022,7 @@ const historyMsgs = [];
 let aborter = null;
 
 function addMsg(cls) {
+  $("chatEmpty").hidden = true;
   const el = document.createElement("div");
   el.className = "msg " + cls;
   $("messages").appendChild(el);
@@ -782,7 +1073,7 @@ async function send() {
       body: JSON.stringify({
         model: health.model || "model", messages,
         // temperature and max_tokens come from the server's generation
-        // defaults (Console tab), exactly as for any other client
+        // defaults (Settings tab), exactly as for any other client
         stream: true, stream_options: { include_usage: true },
       }),
     });
@@ -832,7 +1123,7 @@ async function send() {
     metaEl.innerHTML = parts.join(" · ");
   } catch (e) {
     if (e.name === "AbortError") { metaEl.textContent = "stopped"; historyMsgs.push({ role: "assistant", content: answer }); }
-    else { bodyEl.textContent = (answer ? answer + "\n\n" : "") + "⚠ " + e.message; }
+    else { bodyEl.textContent = (answer ? answer + "\n\n" : "") + "Error: " + e.message; }
   } finally {
     // Also covers the paths the stream never reaches: an abort, an HTTP error,
     // or a turn that produced nothing but reasoning.
@@ -846,13 +1137,14 @@ $("sendBtn").onclick = send;
 $("stopBtn").onclick = () => aborter?.abort();
 $("input").addEventListener("keydown", e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(); } });
 
-if (location.hash === "#chat") showView("chatView");
-if (location.hash === "#logs") showView("logsView");
-pollHealth(); pollStats(); pollCache();
+viewFromHash();
+updateSettingsStatus();
+pollHealth(); pollStats(); pollCache(); pollSettings();
 setInterval(pollHealth, 5000);
 setInterval(pollStats, 2000);
 setInterval(pollCache, 10000);
-setInterval(() => { if ($("logsView").classList.contains("active")) pollLogs(); }, 5000);
+setInterval(pollSettings, 10000);
+setInterval(() => { if ($("dashboardView").classList.contains("active") && $("requestLog").open) pollLogs(); }, 5000);
 </script>
 </body>
 </html>

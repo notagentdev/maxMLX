@@ -1,8 +1,81 @@
 """The built-in web console: served from the package, no backend state needed."""
 
+from html.parser import HTMLParser
+
 from fastapi.testclient import TestClient
 
 from maxtoken.server.api_server import app
+
+
+class ConsoleStructure(HTMLParser):
+    """Check view ownership and balanced markup, not just matching strings."""
+    def __init__(self, page):
+        super().__init__()
+        self.stack = []
+        self.ancestors = {}
+        self.elements = {}
+        self.feed(page)
+        assert not self.stack
+
+    def handle_starttag(self, tag, attrs):
+        attrs = dict(attrs)
+        element_id = attrs.get("id")
+        if element_id:
+            assert element_id not in self.ancestors, f"duplicate ID: {element_id}"
+            self.ancestors[element_id] = [parent_id for _, parent_id in self.stack]
+            self.elements[element_id] = (tag, attrs)
+        if tag not in {"meta", "input", "br", "hr", "link", "img"}:
+            self.stack.append((tag, element_id))
+
+    def handle_endtag(self, tag):
+        assert self.stack and self.stack[-1][0] == tag, f"unbalanced closing tag: {tag}"
+        self.stack.pop()
+
+
+def test_three_views_have_separate_responsibilities():
+    page = TestClient(app).get("/console").text
+    structure = ConsoleStructure(page)
+    views = {key for key, (_, attrs) in structure.elements.items() if "view" in attrs.get("class", "").split()}
+    assert views == {"dashboardView", "settingsView", "chatView"}
+    for key in views:
+        tag, attrs = structure.elements[key]
+        assert tag == "section" and attrs["aria-labelledby"] in structure.elements
+        assert "content" in structure.ancestors[key]
+    for element in ("cTokens", "cReq", "mTps", "mTtft", "memTxt", "kvRow", "diskRow", "requestLog"):
+        assert "dashboardView" in structure.ancestors[element]
+    for element in ("moeRange", "ctxRange", "genTemp", "genThink", "thinkRange", "reloadBtn", "apiOpenai"):
+        assert "settingsView" in structure.ancestors[element]
+    for element in ("sysPrompt", "messages", "input", "sendBtn", "stopBtn"):
+        assert "chatView" in structure.ancestors[element]
+    assert 'id="logsView"' not in page and 'id="sidebar"' not in page
+
+
+def test_settings_have_one_save_button_outside_all_category_panels():
+    page = TestClient(app).get("/console").text
+    structure = ConsoleStructure(page)
+    assert page.count('id="settingsSave"') == 1
+    assert "settingsView" in structure.ancestors["settingsSave"]
+    assert "settingsSaveBar" in structure.ancestors["settingsSave"]
+    assert not {"modelSettings", "memorySettings", "serverSettings", "integrationSettings"}.intersection(structure.ancestors["settingsSave"])
+    for old in ("genApply", "ctxApply", "thinkApply", "cacheApply", "performanceApply", "diskApply", "modelApply", "serverApply"):
+        assert old not in structure.elements
+
+
+def test_navigation_and_controls_are_accessible():
+    page = TestClient(app).get("/console").text
+    structure = ConsoleStructure(page)
+    assert structure.elements["navigation"][1]["aria-label"] == "Main navigation"
+    assert 'aria-controls="dashboardView"' in page
+    assert 'aria-controls="settingsView"' in page
+    assert 'aria-controls="chatView"' in page
+    assert 'aria-current="page"' in page
+    assert 'for="moeRange"' in page and 'for="ctxRange"' in page
+    assert 'for="genTemp"' in page and 'for="genMax"' in page
+    assert 'for="genThink"' in page and 'for="thinkRange"' in page
+    assert 'for="sysPrompt"' in page and 'aria-label="Message"' in page
+    assert 'location.hash === "#logs"' in page
+    assert '"#settings"' in page and '"hashchange"' in page
+    assert 'id="memBar"' not in page, "do not invent a memory capacity for the usage bar"
 
 
 def test_console_served():
@@ -41,13 +114,13 @@ def test_root_redirects_to_console():
     assert r.headers["location"] == "/console"
 
 
-def test_generation_defaults_live_in_the_console_tab_not_the_chat():
-    """Temperature and the output cap are server-wide defaults, edited from the
-    Console tab and applied through /admin/cache/rebuild; the chat sends
-    neither, so it gets exactly what an agent or SDK gets."""
+def test_generation_defaults_live_in_settings_not_the_chat():
+    """Server-wide defaults stay separate from the chat's request controls."""
     page = TestClient(app).get("/console").text
-    console, chat = page.split('id="chatView"', 1)
-    assert 'id="genTemp"' in console and 'id="genMax"' in console and 'id="genApply"' in console
+    structure = ConsoleStructure(page)
+    for element in ("genTemp", "genMax", "settingsSave"):
+        assert "settingsView" in structure.ancestors[element]
+        assert "chatView" not in structure.ancestors[element]
     assert 'id="maxTok"' not in page and 'id="temp"' not in page
     assert "max_output_tokens" in page
     # the chat request carries neither field any more
@@ -60,7 +133,8 @@ def test_the_thinking_switch_sits_in_the_generation_row_and_the_budget_is_a_cap(
     that actually disables thinking lives beside temperature and the output cap
     and rides the same /admin/cache/rebuild call."""
     page = TestClient(app).get("/console").text
-    console, _chat = page.split('id="chatView"', 1)
-    assert 'id="genThink"' in console and '<option value="off">off</option>' in console
+    structure = ConsoleStructure(page)
+    assert "settingsView" in structure.ancestors["genThink"]
+    assert '<option value="off">off</option>' in page
     assert 'thinking: $("genThink").value' in page
-    assert "no cap" in console and "budget off" not in page
+    assert "no cap" in page and "budget off" not in page

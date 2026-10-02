@@ -9,7 +9,7 @@ import threading
 import time
 import uuid
 from contextlib import asynccontextmanager
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from typing import Any, Callable, Dict, List, Literal
 
 import uvicorn
@@ -38,9 +38,10 @@ from maxtoken.utils import (
     init_logger,
     load_generation_sampling,
 )
-from pydantic import BaseModel
+from pydantic import BaseModel, Field, ValidationError
 
 from .args import ServerArgs
+from .settings import LIVE_FIELDS, SERVER_FIELDS, SettingsPatch, SettingsStore
 from .anthropic_api import register_anthropic_routes
 from .accounting import AdmissionClosedError, register_accounting_routes
 from .control_api import register_control_routes
@@ -192,6 +193,7 @@ class FrontendManager:
     start_backend: Any = None
     supervise: Any = None
     backend_generation: int = 0
+    settings_lock: Any = field(default_factory=asyncio.Lock)
     # Event loop the listener runs on, captured when the listener starts (_create_listener_once).
     # Lets a cross-thread caller — the supervisor thread's failure callback — marshal rebuild
     # future resolution back onto the loop (asyncio Futures are not thread-safe). None until the
@@ -439,7 +441,12 @@ def effective_sampling() -> Dict[str, Any]:
     state = _GLOBAL_STATE
     if state is None:
         return base
-    configured = getattr(getattr(state, "config", None), "max_output_tokens", None)
+    config = getattr(state, "config", None)
+    for key in ("temperature", "top_k", "top_p"):
+        value = getattr(config, key, None)
+        if value is not None:
+            base[key] = value
+    configured = getattr(config, "max_output_tokens", None)
     if configured:
         base["max_tokens"] = int(configured)
     for key, value in (getattr(state, "generation_override", None) or {}).items():
@@ -551,6 +558,8 @@ class CacheRebuildRequest(BaseModel):
     # temperature >= 0 (0 = greedy); max_output_tokens >= 1, 0 = back to the
     # server default (--max-output-tokens, else 32k).
     temperature: float | None = None
+    top_k: int | None = Field(default=None, ge=-1)
+    top_p: float | None = Field(default=None, gt=0, le=1)
     max_output_tokens: int | None = None
     # Thinking default for requests without a thinking flag: "on", "off", or
     # "model" (back to the checkpoint's template / --thinking).
@@ -635,7 +644,7 @@ def _resolve_num_swa_pages(state: FrontendManager, req: CacheRebuildRequest) -> 
     return max(1, -(-window_tokens // swa_page_size))  # ceil-div to the pool's page unit
 
 
-async def reload_backend(state: Any) -> tuple[dict, int]:
+async def reload_backend(state: Any, config: ServerArgs | None = None) -> tuple[dict, int]:
     """Restart the engine workers with the configuration they booted with: same checkpoint,
     same flags, a fresh process. What it is for: a scheduler that has wedged or leaked, a
     drafter or cache that should start over, a checkpoint edited on disk. Every cache is
@@ -658,6 +667,10 @@ async def reload_backend(state: Any) -> tuple[dict, int]:
     state.maintenance_state = "loading"
     state.fatal_error = None
     state.ready_at = None
+    if config is not None:
+        state.config = config
+    state.context_length_ceiling = getattr(state.config, "context_length_ceiling", None)
+    state.generation_override = {}
     state.context_length_override = None
     state.reasoning_budget_override = None
     state.thinking_override = None
@@ -685,20 +698,157 @@ async def reload_backend(state: Any) -> tuple[dict, int]:
     def _restart() -> None:
         _terminate_backend_workers(old_workers)
         _reap_backend_workers(old_workers)
-        handle = state.start_backend()
+        handle = state.start_backend(state.config)
         state.backend_processes = list(getattr(handle, "processes", None) or [])
         state.supervise(handle, generation)
 
     # Reaping joins the old workers (up to a few seconds); keep the loop free for /health.
-    await asyncio.to_thread(_restart)
+    try:
+        await asyncio.to_thread(_restart)
+    except Exception as exc:
+        state.maintenance_state = "failed"
+        state.fatal_error = f"engine relaunch failed: {exc}"
+        return {"status": "failed", "error": state.fatal_error}, 500
     logger.info("Engine reload requested: workers relaunched (generation %d)", generation)
     return {"status": "ok", "generation": generation}, 200
 
 
+def settings_store(state) -> SettingsStore:
+    return SettingsStore(getattr(state.config, "settings_file", None))
+
+
+def settings_lock(state) -> asyncio.Lock:
+    if getattr(state, "settings_lock", None) is None:
+        state.settings_lock = asyncio.Lock()
+    return state.settings_lock
+
+
+def local_settings_request(request: Request) -> bool:
+    from urllib.parse import urlsplit
+    hosts = {"127.0.0.1", "::1", "localhost"}
+    if request.client is None or request.client.host not in hosts or request.url.hostname not in hosts | {"testserver"}:
+        return False
+    origin = request.headers.get("origin")
+    if origin is None:
+        return True
+    parsed = urlsplit(origin)
+    return parsed.scheme == request.url.scheme and parsed.netloc == request.url.netloc
+
+
+def settings_document(state) -> dict:
+    store = settings_store(state)
+    saved = store.load(state.config.model_path)
+    active = {key: getattr(state.config, key, None) for key in SettingsPatch.model_fields}
+    active.update(_generation_defaults())
+    active["max_reasoning_tokens"] = int(getattr(state, "reasoning_budget_override", None) or state.config.max_reasoning_tokens or 0)
+    active["max_seq_len_override"] = int(getattr(state, "context_length_override", None) or state.config.max_seq_len)
+    pools = getattr(state, "cache_pools", None) or {}
+    last = getattr(state, "last_rebuild", None) or {}
+    active["moe_cache_size"] = int(last.get("moe_cache_size", pools.get("moe_cache_size", active["moe_cache_size"])) or 0)
+    active["reasoning_parser"] = active["reasoning_parser"] or "off"
+    applied = getattr(state, "settings_applied", {})
+    pending = []
+    for key, value in saved.items():
+        if key == "moe_cache_size":
+            if value and value != state.config.moe_cache_size:
+                pending.append(key)
+            continue
+        if key in LIVE_FIELDS:
+            continue
+        desired = value
+        if key == "served_model_name" and value is None:
+            desired = os.path.basename(os.path.normpath(state.config.model_path)) or state.config.model_path
+        elif key == "reasoning_parser" and value is None:
+            desired = "off"
+        current = applied.get(key) if value == "auto" and key in {"tool_call_parser", "reasoning_parser"} else active.get(key)
+        if desired != current:
+            pending.append(key)
+    return {
+        "model": state.config.model_path, "settings_file": str(store.path),
+        "values": {**active, **{key: value for key, value in saved.items() if key not in LIVE_FIELDS or key == "moe_cache_size"}}, "active": active, "pending_restart": pending,
+        "model_defaults": {"temperature": float(_MODEL_SAMPLING.get("temperature", 0)), "top_k": int(_MODEL_SAMPLING.get("top_k", -1)), "top_p": float(_MODEL_SAMPLING.get("top_p", 1)), "max_output_tokens": 32768, "thinking": "model"},
+    }
+
+
+@app.get("/admin/settings")
+async def read_settings():
+    try:
+        return settings_document(get_global_state())
+    except (OSError, ValueError) as exc:
+        return JSONResponse({"error": f"cannot read saved settings: {exc}"}, status_code=500)
+
+
+@app.post("/admin/settings")
+async def save_settings(req: SettingsPatch, request: Request):
+    if not local_settings_request(request):
+        return JSONResponse({"error": "settings changes require a same-origin loopback request"}, status_code=403)
+    state = get_global_state()
+    patch = req.model_dump(exclude_unset=True)
+    async with settings_lock(state):
+        ceiling = int(getattr(state.config, "context_length_ceiling", None) or state.config.max_seq_len)
+        if patch.get("max_seq_len_override", 0) is not None and patch.get("max_seq_len_override", 0) > ceiling:
+            return JSONResponse({"error": "context window exceeds the checkpoint's trained context length"}, status_code=422)
+        live = {key: value for key, value in patch.items() if key in LIVE_FIELDS}
+        if "moe_backend" in patch or patch.get("moe_cache_rate") is not None or patch.get("moe_cache_auto"):
+            live.pop("moe_cache_size", None)
+        if live and state.maintenance_state != "serving":
+            return JSONResponse({"error": f"engine is {state.maintenance_state}; settings were not saved"}, status_code=409)
+        try:
+            await asyncio.to_thread(settings_store(state).save, state.config.model_path, patch)
+        except ValidationError as exc:
+            return JSONResponse({"error": f"conflicting settings: {exc}"}, status_code=422)
+        except (OSError, ValueError) as exc:
+            return JSONResponse({"error": f"settings were not saved: {exc}"}, status_code=500)
+        if live:
+            names = {"max_seq_len_override": "max_seq_len"}
+            body = {names.get(key, key): value for key, value in live.items() if value is not None}
+            if "max_seq_len_override" in live and live["max_seq_len_override"] is None:
+                body["max_seq_len"] = ceiling
+            if "thinking" in live and live["thinking"] is None:
+                body["thinking"] = "model"
+            if "max_reasoning_tokens" in live and live["max_reasoning_tokens"] is None:
+                body["max_reasoning_tokens"] = 0
+            if body:
+                result = await cache_rebuild(CacheRebuildRequest(**body))
+                if isinstance(result, JSONResponse):
+                    result = json.loads(result.body)
+                if result.get("status") != "ok":
+                    return JSONResponse({"status": "saved", "applied": False, "error": result.get("error", result["status"]), "settings": settings_document(state)}, status_code=409)
+            config_values = {key: value for key, value in live.items()}
+            if config_values.get("thinking") == "model":
+                config_values["thinking"] = None
+            if "moe_cache_size" in config_values:
+                config_values.update(moe_cache_rate=None, moe_cache_auto=False)
+            state.config = replace(state.config, **config_values)
+            for key in ("temperature", "top_k", "top_p", "max_output_tokens"):
+                if key in live and live[key] is None:
+                    (getattr(state, "generation_override", None) or {}).pop("max_tokens" if key == "max_output_tokens" else key, None)
+        return {"status": "ok", "settings": settings_document(state)}
+
+
+class ReloadRequest(BaseModel):
+    apply_saved: bool = False
+
 @app.post("/admin/reload")
-async def admin_reload():
-    """Relaunch the engine workers with the boot configuration (see reload_backend)."""
-    body, status = await reload_backend(get_global_state())
+async def admin_reload(request: Request, req: ReloadRequest | None = None):
+    """Reload current settings, or explicitly activate saved engine settings."""
+    state = get_global_state()
+    async with settings_lock(state):
+        config = None
+        if req is not None and req.apply_saved:
+            if not local_settings_request(request):
+                return JSONResponse({"error": "settings changes require a same-origin loopback request"}, status_code=403)
+            try:
+                from .args import parse_args
+                store = settings_store(state)
+                saved = store.load(state.config.model_path)
+                parsed, _ = parse_args(["--model", state.config.model_path, "--dtype", state.config.dtype, "--settings-file", str(store.path)])
+                config = replace(state.config, **{key: getattr(parsed, key) for key in saved if key not in SERVER_FIELDS}, context_length_ceiling=parsed.context_length_ceiling)
+            except (OSError, ValueError, ValidationError, SystemExit) as exc:
+                return JSONResponse({"error": f"saved settings cannot be activated: {exc}"}, status_code=422)
+        body, status = await reload_backend(state, config)
+    if status == 200 and config is not None:
+        state.settings_applied = saved
     return JSONResponse(body, status_code=status)
 
 
@@ -741,7 +891,7 @@ async def cache_rebuild(req: CacheRebuildRequest):
         ceiling = getattr(state, "context_length_ceiling", None)
         if ceiling is None:
             try:
-                ceiling = int(state.config.max_seq_len)
+                ceiling = int(getattr(state.config, "context_length_ceiling", None) or state.config.max_seq_len)
             except Exception:  # noqa: BLE001 -- unknown ceiling: allow, scheduler decides
                 ceiling = None
             state.context_length_ceiling = ceiling
@@ -753,6 +903,8 @@ async def cache_rebuild(req: CacheRebuildRequest):
                 )},
                 status_code=422,
             )
+    if req.top_k == 0:
+        return JSONResponse({"status": "failed", "error": "top_k must be -1 or positive"}, status_code=422)
     if req.temperature is not None and req.temperature < 0:
         return JSONResponse(
             {"status": "failed", "error": "temperature must be >= 0"}, status_code=422
@@ -773,9 +925,14 @@ async def cache_rebuild(req: CacheRebuildRequest):
         # applies to the NEXT request with no engine work at all.
         state.reasoning_budget_override = req.max_reasoning_tokens or None
         frontend_knobs["max_reasoning_tokens"] = req.max_reasoning_tokens
-    if req.temperature is not None or req.max_output_tokens is not None:
+    if any(value is not None for value in (req.temperature, req.top_k, req.top_p, req.max_output_tokens)):
         # Same class of knob: read by effective_sampling() on every request.
         override = dict(getattr(state, "generation_override", None) or {})
+        for key in ("top_k", "top_p"):
+            value = getattr(req, key)
+            if value is not None:
+                override[key] = value
+                frontend_knobs[key] = value
         if req.temperature is not None:
             override["temperature"] = float(req.temperature)
             frontend_knobs["temperature"] = float(req.temperature)
@@ -1010,7 +1167,7 @@ def cache_geometry(state: Any) -> dict:
 async def cache_status():
     state = get_global_state()
     try:
-        ceiling = int(state.config.max_seq_len)
+        ceiling = int(getattr(state.config, "context_length_ceiling", None) or state.config.max_seq_len)
     except Exception:  # noqa: BLE001 -- unknown ceiling degrades to 0, not a 500
         ceiling = 0
     return {
@@ -1020,7 +1177,7 @@ async def cache_status():
         # The context slider's bounds: current = what admission enforces now
         # (rebuild override or the boot value), ceiling = the model's trained max.
         "context": {
-            "current": int(getattr(state, "context_length_override", 0) or 0) or ceiling,
+            "current": int(getattr(state, "context_length_override", 0) or 0) or int(state.config.max_seq_len),
             "ceiling": ceiling,
         },
         # 0 = unlimited. Server default unless a rebuild set an override.
@@ -1165,7 +1322,7 @@ def _serve_and_run_shell(host: str, port: int) -> None:
         _reap_backend_workers(_GLOBAL_STATE.backend_processes)
 
 
-def run_api_server(config: ServerArgs, start_backend: Callable[[], "Any"], run_shell: bool) -> None:
+def run_api_server(config: ServerArgs, start_backend: Callable[[ServerArgs], "Any"], run_shell: bool) -> None:
     """
     Run the frontend API server (FastAPI + uvicorn) and wire it to the tokenizer process via ZMQ.
 
@@ -1292,10 +1449,11 @@ def run_api_server(config: ServerArgs, start_backend: Callable[[], "Any"], run_s
             daemon=True,
         ).start()
 
+    _GLOBAL_STATE.settings_applied = settings_store(_GLOBAL_STATE).load(config.model_path)
     _GLOBAL_STATE.start_backend = start_backend
     _GLOBAL_STATE.supervise = _supervise
     _GLOBAL_STATE.load_progress = LoadProgress()
-    handle = start_backend()
+    handle = start_backend(config)
     # Hold the worker handles so the orderly-shutdown path can tear them down itself (after
     # setting _SHUTTING_DOWN) rather than relying on OS signal-delivery order.
     _GLOBAL_STATE.backend_processes = list(getattr(handle, "processes", None) or [])

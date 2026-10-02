@@ -149,6 +149,24 @@ observed miss pressure. See **[docs/mlx.md](docs/mlx.md)** for the full macOS
 guide: serving modes, benchmarks, speculative decoding (`--draft-model`), and
 the honest negative results.
 
+### Web settings
+
+The console separates **Dashboard**, **Settings**, and **Chat**. Settings groups
+cover generation (including top-k/top-p), context and reasoning limits, expert
+serving and memory budgets, MTP/draft decoding, prefix-cache storage, network,
+and agent connection commands.
+
+The single **Save** button below the settings saves all modified sections in one
+request and applies live options. Engine changes wait for an explicit
+**Apply saved settings & restart** action. That action restarts model
+workers, clears caches and aborts active requests. Host/port changes require a
+full server restart. Files are written atomically to `~/.maxtoken/settings.json`:
+model settings are scoped by model path/ID, network settings are global. Override
+the file with `--settings-file` or `MAXTOKEN_SETTINGS_FILE`. Explicit CLI flags
+win over saved settings at startup. Settings mutations are restricted to
+same-origin loopback clients; the UI does not enable unauthenticated LAN binds.
+A static HTML preview cannot save settings or perform inference.
+
 MaxToken is Apple-silicon only. The upstream CUDA engine was removed in 0.0.1:
 it could not be built or tested on the target platform, and carrying it forced
 a torch dependency on every install. What remains — server, tokenizer workers,
