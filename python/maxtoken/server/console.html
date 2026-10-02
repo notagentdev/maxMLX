@@ -201,31 +201,156 @@
   input[type=range] { width: 100%; margin: 12px 0 4px; accent-color: var(--accent); }
   .sliderrow .scale { display: flex; justify-content: space-between; font: 10px var(--mono); color: var(--text-3); }
 
-  /* ---------- chat view ---------- */
-  #chatView { display: none; flex-direction: column; height: 100%; min-height: 460px; max-width: 820px; margin: 0 auto; }
-  #chatView.active { display: flex; }
-  #chatView .head { margin-bottom: 18px; }
-  .prompt-panel { border: 1px solid var(--border); border-radius: 10px; padding: 12px 16px; margin-bottom: 12px; }
-  .prompt-panel summary { font-size: 12px; }
-  .prompt-panel label { display: block; margin-top: 12px; color: var(--text-3); font-size: 12px; }
-  #messages { flex: 1; min-height: 140px; overflow-y: auto; display: flex; flex-direction: column; gap: 20px; padding: 12px 2px 24px; }
-  #chatEmpty { margin: auto; text-align: center; max-width: 360px; padding: 32px 16px; }
+  /* ---------- chat view: conversations | thread | settings ---------- */
+  #content:has(#chatView.active) { padding: 0; overflow: hidden; }
+  #chatView { display: none; }
+  #chatView.active { --cs: 272px; --cp: 312px; display: grid; grid-template-columns: var(--cs) minmax(0, 1fr) var(--cp); height: 100%; max-width: none; margin: 0; min-height: 0; position: relative; }
+  #chatView.hide-side { --cs: 0px; }
+  #chatView.hide-panel { --cp: 0px; }
+  #chatSide, #chatPanel { display: flex; flex-direction: column; min-width: 0; min-height: 0; overflow: hidden; background: var(--panel); }
+  #chatSide { border-right: 1px solid var(--border); }
+  #chatPanel { border-left: 1px solid var(--border); }
+  #chatView.hide-side #chatSide, #chatView.hide-panel #chatPanel { visibility: hidden; border-width: 0; }
+  #chatMain { display: flex; flex-direction: column; min-width: 0; min-height: 0; position: relative; }
+  .side-top { display: grid; gap: 10px; padding: 16px 14px 10px; }
+  .side-top .btn { padding: 9px 14px; }
+  .side-top input[type=search], #chatPanel input[type=number], #chatPanel select, #chatPanel textarea, #chatPanel input[type=text] {
+    width: 100%; background: var(--bg); color: var(--text-1); border: 1px solid var(--border); border-radius: 8px; padding: 8px 10px; font-size: 12.5px;
+  }
+  #chatList { flex: 1; min-height: 0; overflow-y: auto; padding: 4px 10px 14px; }
+  .chat-empty { padding: 18px 8px; color: var(--text-3); font-size: 12px; text-align: center; }
+  .chat-row { display: flex; align-items: center; gap: 6px; padding: 8px 8px 8px 11px; margin-bottom: 2px; border-radius: 9px; cursor: pointer; color: var(--text-2); }
+  .chat-row:hover { background: var(--panel-2); }
+  .chat-row.active { background: var(--panel-2); color: var(--text-1); }
+  .chat-row .ctitle { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 13px; }
+  .chat-row input { flex: 1; min-width: 0; background: var(--bg); color: var(--text-1); border: 1px solid var(--border); border-radius: 6px; padding: 4px 7px; }
+  .chat-row .live { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); animation: pulse 1.1s ease-in-out infinite; flex: none; }
+  @keyframes pulse { 50% { opacity: .35; } }
+  @media (prefers-reduced-motion: reduce) { .chat-row .live { animation: none; } }
+  .mini { display: inline-grid; place-items: center; width: 24px; height: 24px; padding: 0; border: 0; border-radius: 6px; background: transparent; color: var(--text-3); cursor: pointer; flex: none; }
+  .mini:hover { background: var(--bg); color: var(--text-1); }
+  .mini.danger:hover, .mini.armed { color: var(--bad); }
+  .mini.armed { background: var(--bad-dim); width: auto; padding: 0 8px; font-size: 11px; font-weight: 600; }
+  .mini svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+  .chat-row .mini { opacity: 0; }
+  .chat-row:hover .mini, .chat-row.active .mini, .chat-row .mini.on, .chat-row .mini:focus-visible { opacity: 1; }
+  .chat-row .mini.on { color: var(--accent); }
+  #chatBar { display: flex; align-items: center; gap: 10px; padding: 12px 16px; border-bottom: 1px solid var(--border); min-height: 56px; }
+  #chatBar h1 { font-size: 14px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  #chatBar .sub { font-size: 11.5px; color: var(--text-3); }
+  #chatBar .titles { flex: 1; min-width: 0; }
+  #messages { position: relative; flex: 1; min-height: 0; overflow-y: auto; display: flex; flex-direction: column; gap: 22px; padding: 26px max(30px, calc((100% - 860px) / 2)) 30px; }
+  #chatEmpty { margin: auto; text-align: center; max-width: 380px; padding: 32px 16px; }
   #chatEmpty h2 { font-size: 23px; font-weight: 600; letter-spacing: -.4px; margin-bottom: 8px; }
   #chatEmpty p { font-size: 13px; color: var(--text-3); line-height: 1.8; }
-  .msg { max-width: 90%; border-radius: 14px; padding: 14px 18px; white-space: pre-wrap; overflow-wrap: anywhere; line-height: 1.75; }
-  .msg.user { align-self: flex-end; background: var(--panel-2); border: 1px solid var(--border); }
-  .msg.assistant { align-self: flex-start; padding-left: 4px; background: transparent; }
-  .msg::before { display: block; font-size: 10px; font-weight: 600; letter-spacing: .8px; color: var(--text-3); margin-bottom: 7px; }
-  .msg.user::before { content: "YOU"; }
-  .msg.assistant::before { content: "MAXTOKEN"; }
-  .msg .think { color: var(--text-3); font-size: 12px; border-left: 3px solid var(--border); padding-left: 9px; margin-bottom: 8px; white-space: pre-wrap; }
-  .msg .meta { font: 10.5px var(--mono); color: var(--text-3); margin-top: 8px; }
-  .msg .meta b { color: var(--text-2); }
-  /* Shown from the moment a turn is sent until its first token lands. A long
-     prompt or a reasoning model can take seconds to answer, and an empty bubble
-     reads as a hung server. */
-  .msg .status { display: flex; align-items: center; gap: 8px; font: 11.5px var(--mono); color: var(--text-3); }
-  .msg .status b { color: var(--text-2); font-weight: 500; }
+  .msg { position: relative; max-width: 100%; overflow-wrap: anywhere; line-height: 1.7; }
+  .msg.user { align-self: flex-end; max-width: 86%; }
+  .msg.user .bubble { background: var(--panel-2); border: 1px solid var(--border); border-radius: 14px; padding: 12px 16px; white-space: pre-wrap; }
+  .msg.user.editing { align-self: stretch; max-width: 100%; }
+  .msg.user.editing textarea { width: 100%; min-height: 90px; resize: vertical; background: var(--bg); color: var(--text-1); border: 1px solid var(--accent); border-radius: 12px; padding: 12px 14px; }
+  .msg.assistant { align-self: stretch; }
+  .mhead { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; min-height: 26px; }
+  .mhead .who { font-size: 11px; font-weight: 600; letter-spacing: .7px; text-transform: uppercase; color: var(--text-3); }
+  .mhead .spacer, .macts .spacer { flex: 1; }
+  #timeline { position: absolute; right: max(6px, calc(50% - 456px)); width: 20px; z-index: 4; pointer-events: none; }
+  #timeline::before { content: ""; position: absolute; left: 50%; top: 16px; bottom: 16px; width: 1px; background: var(--border); transform: translateX(-50%); }
+  .tl-dot { position: absolute; left: 50%; width: 18px; height: 18px; margin: -9px 0 0 -9px; padding: 0; border: 0; background: transparent; display: grid; place-items: center; pointer-events: auto; cursor: pointer; }
+  .tl-dot::after { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--text-3); transition: transform .12s, background .12s; }
+  .tl-dot:hover::after, .tl-dot:focus-visible::after { background: var(--text-1); transform: scale(1.35); }
+  .tl-dot.active::after { background: var(--accent); transform: scale(1.35); }
+  .tl-tip { position: fixed; z-index: 70; max-width: 300px; padding: 7px 10px; border: 1px solid var(--border); border-radius: 8px; background: var(--panel-2); color: var(--text-2); font-size: 11.5px; line-height: 1.45; overflow-wrap: anywhere; pointer-events: none; box-shadow: 0 8px 24px #0008; }
+  .macts { display: flex; gap: 2px; justify-content: flex-end; min-height: 26px; }
+  .msg.user .macts { opacity: 0; transition: opacity .12s; }
+  .msg.user:hover .macts, .msg.user:focus-within .macts { opacity: 1; }
+  .msg.assistant .macts { opacity: .55; }
+  .msg.assistant:hover .macts, .msg.assistant:focus-within .macts { opacity: 1; }
+  .mbody > :first-child { margin-top: 0; } .mbody > :last-child { margin-bottom: 0; }
+  .md p, .md ul, .md ol, .md pre, .md blockquote, .md .tbl, .md .code { margin: 0 0 .85em; }
+  .md h1, .md h2, .md h3, .md h4, .md h5, .md h6 { margin: 1.1em 0 .45em; line-height: 1.3; letter-spacing: -.2px; }
+  .md h1 { font-size: 1.35em; } .md h2 { font-size: 1.2em; } .md h3 { font-size: 1.08em; } .md h4, .md h5, .md h6 { font-size: 1em; }
+  .md ul, .md ol { padding-left: 1.5em; } .md li { margin: .15em 0; } .md li > ul, .md li > ol { margin: .2em 0 .2em; }
+  .md blockquote { border-left: 3px solid var(--border); padding: 2px 0 2px 14px; color: var(--text-2); }
+  .md hr { border: 0; border-top: 1px solid var(--border); margin: 1.2em 0; }
+  .md a { color: var(--accent); text-underline-offset: 2px; }
+  .md :not(pre) > code { font: .88em var(--mono); background: var(--panel-2); border: 1px solid var(--border); border-radius: 5px; padding: 1px 5px; }
+  .md .code { border: 1px solid var(--border); border-radius: 10px; overflow: hidden; background: var(--panel); }
+  .md .code-head { display: flex; align-items: center; justify-content: space-between; padding: 6px 10px 6px 14px; background: var(--panel-2); font: 11px var(--mono); color: var(--text-3); }
+  .md .code-copy { border: 0; background: transparent; color: var(--text-3); cursor: pointer; font: inherit; padding: 2px 6px; border-radius: 5px; }
+  .md .code-copy:hover { color: var(--text-1); background: var(--bg); }
+  .md pre { margin: 0; padding: 12px 14px; overflow-x: auto; font: 12.5px/1.6 var(--mono); }
+  .md .tbl { overflow-x: auto; }
+  .md table { width: auto; font: inherit; border: 1px solid var(--border); border-radius: 8px; }
+  .md th, .md td { white-space: normal; padding: 6px 12px; border: 1px solid var(--border); color: var(--text-1); }
+  .md th { background: var(--panel-2); color: var(--text-2); font-size: 12px; letter-spacing: 0; }
+  .think { margin: 0 0 10px; border: 1px solid var(--border); border-radius: 10px; background: var(--panel); }
+  .think-head { display: flex; align-items: center; gap: 8px; width: 100%; padding: 8px 12px; border: 0; background: transparent; color: var(--text-3); font-size: 12px; cursor: pointer; text-align: left; }
+  .think-head:hover { color: var(--text-1); }
+  .think-head svg { width: 13px; height: 13px; stroke: currentColor; fill: none; stroke-width: 2; transition: transform .15s; margin-left: auto; }
+  .think.open .think-head svg { transform: rotate(180deg); }
+  .think-body { display: none; padding: 2px 14px 12px; color: var(--text-3); font-size: 12.5px; max-height: 340px; overflow-y: auto; }
+  .think.open .think-body { display: block; }
+  .mstatus { display: flex; align-items: center; gap: 8px; font: 11.5px var(--mono); color: var(--text-3); }
+  .mstatus b { color: var(--text-2); font-weight: 500; }
+  .mmeta { font: 10.5px var(--mono); color: var(--text-3); margin-top: 8px; }
+  .mmeta b { color: var(--text-2); font-weight: 500; }
+  .merror { color: var(--bad); font-size: 12.5px; background: var(--bad-dim); border-radius: 8px; padding: 8px 12px; margin-top: 6px; white-space: pre-wrap; }
+  .variants { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; justify-content: flex-end; }
+  .variant { display: inline-flex; align-items: center; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; font-size: 11.5px; }
+  .variant button { border: 0; background: transparent; color: var(--text-3); padding: 4px 9px; cursor: pointer; }
+  .variant button:hover { color: var(--text-1); background: var(--panel-2); }
+  .variant.active { border-color: var(--accent); }
+  .variant.active button:first-child { color: var(--text-1); background: var(--accent-dim); }
+  .menu { position: fixed; z-index: 60; min-width: 190px; padding: 5px; background: var(--panel-2); border: 1px solid var(--border); border-radius: 10px; box-shadow: 0 10px 30px #0008; }
+  .menu button { display: flex; align-items: center; gap: 9px; width: 100%; padding: 7px 10px; border: 0; border-radius: 6px; background: transparent; color: var(--text-1); font-size: 12.5px; text-align: left; cursor: pointer; }
+  .menu button:hover { background: var(--bg); }
+  .menu button.danger { color: var(--bad); }
+  .menu hr { border: 0; border-top: 1px solid var(--border); margin: 4px 0; }
+  .menu svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+  #jumpLatest { position: absolute; left: 50%; bottom: 112px; transform: translateX(-50%); z-index: 5; box-shadow: 0 6px 20px #0008; }
+  #composerWrap { padding: 0 max(16px, calc((100% - 860px) / 2)) 14px; }
+  #composer { display: flex; align-items: flex-end; gap: 8px; padding: 10px; border: 1px solid var(--border); border-radius: 16px; background: var(--panel); }
+  #composer:focus-within { border-color: #6f7792; }
+  #composer textarea { flex: 1; min-width: 0; resize: none; background: transparent; color: var(--text-1); border: 0; outline: 0; border-radius: 8px; padding: 9px 6px; font: inherit; min-height: 44px; max-height: 200px; }
+  #composer .btn { margin-bottom: 3px; }
+  #chatOpts { display: flex; gap: 16px; align-items: center; justify-content: space-between; padding: 8px 4px 0; font: 11px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; color: var(--text-3); flex-wrap: wrap; }
+  #ctxCap { display: inline-flex; align-items: center; gap: 8px; font: 11px var(--mono); }
+  #ctxCap .dl-bar { width: 70px; margin: 0; height: 4px; }
+  .panel-tabs { display: flex; gap: 4px; padding: 14px 14px 10px; }
+  .panel-tabs button { flex: 1; border: 0; border-radius: 8px; padding: 7px 8px; background: transparent; color: var(--text-3); font-size: 10.5px; font-weight: 700; letter-spacing: .7px; text-transform: uppercase; cursor: pointer; }
+  .panel-tabs button:hover { color: var(--text-1); }
+  .panel-tabs button[aria-selected=true] { background: var(--panel-2); color: var(--text-1); }
+  .panel-body { flex: 1; min-height: 0; overflow-y: auto; padding: 4px 16px 16px; }
+  .pane { display: none; gap: 14px; align-content: start; }
+  .pane.active { display: grid; }
+  .pane label, .field-label { display: block; margin-bottom: 5px; font-size: 10.5px; font-weight: 700; letter-spacing: .7px; text-transform: uppercase; color: var(--text-3); }
+  .pane .two { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .pane .hint { font-size: 11px; color: var(--text-3); line-height: 1.5; }
+  .pane .readout { padding: 8px 10px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg); font: 12px var(--mono); overflow-wrap: anywhere; }
+  .pane textarea { min-height: 150px; resize: vertical; line-height: 1.55; }
+  .prof { display: flex; align-items: center; gap: 8px; padding: 8px 10px; border-radius: 8px; cursor: pointer; font-size: 12.5px; }
+  .prof:hover { background: var(--panel-2); }
+  .prof.active { background: var(--panel-2); }
+  .prof .pdot { width: 8px; height: 8px; border-radius: 50%; border: 1px solid var(--text-3); flex: none; }
+  .prof.active .pdot { background: var(--accent); border-color: var(--accent); }
+  .prof .pname { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .prof input { flex: 1; min-width: 0; }
+  #chatPerf { padding: 12px 16px 14px; border-top: 1px solid var(--border); display: grid; grid-template-columns: 1fr 1fr; gap: 8px 14px; font-size: 11px; color: var(--text-3); }
+  #chatPerf b { display: block; font: 600 13px var(--mono); color: var(--text-1); margin-top: 2px; }
+  .chat-only-narrow { display: none; }
+  @media (max-width: 1100px) {
+    #chatView.active { grid-template-columns: var(--cs) minmax(0, 1fr); }
+    #chatPanel { position: absolute; right: 0; top: 0; bottom: 0; width: 312px; max-width: 92vw; z-index: 30; box-shadow: -12px 0 40px #0009; }
+    #chatView.hide-panel #chatPanel { display: none; }
+  }
+  @media (max-width: 760px) {
+    #chatView.active { grid-template-columns: minmax(0, 1fr); }
+    #chatSide { position: absolute; left: 0; top: 0; bottom: 0; width: 280px; max-width: 92vw; z-index: 30; box-shadow: 12px 0 40px #0009; }
+    #chatView.hide-side #chatSide { display: none; }
+    .msg.user { max-width: 94%; }
+    #jumpLatest { bottom: 122px; }
+    #timeline { display: none; }
+  }
+
   .spinner {
     width: 11px; height: 11px; flex: none; border-radius: 50%;
     border: 2px solid var(--border); border-top-color: var(--accent);
@@ -233,16 +358,6 @@
   }
   @keyframes spin { to { transform: rotate(360deg); } }
   @media (prefers-reduced-motion: reduce) { .spinner { animation-duration: 2.4s; } }
-  #composer { display: flex; align-items: flex-end; gap: 8px; padding: 10px; border: 1px solid var(--border); border-radius: 16px; background: var(--panel); }
-  #composer textarea {
-    flex: 1; min-width: 0; resize: none; background: transparent; color: var(--text-1);
-    border: 0; border-radius: 8px; padding: 9px 6px;
-    font: inherit; min-height: 44px; max-height: 150px;
-  }
-  #composer .btn { margin-bottom: 3px; }
-  #chatOpts { display: flex; gap: 16px; align-items: center; padding: 8px 2px 0; font: 11px var(--mono); color: var(--text-3); flex-wrap: wrap; }
-  #chatOpts { justify-content: space-between; font: 11px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
-  #sysPrompt { width: 100%; background: var(--panel); border: 1px solid var(--border); color: var(--text-2); border-radius: 8px; padding: 7px 10px; font-size: 12px; line-height: 1.6; resize: vertical; min-height: 80px; margin-top: 8px; }
 
   /* ---------- logs view ---------- */
   table { width: 100%; border-collapse: collapse; font: 12px var(--mono); }
@@ -272,10 +387,10 @@
   .dl-queue { display: grid; gap: 10px; }
   .dl-job { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 6px 16px; align-items: center; padding: 14px 16px; border: 1px solid var(--border); border-radius: 12px; background: var(--bg); }
   .dl-job .name { font: 600 13px var(--mono); overflow-wrap: anywhere; }
-  .dl-job .name .org { color: var(--text-3); font-weight: 400; }
+  .dl-job .owner { grid-column: 1; margin-top: -4px; font: 11px var(--mono); color: var(--text-3); }
   .dl-job .stat { grid-column: 1; font: 11.5px var(--mono); color: var(--text-3); }
   .dl-job .stat.error { color: var(--bad); white-space: normal; }
-  .dl-job .acts { grid-column: 2; grid-row: 1 / span 3; display: flex; gap: 6px; }
+  .dl-job .acts { grid-column: 2; grid-row: 1 / span 4; display: flex; gap: 6px; }
   .dl-job .acts .btn { padding: 6px 11px; }
   .dl-bar { grid-column: 1; height: 5px; border-radius: 4px; background: var(--border); overflow: hidden; }
   .dl-bar > i { display: block; height: 100%; background: var(--accent); border-radius: 4px; transition: width .4s; }
@@ -303,7 +418,7 @@
   .dl-row { display: grid; grid-template-columns: 26px minmax(0, 1fr) 150px 150px auto; gap: 14px; align-items: center; padding: 13px 4px; border-bottom: 1px solid var(--border); }
   .dl-row .rank { font: 11px var(--mono); color: var(--text-3); text-align: right; }
   .dl-row .title { font-weight: 600; overflow-wrap: anywhere; }
-  .dl-row .title .org { color: var(--text-3); font-weight: 400; }
+  .dl-row .sub .owner { color: var(--text-2); }
   .dl-row .sub { margin-top: 3px; font: 11px var(--mono); color: var(--text-3); }
   .dl-row .acts { display: flex; gap: 6px; }
   .dl-row .acts .btn { padding: 6px 12px; }
@@ -407,7 +522,7 @@
       <div class="model-actions">
         <button class="btn ghost" onclick="showView('settingsView')">Configure</button>
         <button class="btn" onclick="showView('chatView')">Open chat</button>
-        <button class="btn danger" id="stopBtnTop" disabled onclick="aborter&&aborter.abort()">Stop</button>
+        <button class="btn danger" id="stopBtnTop" disabled onclick="stopAllChats()">Stop</button>
       </div>
     </div>
     <div class="section-heading"><h2>Memory &amp; cache</h2><span class="feedback">Current engine footprint</span></div>
@@ -698,27 +813,97 @@
   </section>
 
   <section class="view" id="chatView" aria-labelledby="chatTitle">
-    <div class="head">
-      <div><div class="eyebrow">Playground</div><h1 id="chatTitle">Chat</h1><div class="sub" id="chatModel">Connecting to your model…</div></div>
-      <div class="spacer"></div><button class="btn ghost" onclick="showView('settingsView')">Settings</button>
-    </div>
-    <details class="prompt-panel">
-      <summary>System prompt <span class="feedback">· optional</span></summary>
-      <label for="sysPrompt">Instructions sent before your messages</label>
-      <textarea id="sysPrompt" placeholder="You are a helpful assistant."></textarea>
-    </details>
-    <div id="messages" role="log" aria-label="Conversation">
-      <div id="chatEmpty"><div class="eyebrow">Local &amp; private</div><h2>What would you like to explore?</h2><p>Talk directly to the loaded model.<br>Generation defaults are managed in Settings.</p></div>
-    </div>
-      <div id="composer">
-        <textarea id="input" aria-label="Message" placeholder="Message your model…"></textarea>
-        <button class="btn" id="sendBtn">Send</button>
-        <button class="btn danger" id="stopBtn" disabled>Stop</button>
+    <aside id="chatSide" aria-label="Conversations">
+      <div class="side-top">
+        <button type="button" class="btn" id="newChatBtn">+ New chat</button>
+        <input type="search" id="chatSearch" placeholder="Search chats" aria-label="Search chats" autocomplete="off">
       </div>
-      <div id="chatOpts">
-        <span>Enter to send · Shift+Enter for a new line</span><span id="chatHint">This conversation is not saved.</span>
+      <div id="chatList" role="list" aria-label="Chats"></div>
+    </aside>
+
+    <div id="chatMain">
+      <div id="chatBar">
+        <button type="button" class="mini" id="toggleSide" aria-label="Show or hide the chat list" title="Chats"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 5h18v14H3zM9 5v14"/></svg></button>
+        <div class="titles"><h1 id="chatTitle">New chat</h1><div class="sub" id="chatModel">Connecting to your model…</div></div>
+        <button type="button" class="mini" id="togglePanel" aria-label="Show or hide chat settings" title="Chat settings"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 5h18v14H3zM15 5v14"/></svg></button>
       </div>
-    </section>
+      <div id="messages" role="log" aria-label="Conversation">
+        <div id="chatEmpty"><div class="eyebrow">Local &amp; private</div><h2>What would you like to explore?</h2><p>Talk directly to the loaded model.<br>Conversations are saved on this machine.</p></div>
+      </div>
+      <div id="timeline" hidden aria-label="Message timeline"></div>
+      <div class="tl-tip" id="tlTip" hidden role="tooltip"></div>
+      <button type="button" class="btn ghost" id="jumpLatest" hidden>↓ Jump to latest</button>
+      <div id="composerWrap">
+        <div id="composer">
+          <textarea id="input" rows="1" aria-label="Message" placeholder="Message your model…"></textarea>
+          <button type="button" class="btn" id="sendBtn">Send</button>
+          <button type="button" class="btn danger" id="stopBtn" disabled>Stop</button>
+        </div>
+        <div id="chatOpts">
+          <span id="chatHint">Enter to send · Shift+Enter for a new line</span>
+          <span id="ctxCap" hidden><span id="ctxText"></span><span class="dl-bar"><i id="ctxBar" style="width:0%"></i></span></span>
+        </div>
+      </div>
+    </div>
+
+    <aside id="chatPanel" aria-label="Chat settings">
+      <div class="panel-tabs" role="tablist" aria-label="Chat settings">
+        <button type="button" role="tab" id="tabModel" data-tab="model" aria-selected="true" aria-controls="paneModel">Model</button>
+        <button type="button" role="tab" id="tabProfile" data-tab="profile" aria-selected="false" aria-controls="paneProfile">Profile</button>
+        <button type="button" role="tab" id="tabChat" data-tab="chat" aria-selected="false" aria-controls="paneChat">Chat</button>
+      </div>
+      <div class="panel-body">
+        <div class="pane active" id="paneModel" role="tabpanel" aria-labelledby="tabModel">
+          <div><label for="csProfile">Active profile</label><select id="csProfile"></select></div>
+          <div><span class="field-label">Model</span><div class="readout" id="csModel">–</div></div>
+          <div class="two">
+            <div><label for="csTemp">Temperature</label><input type="number" id="csTemp" data-setting="temperature" min="0" max="2" step="0.1" placeholder="default"></div>
+            <div><label for="csMax">Max tokens</label><input type="number" id="csMax" data-setting="max_tokens" min="1" step="1" placeholder="default"></div>
+          </div>
+          <div class="two">
+            <div><label for="csTopP">Top P</label><input type="number" id="csTopP" data-setting="top_p" min="0" max="1" step="0.05" placeholder="default"></div>
+            <div><label for="csTopK">Top K</label><input type="number" id="csTopK" data-setting="top_k" min="-1" step="1" placeholder="default"></div>
+          </div>
+          <div class="two">
+            <div><label for="csPres">Presence penalty</label><input type="number" id="csPres" data-setting="presence_penalty" min="-2" max="2" step="0.1" placeholder="default"></div>
+            <div><label for="csFreq">Frequency penalty</label><input type="number" id="csFreq" data-setting="frequency_penalty" min="-2" max="2" step="0.1" placeholder="default"></div>
+          </div>
+          <div><label for="csThink">Thinking</label>
+            <select id="csThink" data-setting="thinking"><option value="">Model default</option><option value="on">On</option><option value="off">Off</option></select></div>
+          <p class="hint">Empty fields use the server defaults from Settings. These values belong to this chat and are saved with it.</p>
+          <button type="button" class="btn ghost" id="csReset">Reset to defaults</button>
+        </div>
+
+        <div class="pane" id="paneProfile" role="tabpanel" aria-labelledby="tabProfile">
+          <div id="profList" role="list"></div>
+          <button type="button" class="btn ghost" id="profAdd">+ Add profile</button>
+          <div><label for="sysPrompt">System prompt</label>
+            <textarea id="sysPrompt" placeholder="You are a helpful assistant."></textarea></div>
+          <p class="hint">Sent before the messages of this chat. Save stores the text in the selected profile so other chats can use it.</p>
+          <button type="button" class="btn" id="profSave" disabled>Save to profile</button>
+        </div>
+
+        <div class="pane" id="paneChat" role="tabpanel" aria-labelledby="tabChat">
+          <div><span class="field-label">Reasoning</span>
+            <label style="display:flex;gap:8px;align-items:center;text-transform:none;letter-spacing:0;font-size:12.5px;font-weight:400;color:var(--text-1)"><input type="checkbox" id="prefThink"> Expand reasoning by default</label></div>
+          <div><span class="field-label">Keyboard</span>
+            <p class="hint"><b>Enter</b> sends · <b>Shift+Enter</b> new line<br><b>Esc</b> cancels an edit or closes a menu</p></div>
+          <div><span class="field-label">History</span>
+            <div style="display:grid;gap:8px">
+              <button type="button" class="btn ghost" id="exportChats">Export all chats</button>
+              <button type="button" class="btn ghost" id="importChatsBtn">Import chats…</button>
+              <input type="file" id="importChats" accept="application/json,.json" hidden>
+              <button type="button" class="btn danger" id="deleteAllChats">Delete all chats</button>
+              <div class="feedback" id="historyMsg" role="status"></div>
+            </div></div>
+        </div>
+      </div>
+      <div id="chatPerf" aria-label="Last response">
+        <div>Prefill<b id="pfPrefill">–</b></div><div>Generation<b id="pfGen">–</b></div>
+        <div>Tokens in / out<b id="pfTokens">–</b></div><div>Total time<b id="pfTotal">–</b></div>
+      </div>
+    </aside>
+  </section>
   </main>
 </div>
 
@@ -743,6 +928,7 @@ function showView(id, updateHash = true) {
   if (updateHash && location.hash !== VIEW_HASHES[id]) history.pushState(null, "", VIEW_HASHES[id]);
   if (id === "dashboardView" && $("requestLog").open) pollLogs();
   if (id === "downloadsView") openDownloads();
+  if (id === "chatView") { openChatView(); scheduleTimeline(); }
 }
 function viewFromHash() {
   const id = Object.keys(VIEW_HASHES).find(key => VIEW_HASHES[key] === location.hash) || "dashboardView";
@@ -953,6 +1139,7 @@ async function pollHealth() {
     $("mName").textContent = health.model || "–";
     $("avatar").textContent = (health.model || "MT").slice(0, 2).toUpperCase();
     $("chatModel").textContent = health.model || "Waiting for a model…";
+    $("csModel").textContent = health.model || "–";
     $("version").textContent = "v" + (health.version || "?");
   } catch {
     $("apiDot").style.background = "var(--bad)";
@@ -1204,126 +1391,6 @@ async function pollLogs() {
   } catch { /* endpoint shape is best-effort */ }
 }
 
-/* ---------------- chat (SSE streaming) ---------------- */
-const historyMsgs = [];
-let aborter = null;
-
-function addMsg(cls) {
-  $("chatEmpty").hidden = true;
-  const el = document.createElement("div");
-  el.className = "msg " + cls;
-  $("messages").appendChild(el);
-  return el;
-}
-const scrollDown = () => { const m = $("messages"); m.scrollTop = m.scrollHeight; };
-
-async function send() {
-  const text = $("input").value.trim();
-  if (!text || aborter) return;
-  $("input").value = "";
-  historyMsgs.push({ role: "user", content: text });
-  addMsg("user").textContent = text;
-
-  const el = addMsg("assistant");
-  const statusEl = document.createElement("div"); statusEl.className = "status";
-  statusEl.innerHTML = '<span class="spinner"></span><span class="phase">Processing prompt</span><b></b>';
-  const thinkEl = document.createElement("div"); thinkEl.className = "think"; thinkEl.hidden = true;
-  const bodyEl = document.createElement("div");
-  const metaEl = document.createElement("div"); metaEl.className = "meta";
-  el.append(statusEl, thinkEl, bodyEl, metaEl);
-  scrollDown();
-
-  // The prompt-processing clock. It runs from the request leaving the browser
-  // until the first token arrives, so what it counts is exactly the wait the
-  // TTFT figure reports afterwards.
-  const t0 = performance.now();
-  const elapsedEl = statusEl.querySelector("b");
-  const phaseEl = statusEl.querySelector(".phase");
-  const ticker = setInterval(() => {
-    elapsedEl.textContent = ((performance.now() - t0) / 1000).toFixed(1) + "s";
-  }, 100);
-  elapsedEl.textContent = "0.0s";
-  const endStatus = () => { clearInterval(ticker); statusEl.remove(); };
-
-  const messages = [];
-  if ($("sysPrompt").value.trim()) messages.push({ role: "system", content: $("sysPrompt").value.trim() });
-  messages.push(...historyMsgs);
-
-  aborter = new AbortController();
-  $("sendBtn").disabled = true; $("stopBtn").disabled = false; $("stopBtnTop").disabled = false;
-  let tFirst = null, answer = "", think = "", usage = null;
-
-  try {
-    const resp = await fetch("/v1/chat/completions", {
-      method: "POST", headers: { "Content-Type": "application/json" },
-      signal: aborter.signal,
-      body: JSON.stringify({
-        model: health.model || "model", messages,
-        // temperature and max_tokens come from the server's generation
-        // defaults (Settings tab), exactly as for any other client
-        stream: true, stream_options: { include_usage: true },
-      }),
-    });
-    if (!resp.ok) throw new Error("HTTP " + resp.status + ": " + (await resp.text()).slice(0, 300));
-    const reader = resp.body.getReader();
-    const dec = new TextDecoder();
-    let buf = "";
-    for (;;) {
-      const { done, value } = await reader.read();
-      if (done) break;
-      buf += dec.decode(value, { stream: true });
-      const lines = buf.split("\n"); buf = lines.pop();
-      for (const line of lines) {
-        if (!line.startsWith("data:")) continue;
-        const payload = line.slice(5).trim();
-        if (payload === "[DONE]") continue;
-        const chunk = JSON.parse(payload);
-        if (chunk.usage) usage = chunk.usage;
-        const delta = chunk.choices?.[0]?.delta || {};
-        if (delta.reasoning_content) {
-          if (tFirst === null) tFirst = performance.now();
-          // The prompt is through; the model is reasoning. Keep the spinner —
-          // the reasoning block is collapsed by default, so this is still the
-          // only sign that anything is happening.
-          phaseEl.textContent = "Thinking";
-          think += delta.reasoning_content; thinkEl.hidden = false; thinkEl.textContent = think;
-        }
-        if (delta.content) {
-          if (tFirst === null) tFirst = performance.now();
-          endStatus();
-          answer += delta.content; bodyEl.textContent = answer;
-        }
-        scrollDown();
-      }
-    }
-    historyMsgs.push({ role: "assistant", content: answer });
-    const secs = (performance.now() - (tFirst ?? t0)) / 1000;
-    const parts = [];
-    if (usage) {
-      const tps = usage.completion_tokens > 1 && secs > 0 ? (usage.completion_tokens - 1) / secs : null;
-      parts.push(`<b>${usage.completion_tokens}</b> tok`);
-      if (tps) parts.push(`<b>${fmt(tps)}</b> tok/s`);
-      parts.push(`TTFT <b>${fmt(((tFirst ?? t0) - t0)/1000, 2)}s</b>`);
-      const cached = usage.prompt_tokens_details?.cached_tokens;
-      if (cached) parts.push(`cache-hit <b>${cached}</b>/${usage.prompt_tokens}`);
-    }
-    metaEl.innerHTML = parts.join(" · ");
-  } catch (e) {
-    if (e.name === "AbortError") { metaEl.textContent = "stopped"; historyMsgs.push({ role: "assistant", content: answer }); }
-    else { bodyEl.textContent = (answer ? answer + "\n\n" : "") + "Error: " + e.message; }
-  } finally {
-    // Also covers the paths the stream never reaches: an abort, an HTTP error,
-    // or a turn that produced nothing but reasoning.
-    endStatus();
-    aborter = null;
-    $("sendBtn").disabled = false; $("stopBtn").disabled = true; $("stopBtnTop").disabled = true;
-    pollStats();
-  }
-}
-$("sendBtn").onclick = send;
-$("stopBtn").onclick = () => aborter?.abort();
-$("input").addEventListener("keydown", e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(); } });
-
 /* ---------------- downloads ---------------- */
 const GIB = 1024 ** 3;
 const DL_API = "/admin/downloads";
@@ -1405,8 +1472,9 @@ function taskRow(task) {
   if (task.status === "failed" || task.status === "cancelled") acts.append(el("button", { type: "button", class: "btn ghost", onclick: () => taskAction("retry", task) }, "Retry"));
   if (!active && !queued) acts.append(el("button", { type: "button", class: "btn ghost", onclick: () => taskAction("remove", task) }, "Remove"));
   return el("div", { class: "dl-job" },
-    el("div", { class: "name" }, el("span", { class: "org" }, org), name, el("span", { class: "dl-state " + task.status }, task.status)),
+    el("div", { class: "name" }, name, el("span", { class: "dl-state " + task.status }, task.status)),
     acts,
+    org && el("div", { class: "owner" }, org.replace(/\/$/, "")),
     (active || queued) && el("div", { class: "dl-bar" + (active && !known ? " indeterminate" : "") }, el("i", { style: `width:${active && known ? task.progress : 0}%` })),
     stat && el("div", { class: "stat" }, stat),
     task.error && el("div", { class: "stat error" }, task.error));
@@ -1474,11 +1542,12 @@ function fitInfo(size) {
 }
 function modelRow(model, index) {
   const [org, name] = splitRepo(model.repo_id);
+  const owner = org.replace(/\/$/, "");
   const fit = fitInfo(model.size);
   const subs = [model.params_formatted && model.params_formatted + " params", model.size_formatted].filter(Boolean).join("  ·  ");
   return el("div", { class: "dl-row" },
     el("div", { class: "rank" }, model.rank || (index + 1)),
-    el("div", {}, el("div", { class: "title" }, el("span", { class: "org" }, org), name), subs && el("div", { class: "sub" }, subs)),
+    el("div", {}, el("div", { class: "title" }, name), (owner || subs) && el("div", { class: "sub" }, owner && el("span", { class: "owner" }, owner), owner && subs && "  ·  ", subs)),
     el("div", { class: "stats" }, `↓ ${human(model.downloads)}   ♥ ${human(model.likes)}`),
     el("div", { class: fit?.cls ? "fit " + fit.cls : "fit" },
       fit ? [el("b", {}, Math.round(fit.ratio * 100) + "%"), " of memory", el("div", { class: "dl-bar" }, el("i", { style: `width:${Math.min(100, fit.ratio * 100)}%` }))] : "—"),
@@ -1669,6 +1738,790 @@ $("dlSettingsBtn").onclick = openDownloadSettings;
 $("dlCfgCancel").onclick = () => $("dlSettings").close();
 $("dlCfgSave").onclick = saveDownloadSettings;
 for (const dialog of [$("dlDetail"), $("dlSettings")]) dialog.addEventListener("click", e => { if (e.target === dialog) dialog.close(); });
+
+/* ---------------- chat ----------------
+   Conversations live on the server (/admin/chats), one document each: the page owns its shape.
+   A document is { id, title, manualTitle, pinned, updatedAt, model, systemPrompt, activeProfile,
+   settings, contextTokens, messages }. Fields starting with "_" are transient and never saved.
+   Messages are a flat list: a user message is followed by one or more assistant messages (the
+   variants of that turn); user.active names the one that is shown and sent as history. */
+const CHAT_API = "/admin/chats";
+const DEFAULT_PROFILE = "System Default";
+const chat = {
+  list: [], results: null, docs: {}, cur: null, query: "", seq: 0,
+  profiles: [{ name: DEFAULT_PROFILE, content: "" }],
+  streams: {}, editing: null, renaming: null, armed: null, profRename: null, profArmed: null,
+  stick: true, tab: "model", ready: null, searchTimer: null, paintQueued: new Set(),
+  expandThinking: false,
+};
+try { chat.expandThinking = localStorage.getItem("chatExpandThinking") === "1"; } catch {}
+
+const ICONS = {
+  pin: "M12 17v5M9 10.8a2 2 0 0 1-1.1 1.8l-1.8.9A2 2 0 0 0 5 15.2V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.8a2 2 0 0 0-1.1-1.8l-1.8-.9A2 2 0 0 1 15 10.8V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z",
+  pencil: "M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z",
+  trash: "M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14M10 11v6M14 11v6",
+  copy: "M9 9h11v11H9zM5 15V5h10",
+  refresh: "M20 11a8 8 0 0 0-14.9-3M4 4v4h4M4 13a8 8 0 0 0 14.9 3M20 20v-4h-4",
+  more: "M12 5h.01M12 12h.01M12 19h.01",
+  branch: "M6 3v12M18 6a3 3 0 1 0 0 .01M6 18a3 3 0 1 0 0 .01M18 9a9 9 0 0 1-9 9",
+  doc: "M7 3h7l5 5v13H7zM14 3v5h5",
+  spark: "M12 3l2 6 6 2-6 2-2 6-2-6-6-2 6-2z",
+  check: "M5 12l5 5L20 7",
+  x: "M6 6l12 12M18 6L6 18",
+  chevron: "M6 9l6 6 6-6",
+};
+function icon(name) {
+  const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+  svg.setAttribute("viewBox", "0 0 24 24"); svg.setAttribute("aria-hidden", "true");
+  const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+  path.setAttribute("d", ICONS[name]);
+  if (name === "more") path.setAttribute("stroke-width", "3");
+  svg.append(path);
+  return svg;
+}
+const miniBtn = (name, title, onclick, cls = "") => el("button", { type: "button", class: "mini " + cls, title, "aria-label": title, onclick }, icon(name));
+
+const chatJson = async (path, options = {}) => {
+  const response = await fetch(path, options);
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) throw new Error(data.detail || data.error || `Request failed (${response.status})`);
+  return data;
+};
+const rid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+const newChatId = () => "chat_" + rid();
+const newMsgId = () => "msg_" + rid();
+const clone = value => JSON.parse(JSON.stringify(value));
+const textOf = c => typeof c === "string" ? c : Array.isArray(c) ? c.map(p => p?.text || "").join("\n") : "";
+
+/* ---- safe markdown: everything is escaped first, only whitelisted tags are produced ---- */
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+function mdInline(src) {
+  const stash = [];
+  const keep = html => "\u0001" + (stash.push(html) - 1) + "\u0001";
+  const link = (label, url) => keep(`<a href="${esc(url)}" target="_blank" rel="noopener noreferrer">${esc(label)}</a>`);
+  let s = String(src).replace(/\u0001/g, "");
+  s = s.replace(/(`+)([\s\S]*?[^`])\1(?!`)/g, (_, __, code) => keep("<code>" + esc(code.trim()) + "</code>"));
+  s = s.replace(/!?\[([^\]\n]+)\]\(((?:https?:\/\/|mailto:)[^\s)]+)\)/g, (_, label, url) => link(label, url));
+  s = s.replace(/(^|[\s(>])(https?:\/\/[^\s<>()]*[^\s<>().,;:!?'"\]])/g, (_, lead, url) => lead + link(url, url));
+  s = esc(s)
+    .replace(/\*\*(?=\S)([\s\S]*?\S)\*\*/g, "<strong>$1</strong>")
+    .replace(/(^|[^\w*])__(?=\S)([\s\S]*?\S)__(?![\w*])/g, "$1<strong>$2</strong>")
+    .replace(/(^|[^*\w])\*(?=[^\s*])([^*\n]*?[^\s*])\*(?!\*)/g, "$1<em>$2</em>")
+    .replace(/(^|[\s(])_(?=[^\s_])([^_\n]*?[^\s_])_(?=$|[\s).,;:!?])/g, "$1<em>$2</em>")
+    .replace(/~~(?=\S)([\s\S]*?\S)~~/g, "<del>$1</del>");
+  return s.replace(/\u0001(\d+)\u0001/g, (_, i) => stash[i]).replace(/\n/g, "<br>");
+}
+const BLOCK_START = /^(\s*(`{3,}|~{3,})|#{1,6}\s|\s{0,3}>|\s*([-*+]|\d+[.)])\s+|\s{0,3}([-*_])(\s*\4){2,}\s*$)/;
+function mdList(lines, i) {
+  const item = /^(\s*)([-*+]|\d+[.)])\s+(.*)$/;
+  const first = lines[i].match(item);
+  const base = first[1].length, ordered = /\d/.test(first[2]);
+  const items = [];
+  while (i < lines.length) {
+    const m = lines[i].match(item);
+    if (!m || m[1].length < base) break;
+    if (m[1].length > base) {
+      if (!items.length) break;
+      const nested = mdList(lines, i);
+      items[items.length - 1] += nested.html; i = nested.next; continue;
+    }
+    if (/\d/.test(m[2]) !== ordered) break;
+    const text = [m[3]]; i++;
+    while (i < lines.length && lines[i].trim() && /^\s+/.test(lines[i]) && !item.test(lines[i])) text.push(lines[i++].trim());
+    items.push(mdInline(text.join("\n")));
+    if (i + 1 < lines.length && !lines[i].trim() && item.test(lines[i + 1]) && lines[i + 1].match(item)[1].length >= base) i++;
+  }
+  const start = ordered ? parseInt(first[2], 10) : 1;
+  const tag = ordered ? "ol" : "ul";
+  return { html: `<${tag}${ordered && start !== 1 ? ` start="${start}"` : ""}>` + items.map(h => `<li>${h}</li>`).join("") + `</${tag}>`, next: i };
+}
+function mdTable(lines, i) {
+  const cells = row => row.trim().replace(/^\||\|$/g, "").split("|").map(c => c.trim());
+  const align = cells(lines[i + 1]).map(c => c.startsWith(":") && c.endsWith(":") ? "center" : c.endsWith(":") ? "right" : "");
+  const cell = (tag, text, n) => `<${tag}${align[n] ? ` style="text-align:${align[n]}"` : ""}>${mdInline(text)}</${tag}>`;
+  let html = "<div class=\"tbl\"><table><thead><tr>" + cells(lines[i]).map((c, n) => cell("th", c, n)).join("") + "</tr></thead><tbody>";
+  i += 2;
+  while (i < lines.length && lines[i].trim() && lines[i].includes("|")) html += "<tr>" + cells(lines[i++]).map((c, n) => cell("td", c, n)).join("") + "</tr>";
+  return { html: html + "</tbody></table></div>", next: i };
+}
+function renderMarkdown(text) {
+  const lines = String(text).replace(/\r\n?/g, "\n").split("\n");
+  const out = [];
+  let i = 0;
+  while (i < lines.length) {
+    const line = lines[i];
+    let m = line.match(/^\s*(`{3,}|~{3,})\s*([\w+#.-]*)\s*$/);
+    if (m) {
+      const close = new RegExp("^\\s*" + (m[1][0] === "`" ? "`" : "~") + "{" + m[1].length + ",}\\s*$");
+      const body = [];
+      for (i++; i < lines.length && !close.test(lines[i]); i++) body.push(lines[i]);
+      i++;
+      out.push(`<div class="code"><div class="code-head"><span>${esc(m[2] || "text")}</span><button type="button" class="code-copy">Copy</button></div><pre><code>${esc(body.join("\n"))}</code></pre></div>`);
+      continue;
+    }
+    if (!line.trim()) { i++; continue; }
+    if ((m = line.match(/^(#{1,6})\s+(.*?)\s*#*\s*$/))) { out.push(`<h${m[1].length}>${mdInline(m[2])}</h${m[1].length}>`); i++; continue; }
+    if (/^\s{0,3}([-*_])(\s*\1){2,}\s*$/.test(line)) { out.push("<hr>"); i++; continue; }
+    if (/^\s{0,3}>/.test(line)) {
+      const quoted = [];
+      for (; i < lines.length && /^\s{0,3}>/.test(lines[i]); i++) quoted.push(lines[i].replace(/^\s{0,3}>\s?/, ""));
+      out.push("<blockquote>" + renderMarkdown(quoted.join("\n")) + "</blockquote>");
+      continue;
+    }
+    if (line.includes("|") && i + 1 < lines.length && /^\s*\|?\s*:?-{2,}:?\s*(\|\s*:?-{2,}:?\s*)*\|?\s*$/.test(lines[i + 1])) {
+      const table = mdTable(lines, i); out.push(table.html); i = table.next; continue;
+    }
+    if (/^\s*([-*+]|\d+[.)])\s+/.test(line)) { const list = mdList(lines, i); out.push(list.html); i = list.next; continue; }
+    const para = [line];
+    for (i++; i < lines.length && lines[i].trim() && !BLOCK_START.test(lines[i]); i++) para.push(lines[i]);
+    out.push("<p>" + mdInline(para.join("\n")) + "</p>");
+  }
+  return out.join("");
+}
+
+/* ---- persistence ---- */
+const byRecency = (a, b) => (!!b.pinned - !!a.pinned) || ((Date.parse(b.updatedAt) || 0) - (Date.parse(a.updatedAt) || 0));
+const summaryOf = d => ({ id: d.id, title: d.title || "", pinned: !!d.pinned, manualTitle: !!d.manualTitle, updatedAt: d.updatedAt, model: d.model, messageCount: d.messages.length });
+function chatNote(text) { $("chatHint").textContent = text || "Enter to send · Shift+Enter for a new line"; $("chatHint").style.color = text ? "var(--bad)" : ""; }
+function persist(doc, { touch = true } = {}) {
+  if (touch) doc.updatedAt = new Date().toISOString();
+  // A message still waiting for its first token is not worth storing; a reload would show a blank.
+  const body = JSON.stringify({ ...doc, messages: doc.messages.filter(m => !(m._streaming && !m.content && !m.thinking)) }, (k, v) => k.startsWith("_") ? undefined : v);
+  doc._saved = true;
+  doc._queue = (doc._queue || Promise.resolve())
+    .then(() => chatJson(`${CHAT_API}/${doc.id}`, { method: "PUT", headers: { "Content-Type": "application/json" }, body }))
+    .then(() => chatNote(""), e => chatNote("Could not save this chat: " + e.message));
+  const entry = summaryOf(doc), at = chat.list.findIndex(c => c.id === doc.id);
+  if (at >= 0) chat.list[at] = entry; else chat.list.push(entry);
+  chat.list.sort(byRecency);
+  renderChatList();
+  return doc._queue;
+}
+// Documents can come from an import or another version: fill in what the page relies on.
+function normalizeDoc(doc) {
+  doc.title = typeof doc.title === "string" ? doc.title : "";
+  doc.settings = doc.settings && typeof doc.settings === "object" && !Array.isArray(doc.settings) ? doc.settings : {};
+  doc.systemPrompt = typeof doc.systemPrompt === "string" ? doc.systemPrompt : "";
+  doc.messages = Array.isArray(doc.messages) ? doc.messages.filter(m => m && typeof m === "object") : [];
+  for (const m of doc.messages) { m.id ||= newMsgId(); m.content ??= ""; }
+  return doc;
+}
+async function getDoc(id) {
+  if (!chat.docs[id]) { const doc = normalizeDoc(await chatJson(`${CHAT_API}/${id}`)); doc._saved = true; chat.docs[id] = doc; }
+  return chat.docs[id];
+}
+const isStreaming = id => !!chat.streams[id];
+const anyStreaming = () => Object.keys(chat.streams).length > 0;
+
+/* ---- conversations ---- */
+function blankChat() {
+  const base = chat.profiles.find(p => p.name === DEFAULT_PROFILE) || chat.profiles[0];
+  const doc = { id: newChatId(), title: "", manualTitle: false, pinned: false, updatedAt: new Date().toISOString(), model: health.model || null, systemPrompt: base?.content || "", activeProfile: base?.name || null, settings: {}, messages: [] };
+  chat.docs[doc.id] = doc;
+  return doc;
+}
+function newChat() {
+  if (chat.cur && !chat.cur._saved && !chat.cur.messages.length) { $("input").focus(); return; }
+  setCurrent(blankChat());
+  if (innerWidth < 760) $("chatView").classList.add("hide-side");
+  $("input").focus();
+}
+function setCurrent(doc) {
+  chat.cur = doc; chat.editing = null; chat.stick = true;
+  try { localStorage.setItem("chatCurrent", doc._saved ? doc.id : ""); } catch {}
+  renderChatList(); renderMessages(); syncPanel(); updateComposer();
+}
+async function openChat(id) {
+  if (chat.cur?.id === id) { if (innerWidth < 760) $("chatView").classList.add("hide-side"); return; }
+  try { setCurrent(isStreaming(id) ? chat.docs[id] : (delete chat.docs[id], await getDoc(id))); }
+  catch (e) { chatNote("Could not open that chat: " + e.message); await loadChatList(); return; }
+  if (innerWidth < 760) $("chatView").classList.add("hide-side");
+}
+async function loadChatList() {
+  try { chat.list = (await chatJson(CHAT_API)).chats || []; chat.list.sort(byRecency); }
+  catch (e) { chatNote("Could not load your chats: " + e.message); }
+  renderChatList();
+}
+async function deleteChat(id) {
+  chat.streams[id]?.abort.abort();
+  try { await chatJson(`${CHAT_API}/${id}`, { method: "DELETE" }); } catch (e) { if (!/not found/i.test(e.message)) { chatNote("Could not delete: " + e.message); return; } }
+  delete chat.docs[id]; chat.list = chat.list.filter(c => c.id !== id); chat.armed = null;
+  if (chat.cur?.id === id) { const next = chat.list[0]; if (next) await openChat(next.id); else setCurrent(blankChat()); }
+  else renderChatList();
+}
+function renderChatList() {
+  const box = $("chatList"), rows = [];
+  const shown = chat.query ? (chat.results ?? chat.list.filter(c => (c.title || "").toLowerCase().includes(chat.query.toLowerCase()))) : chat.list;
+  const draft = chat.cur && !chat.cur._saved && !chat.query ? [{ id: chat.cur.id, title: "", draft: true }] : [];
+  for (const c of [...draft, ...shown]) {
+    const active = chat.cur?.id === c.id;
+    const row = el("div", { class: "chat-row" + (active ? " active" : ""), role: "listitem", "data-id": c.id, tabindex: "0", "aria-current": active ? "true" : null,
+      onclick: () => { if (chat.renaming !== c.id) openChat(c.id); },
+      onkeydown: e => { if (e.target === row && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); openChat(c.id); } } });
+    if (isStreaming(c.id)) row.append(el("span", { class: "live", title: "Generating…" }));
+    if (chat.renaming === c.id) {
+      const input = el("input", { type: "text", value: c.title, "aria-label": "Chat title", onclick: e => e.stopPropagation(),
+        onkeydown: e => { if (e.key === "Enter") { e.preventDefault(); commitRename(c.id, input.value); } if (e.key === "Escape") { chat.renaming = null; renderChatList(); } } });
+      row.append(input, miniBtn("check", "Save title", e => { e.stopPropagation(); commitRename(c.id, input.value); }), miniBtn("x", "Cancel", e => { e.stopPropagation(); chat.renaming = null; renderChatList(); }));
+      queueMicrotask(() => { input.focus(); input.select(); });
+    } else {
+      row.append(el("span", { class: "ctitle", title: c.title || "New chat" }, c.title || "New chat"));
+      if (!c.draft) {
+        row.append(
+          miniBtn("pin", c.pinned ? "Unpin chat" : "Pin chat", e => { e.stopPropagation(); togglePin(c.id); }, c.pinned ? "on" : ""),
+          miniBtn("pencil", "Rename chat", e => { e.stopPropagation(); chat.renaming = c.id; renderChatList(); }),
+          chat.armed === c.id
+            ? el("button", { type: "button", class: "mini armed", onclick: e => { e.stopPropagation(); deleteChat(c.id); } }, "Delete?")
+            : miniBtn("trash", "Delete chat", e => { e.stopPropagation(); chat.armed = c.id; renderChatList(); setTimeout(() => { if (chat.armed === c.id) { chat.armed = null; renderChatList(); } }, 3500); }, "danger"));
+      }
+    }
+    rows.push(row);
+  }
+  if (!rows.length) rows.push(el("div", { class: "chat-empty" }, chat.query ? `No chats match “${chat.query}”.` : "No conversations yet."));
+  box.replaceChildren(...rows);
+  $("chatTitle").textContent = chat.cur?.title || "New chat";
+}
+async function commitRename(id, value) {
+  chat.renaming = null;
+  const title = value.trim();
+  if (title) { const doc = await getDoc(id); doc.title = title; doc.manualTitle = true; await persist(doc, { touch: false }); }
+  renderChatList();
+}
+async function togglePin(id) { const doc = await getDoc(id); doc.pinned = !doc.pinned; persist(doc, { touch: false }); }
+$("newChatBtn").onclick = newChat;
+$("chatSearch").addEventListener("input", () => {
+  chat.query = $("chatSearch").value.trim(); chat.results = null; renderChatList();
+  clearTimeout(chat.searchTimer);
+  if (!chat.query) return;
+  const ticket = ++chat.seq;
+  chat.searchTimer = setTimeout(async () => {
+    try { const found = (await chatJson(`${CHAT_API}?q=${encodeURIComponent(chat.query)}`)).chats || []; if (ticket === chat.seq) { chat.results = found; renderChatList(); } } catch {}
+  }, 250);
+});
+
+/* ---- turns and variants ---- */
+function turnsOf(doc) {
+  const turns = [];
+  doc.messages.forEach((m, index) => {
+    if (m.role === "user" || !turns.length) turns.push({ user: m.role === "user" ? m : null, userIndex: m.role === "user" ? index : -1, assistants: m.role === "user" ? [] : [m], indexes: [index] });
+    else { turns.at(-1).assistants.push(m); turns.at(-1).indexes.push(index); }
+  });
+  return turns;
+}
+const activeOf = turn => turn.assistants.find(a => a.id === turn.user?.active) || turn.assistants.at(-1) || null;
+function visibleItems(doc) {
+  const items = [];
+  for (const turn of turnsOf(doc)) {
+    if (turn.user) items.push({ msg: turn.user, index: turn.userIndex, turn });
+    const a = activeOf(turn);
+    if (a) items.push({ msg: a, index: doc.messages.indexOf(a), turn });
+  }
+  return items;
+}
+function requestMessages(doc, userIndex) {
+  const out = [];
+  if (doc.systemPrompt?.trim()) out.push({ role: "system", content: doc.systemPrompt.trim() });
+  for (const turn of turnsOf(doc)) {
+    if (!turn.user) continue;
+    if (turn.userIndex > userIndex) break;
+    out.push({ role: "user", content: textOf(turn.user.content) });
+    if (turn.userIndex === userIndex) break;
+    const a = activeOf(turn);
+    if (a?.content) out.push({ role: "assistant", content: a.content });
+  }
+  return out;
+}
+function samplingOf(settings, override = {}) {
+  const s = { ...settings, ...override }, body = {};
+  for (const key of ["temperature", "top_p", "top_k", "max_tokens", "presence_penalty", "frequency_penalty"]) if (Number.isFinite(s[key])) body[key] = s[key];
+  if (s.thinking === "on") body.thinking = { type: "enabled" };
+  if (s.thinking === "off") body.thinking = { type: "disabled" };
+  return body;
+}
+const deriveTitle = text => { const line = (text.split("\n").find(l => l.trim()) || "").replace(/\s+/g, " ").trim(); return line.length > 48 ? line.slice(0, 47) + "…" : line; };
+
+/* ---- sending, regenerating, editing ---- */
+async function send() {
+  const text = $("input").value.trim();
+  if (!text) return;
+  await openChatView();
+  const doc = chat.cur;
+  if (!doc || isStreaming(doc.id)) return;
+  $("input").value = ""; autosize();
+  doc.messages.push({ id: newMsgId(), role: "user", content: text });
+  if (!doc.manualTitle && !doc.title) doc.title = deriveTitle(text);
+  doc.model = health.model || doc.model;
+  chat.stick = true;
+  await generate(doc, doc.messages.length - 1);
+}
+async function generate(doc, userIndex, { override = {} } = {}) {
+  const user = doc.messages[userIndex];
+  let at = userIndex + 1;
+  while (at < doc.messages.length && doc.messages[at].role !== "user") at++;
+  const msg = { id: newMsgId(), role: "assistant", content: "", thinking: "", model: health.model || "", createdAt: new Date().toISOString(), _streaming: true, _t0: performance.now() };
+  doc.messages.splice(at, 0, msg);
+  user.active = msg.id;
+  const abort = new AbortController();
+  chat.streams[doc.id] = { abort, msgId: msg.id };
+  persist(doc);
+  if (chat.cur?.id === doc.id) renderMessages();
+  updateComposer();
+  let usage = null, tFirst = null;
+  try {
+    const resp = await fetch("/v1/chat/completions", {
+      method: "POST", headers: { "Content-Type": "application/json" }, signal: abort.signal,
+      body: JSON.stringify({ model: health.model || "model", messages: requestMessages(doc, userIndex), stream: true, stream_options: { include_usage: true }, ...samplingOf(doc.settings, override) }),
+    });
+    if (!resp.ok) throw new Error("HTTP " + resp.status + ": " + (await resp.text()).slice(0, 300));
+    const reader = resp.body.getReader(), dec = new TextDecoder();
+    let buf = "";
+    for (;;) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buf += dec.decode(value, { stream: true });
+      const lines = buf.split("\n"); buf = lines.pop();
+      for (const line of lines) {
+        if (!line.startsWith("data:")) continue;
+        const payload = line.slice(5).trim();
+        if (payload === "[DONE]") continue;
+        let chunk; try { chunk = JSON.parse(payload); } catch { continue; }
+        if (chunk.error) throw new Error(chunk.error.message || JSON.stringify(chunk.error));
+        if (chunk.usage) usage = chunk.usage;
+        const delta = chunk.choices?.[0]?.delta || {};
+        if (delta.reasoning_content) { tFirst ??= performance.now(); msg.thinking += delta.reasoning_content; msg._phase = "Thinking"; }
+        if (delta.content) { tFirst ??= performance.now(); msg.content += delta.content; }
+        if (delta.reasoning_content || delta.content) schedulePaint(doc.id, msg);
+      }
+    }
+  } catch (e) {
+    if (e.name === "AbortError") msg.stopped = true;
+    else msg.error = e.message;
+  } finally {
+    const now = performance.now(), secs = (now - (tFirst ?? msg._t0)) / 1000;
+    msg._streaming = false; delete chat.streams[doc.id];
+    msg.stats = {
+      prompt_tokens: usage?.prompt_tokens ?? null, completion_tokens: usage?.completion_tokens ?? null,
+      cached_tokens: usage?.prompt_tokens_details?.cached_tokens ?? null,
+      ttft_s: tFirst ? (tFirst - msg._t0) / 1000 : null, total_s: (now - msg._t0) / 1000,
+      tps: usage?.completion_tokens > 1 && secs > 0 ? (usage.completion_tokens - 1) / secs : null,
+    };
+    if (usage) doc.contextTokens = (usage.prompt_tokens || 0) + (usage.completion_tokens || 0);
+    if (!msg.content && !msg.thinking && !msg.error) {
+      // Stopped before anything arrived: leave no empty answer behind.
+      doc.messages.splice(doc.messages.indexOf(msg), 1);
+      const turn = turnsOf(doc).find(t => t.user === user);
+      if (user.active === msg.id) user.active = turn?.assistants.at(-1)?.id;
+    }
+    persist(doc);
+    if (chat.cur?.id === doc.id) { renderMessages(); updateInspector(); }
+    updateComposer(); pollStats();
+  }
+}
+function schedulePaint(docId, msg) {
+  if (chat.paintQueued.has(msg.id)) return;
+  chat.paintQueued.add(msg.id);
+  requestAnimationFrame(() => {
+    chat.paintQueued.delete(msg.id);
+    if (chat.cur?.id !== docId) return;
+    const node = $("messages").querySelector(`[data-id="${msg.id}"]`);
+    if (node) { paintAssistant(node, msg); autoscroll(); updateInspector(); scheduleTimeline(); }
+  });
+}
+async function regenerate(index, override = {}) {
+  const doc = chat.cur;
+  if (!doc || isStreaming(doc.id)) return;
+  let u = index; while (u >= 0 && doc.messages[u].role !== "user") u--;
+  if (u < 0) return;
+  chat.stick = true;
+  await generate(doc, u, { override });
+}
+function stopChat(id = chat.cur?.id) { chat.streams[id]?.abort.abort(); }
+function stopAllChats() { Object.values(chat.streams).forEach(s => s.abort.abort()); }
+function startEdit(index) { if (isStreaming(chat.cur.id) || chat.editing) return; chat.editing = { index, text: textOf(chat.cur.messages[index].content) }; renderMessages(); }
+async function saveEdit(index, text) {
+  const doc = chat.cur;
+  text = text.trim();
+  if (!text || isStreaming(doc.id)) return;
+  doc.messages = doc.messages.slice(0, index);
+  doc.messages.push({ id: newMsgId(), role: "user", content: text });
+  if (!doc.manualTitle && index === 0) doc.title = deriveTitle(text);
+  chat.editing = null; chat.stick = true;
+  await generate(doc, doc.messages.length - 1);
+}
+function deleteMessage(index) {
+  const doc = chat.cur;
+  if (isStreaming(doc.id)) return;
+  let u = index; while (u > 0 && doc.messages[u].role !== "user") u--;
+  doc.messages = doc.messages.slice(0, u);
+  if (!doc.messages.length) { deleteChat(doc.id); return; }
+  persist(doc); renderMessages(); updateInspector();
+}
+function selectVariant(userIndex, id) { const doc = chat.cur; doc.messages[userIndex].active = id; persist(doc, { touch: false }); renderMessages(); updateInspector(); }
+function deleteVariant(userIndex, id) {
+  const doc = chat.cur;
+  if (isStreaming(doc.id)) return;
+  doc.messages = doc.messages.filter(m => m.id !== id);
+  const user = doc.messages[userIndex], turn = turnsOf(doc).find(t => t.user === user);
+  if (user.active === id) user.active = turn?.assistants.at(-1)?.id;
+  persist(doc); renderMessages(); updateInspector();
+}
+async function branchChat(index) {
+  const doc = chat.cur, items = visibleItems(doc), k = items.findIndex(it => it.index === index);
+  if (k < 0 || isStreaming(doc.id)) return;
+  const kept = items.slice(0, k + 1).map((it, n, all) => clone({ ...it.msg, active: it.msg.role === "user" ? all[n + 1]?.msg.id : undefined }));
+  const branch = { ...clone({ ...doc, messages: [] }), id: newChatId(), title: "Branch of " + (doc.title || "New chat"), manualTitle: true, pinned: false, messages: kept, updatedAt: new Date().toISOString() };
+  for (const key of Object.keys(branch)) if (key.startsWith("_")) delete branch[key];
+  chat.docs[branch.id] = branch;
+  await persist(branch);
+  setCurrent(branch);
+}
+
+/* ---- menus and clipboard ---- */
+let openMenuNode = null;
+function closeMenu() { openMenuNode?.remove(); openMenuNode = null; }
+function openMenu(anchor, items) {
+  closeMenu();
+  const menu = el("div", { class: "menu", role: "menu" }, items.map(it => it === "-" ? el("hr") : el("button", { type: "button", role: "menuitem", class: it.danger ? "danger" : "", onclick: () => { closeMenu(); it.run(); } }, icon(it.icon), it.label)));
+  document.body.append(menu);
+  const r = anchor.getBoundingClientRect(), mw = menu.offsetWidth, mh = menu.offsetHeight;
+  menu.style.left = Math.max(8, Math.min(innerWidth - mw - 8, r.right - mw)) + "px";
+  menu.style.top = (r.bottom + mh + 8 > innerHeight ? Math.max(8, r.top - mh - 4) : r.bottom + 4) + "px";
+  openMenuNode = menu;
+  menu.querySelector("button")?.focus();
+}
+document.addEventListener("click", e => { if (openMenuNode && !openMenuNode.contains(e.target) && !e.target.closest(".menu-anchor")) closeMenu(); });
+document.addEventListener("keydown", e => { if (e.key === "Escape") { closeMenu(); if (chat.editing) { chat.editing = null; renderMessages(); } } });
+$("content").addEventListener("scroll", closeMenu, true);
+async function copyText(text) {
+  try { await navigator.clipboard.writeText(text); }
+  catch {
+    const area = el("textarea", { style: "position:fixed;opacity:0" }); area.value = text; document.body.append(area); area.select();
+    try { document.execCommand("copy"); } catch {} area.remove();
+  }
+}
+
+/* ---- rendering the thread ---- */
+const modelLabel = msg => msg.model || health.model || "Assistant";
+const thinkingOpen = msg => msg._open ?? (msg._streaming ? !msg.content : chat.expandThinking);
+function buildUser(item) {
+  const { msg, index, turn } = item;
+  if (chat.editing?.index === index) {
+    const area = el("textarea", { "aria-label": "Edit message" }); area.value = chat.editing.text;
+    area.addEventListener("input", () => { chat.editing.text = area.value; });
+    area.addEventListener("keydown", e => { if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) { e.preventDefault(); saveEdit(index, area.value); } });
+    queueMicrotask(() => { area.focus(); area.setSelectionRange(area.value.length, area.value.length); });
+    return el("div", { class: "msg user editing", "data-id": msg.id }, area,
+      el("div", { class: "actions", style: "justify-content:flex-end" },
+        el("button", { type: "button", class: "btn ghost", onclick: () => { chat.editing = null; renderMessages(); } }, "Cancel"),
+        el("button", { type: "button", class: "btn", onclick: () => saveEdit(index, area.value) }, "Save & regenerate")));
+  }
+  const more = el("button", { type: "button", class: "mini menu-anchor", title: "More actions", "aria-label": "More actions" }, icon("more"));
+  more.onclick = () => openMenu(more, [
+    { label: "Branch here", icon: "branch", run: () => branchChat(index) },
+    { label: "Copy as markdown", icon: "doc", run: () => copyText(textOf(msg.content)) },
+    "-", { label: "Delete message", icon: "trash", danger: true, run: () => deleteMessage(index) }]);
+  const node = el("div", { class: "msg user", "data-id": msg.id },
+    el("div", { class: "macts" }, miniBtn("copy", "Copy", () => copyText(textOf(msg.content))), miniBtn("pencil", "Edit", () => startEdit(index)), more),
+    el("div", { class: "bubble" }, textOf(msg.content)));
+  if (turn.assistants.length > 1) {
+    const active = activeOf(turn);
+    node.append(el("div", { class: "variants", role: "group", "aria-label": "Responses" }, turn.assistants.map((a, n) =>
+      el("div", { class: "variant" + (a === active ? " active" : "") },
+        el("button", { type: "button", onclick: () => selectVariant(index, a.id), "aria-pressed": String(a === active), title: modelLabel(a) }, "Response " + (n + 1)),
+        el("button", { type: "button", title: "Delete this response", "aria-label": "Delete response " + (n + 1), onclick: () => deleteVariant(index, a.id) }, "×")))));
+  }
+  return node;
+}
+function buildAssistant(item) {
+  const { msg, index } = item;
+  const more = el("button", { type: "button", class: "mini menu-anchor", title: "More actions", "aria-label": "More actions" }, icon("more"));
+  more.onclick = () => openMenu(more, [
+    { label: "Branch here", icon: "branch", run: () => branchChat(index) },
+    { label: "Copy as markdown", icon: "doc", run: () => copyText(msg.content) },
+    { label: "Regenerate with more variety", icon: "spark", run: () => regenerate(index, { temperature: Math.min(2, (Number.isFinite(chat.cur.settings.temperature) ? chat.cur.settings.temperature : 0.8) + 0.4) }) },
+    "-", { label: "Delete message", icon: "trash", danger: true, run: () => deleteMessage(index) }]);
+  const node = el("div", { class: "msg assistant", "data-id": msg.id },
+    el("div", { class: "mhead" }, el("span", { class: "who" }, modelLabel(msg)), el("span", { class: "spacer" }),
+      el("div", { class: "macts" }, miniBtn("copy", "Copy", () => copyText(msg.content)), miniBtn("refresh", "Regenerate", () => regenerate(index)), more)),
+    el("div", { class: "think", hidden: true }, el("button", { type: "button", class: "think-head", "aria-expanded": "false", onclick: () => { msg._open = !thinkingOpen(msg); paintAssistant(node, msg); } }, el("span", {}, "Thinking"), icon("chevron")), el("div", { class: "think-body md" })),
+    el("div", { class: "mbody md" }),
+    el("div", { class: "mstatus", hidden: true }, el("span", { class: "spinner" }), el("span", { class: "phase" }), el("b")),
+    el("div", { class: "merror", role: "alert", hidden: true }),
+    el("div", { class: "mmeta" }));
+  paintAssistant(node, msg);
+  return node;
+}
+function paintAssistant(node, msg) {
+  const think = node.querySelector(".think"), body = node.querySelector(".mbody"), status = node.querySelector(".mstatus");
+  think.hidden = !msg.thinking;
+  const open = thinkingOpen(msg);
+  think.classList.toggle("open", open);
+  think.querySelector(".think-head").setAttribute("aria-expanded", String(open));
+  if (msg.thinking && node._thinking !== msg.thinking) { node._thinking = msg.thinking; think.querySelector(".think-body").innerHTML = renderMarkdown(msg.thinking); }
+  if (node._content !== msg.content) { node._content = msg.content; body.innerHTML = renderMarkdown(msg.content || ""); }
+  body.hidden = !msg.content;
+  status.hidden = !(msg._streaming && !msg.content);
+  if (!status.hidden) node.querySelector(".phase").textContent = msg._phase === "Thinking" ? "Thinking" : "Processing prompt";
+  const error = node.querySelector(".merror");
+  error.hidden = !msg.error; error.textContent = msg.error || "";
+  const s = msg.stats, parts = [];
+  if (!msg._streaming && s) {
+    // Stored documents can come from an import: nothing here is trusted as markup.
+    if (s.completion_tokens != null) parts.push(`<b>${esc(s.completion_tokens)}</b> tok`);
+    if (s.tps) parts.push(`<b>${esc(fmt(s.tps))}</b> tok/s`);
+    if (s.ttft_s != null) parts.push(`TTFT <b>${esc(fmt(s.ttft_s, 2))}s</b>`);
+    if (s.cached_tokens) parts.push(`cache-hit <b>${esc(s.cached_tokens)}</b>/${esc(s.prompt_tokens)}`);
+    if (msg.stopped) parts.push("stopped");
+  }
+  node.querySelector(".mmeta").innerHTML = parts.join(" · ");
+}
+function renderMessages() {
+  const doc = chat.cur, box = $("messages"), items = visibleItems(doc);
+  $("chatEmpty").hidden = items.length > 0;
+  box.replaceChildren($("chatEmpty"), ...items.map(it => it.msg.role === "user" ? buildUser(it) : buildAssistant(it)));
+  $("chatTitle").textContent = doc.title || "New chat";
+  if (chat.stick) box.scrollTop = box.scrollHeight;
+  updateJump(); updateContext(); scheduleTimeline();
+}
+const atBottom = () => { const m = $("messages"); return m.scrollHeight - m.scrollTop - m.clientHeight < 60; };
+function autoscroll() { if (chat.stick) { const m = $("messages"); m.scrollTop = m.scrollHeight; } updateJump(); }
+function updateJump() { $("jumpLatest").hidden = !(chat.cur && isStreaming(chat.cur.id) && !atBottom()); }
+$("messages").addEventListener("scroll", () => { chat.stick = atBottom(); updateJump(); scheduleTimeline(); });
+$("jumpLatest").onclick = () => { chat.stick = true; autoscroll(); };
+$("messages").addEventListener("click", e => {
+  const button = e.target.closest(".code-copy");
+  if (!button) return;
+  copyText(button.closest(".code").querySelector("code").textContent);
+  button.textContent = "Copied"; setTimeout(() => { button.textContent = "Copy"; }, 1500);
+});
+// The prompt-processing clock: runs from the request leaving the browser until the first token.
+setInterval(() => {
+  const id = chat.cur && chat.streams[chat.cur.id]?.msgId;
+  const node = id && $("messages").querySelector(`[data-id="${id}"] .mstatus b`);
+  const msg = id && chat.cur.messages.find(m => m.id === id);
+  if (node && msg) node.textContent = ((performance.now() - msg._t0) / 1000).toFixed(1) + "s";
+}, 100);
+
+/* ---- timeline: one dot per question, placed by where it sits in the thread ---- */
+const timeline = { raf: 0, dots: new Map() };
+function scheduleTimeline() {
+  if (timeline.raf) return;
+  timeline.raf = requestAnimationFrame(() => { timeline.raf = 0; computeTimeline(); });
+}
+function computeTimeline() {
+  const box = $("messages"), rail = $("timeline");
+  const nodes = [...box.querySelectorAll(".msg.user:not(.editing)")];
+  const scrollMax = box.scrollHeight - box.clientHeight;
+  // With one question, or a thread that fits on screen, there is nothing to navigate.
+  rail.hidden = !(chat.cur && nodes.length > 1 && scrollMax > 0);
+  if (rail.hidden) { $("tlTip").hidden = true; return; }
+  rail.style.top = box.offsetTop + "px"; rail.style.height = box.clientHeight + "px";
+  const height = box.clientHeight, seen = new Set();
+  let active = nodes[0];
+  for (const node of nodes) if (node.offsetTop <= box.scrollTop + 60) active = node;
+  for (const node of nodes) {
+    const id = node.dataset.id;
+    seen.add(id);
+    let dot = timeline.dots.get(id);
+    if (!dot) {
+      const excerpt = () => textOf(chat.cur.messages.find(m => m.id === id)?.content).replace(/\s+/g, " ").trim().slice(0, 120) || "Message";
+      const show = () => {
+        const tip = $("tlTip"), r = dot.getBoundingClientRect();
+        tip.textContent = excerpt(); tip.hidden = false;
+        tip.style.left = Math.max(8, r.left - tip.offsetWidth - 10) + "px";
+        tip.style.top = Math.max(8, r.top + r.height / 2 - tip.offsetHeight / 2) + "px";
+      };
+      dot = el("button", { type: "button", class: "tl-dot", onmouseenter: show, onfocus: show, onmouseleave: () => { $("tlTip").hidden = true; }, onblur: () => { $("tlTip").hidden = true; },
+        onclick: () => { const target = $("messages").querySelector(`[data-id="${id}"]`); target?.scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "start" }); } });
+      timeline.dots.set(id, dot);
+    }
+    dot.setAttribute("aria-label", "Go to: " + (textOf(chat.cur.messages.find(m => m.id === id)?.content).replace(/\s+/g, " ").trim().slice(0, 60) || "message"));
+    dot.style.top = (16 + Math.min(node.offsetTop / scrollMax, 1) * (height - 32)) + "px";
+    dot.classList.toggle("active", node === active);
+  }
+  for (const [id, dot] of timeline.dots) if (!seen.has(id)) { dot.remove(); timeline.dots.delete(id); }
+  for (const dot of timeline.dots.values()) if (dot.parentNode !== rail) rail.append(dot);
+}
+addEventListener("resize", scheduleTimeline);
+
+/* ---- composer ---- */
+function autosize() { const t = $("input"); t.style.height = "auto"; t.style.height = Math.min(t.scrollHeight, 200) + "px"; }
+function updateComposer() {
+  const busy = !!chat.cur && isStreaming(chat.cur.id);
+  $("sendBtn").disabled = busy; $("stopBtn").disabled = !busy;
+  $("stopBtnTop").disabled = !anyStreaming();
+  updateJump(); renderChatList();
+}
+function updateContext() {
+  const doc = chat.cur, win = stats.model?.ctx || 0, used = doc?.contextTokens || 0;
+  $("ctxCap").hidden = !(win && used);
+  if (win && used) { $("ctxText").textContent = `${human(used)} / ${human(win)} · ${Math.min(100, Math.round(used / win * 100))}%`; $("ctxBar").style.width = Math.min(100, used / win * 100) + "%"; }
+}
+function updateInspector() {
+  const doc = chat.cur;
+  const items = doc ? visibleItems(doc).filter(it => it.msg.role === "assistant" && it.msg.stats) : [];
+  const s = items.at(-1)?.msg.stats;
+  $("pfPrefill").textContent = s?.ttft_s != null ? fmt(s.ttft_s, 2) + "s" : "–";
+  $("pfGen").textContent = s?.tps ? fmt(s.tps) + " tok/s" : "–";
+  $("pfTokens").textContent = s ? `${s.prompt_tokens ?? "–"} / ${s.completion_tokens ?? "–"}` : "–";
+  $("pfTotal").textContent = s?.total_s != null ? fmt(s.total_s, 1) + "s" : "–";
+  updateContext();
+}
+const coarse = () => !!(matchMedia && matchMedia("(pointer: coarse)").matches);
+$("sendBtn").onclick = send;
+$("stopBtn").onclick = () => stopChat();
+$("input").addEventListener("input", autosize);
+$("input").addEventListener("keydown", e => { if (e.key === "Enter" && !e.shiftKey && !e.isComposing && !coarse()) { e.preventDefault(); send(); } });
+$("toggleSide").onclick = () => $("chatView").classList.toggle("hide-side");
+$("togglePanel").onclick = () => $("chatView").classList.toggle("hide-panel");
+
+/* ---- settings panel: per-chat values, profiles, history ---- */
+function showPanelTab(name) {
+  chat.tab = name;
+  document.querySelectorAll("#chatPanel .panel-tabs [data-tab]").forEach(b => b.setAttribute("aria-selected", String(b.dataset.tab === name)));
+  document.querySelectorAll("#chatPanel .pane").forEach(p => p.classList.toggle("active", p.id === "pane" + name[0].toUpperCase() + name.slice(1)));
+}
+document.querySelectorAll("#chatPanel .panel-tabs [data-tab]").forEach(b => b.onclick = () => showPanelTab(b.dataset.tab));
+function syncPanel() {
+  const doc = chat.cur; if (!doc) return;
+  document.querySelectorAll("#chatPanel [data-setting]").forEach(input => { input.value = doc.settings[input.dataset.setting] ?? ""; });
+  $("sysPrompt").value = doc.systemPrompt || "";
+  $("csModel").textContent = health.model || "–";
+  renderProfiles(); updateInspector();
+}
+function saveSettingsSoon() {
+  clearTimeout(saveSettingsSoon.timer);
+  const doc = chat.cur;
+  saveSettingsSoon.timer = setTimeout(() => { if (doc._saved || doc.messages.length) persist(doc, { touch: false }); }, 400);
+}
+document.querySelectorAll("#chatPanel [data-setting]").forEach(input => {
+  const key = input.dataset.setting;
+  input.addEventListener("input", () => {
+    const doc = chat.cur;
+    if (input.tagName === "SELECT") { if (input.value) doc.settings[key] = input.value; else delete doc.settings[key]; }
+    else {
+      const value = input.value === "" ? NaN : Number(input.value);
+      const whole = key === "top_k" || key === "max_tokens";
+      if (Number.isFinite(value) && (!whole || Number.isInteger(value)) && (key !== "max_tokens" || value >= 1)) doc.settings[key] = value; else delete doc.settings[key];
+    }
+    saveSettingsSoon();
+  });
+});
+$("csReset").onclick = () => { chat.cur.settings = {}; syncPanel(); saveSettingsSoon(); };
+function profileDirty() { const p = chat.profiles.find(x => x.name === chat.cur?.activeProfile); return !!p && p.content !== (chat.cur.systemPrompt || ""); }
+async function saveProfiles() {
+  try { chat.profiles = (await chatJson("/admin/chat-profiles", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ profiles: chat.profiles }) })).profiles; }
+  catch (e) { chatNote("Could not save profiles: " + e.message); }
+  renderProfiles();
+}
+function selectProfile(name) {
+  const doc = chat.cur, p = chat.profiles.find(x => x.name === name);
+  doc.activeProfile = p ? p.name : null;
+  if (p) doc.systemPrompt = p.content;
+  $("sysPrompt").value = doc.systemPrompt || "";
+  renderProfiles(); saveSettingsSoon();
+}
+function renderProfiles() {
+  const doc = chat.cur; if (!doc) return;
+  const select = $("csProfile");
+  select.replaceChildren(...chat.profiles.map(p => el("option", { value: p.name, selected: p.name === doc.activeProfile }, p.name)));
+  if (!doc.activeProfile) select.add(new Option("Custom", "", true, true), 0);
+  $("profList").replaceChildren(...chat.profiles.map(p => {
+    const active = p.name === doc.activeProfile, locked = p.name === DEFAULT_PROFILE;
+    const row = el("div", { class: "prof" + (active ? " active" : ""), role: "listitem", onclick: () => { if (chat.profRename !== p.name) selectProfile(p.name); } }, el("span", { class: "pdot" }));
+    if (chat.profRename === p.name) {
+      const input = el("input", { type: "text", value: p.name, "aria-label": "Profile name", onclick: e => e.stopPropagation(), onkeydown: e => { if (e.key === "Enter") commit(); if (e.key === "Escape") { chat.profRename = null; renderProfiles(); } } });
+      const commit = async () => {
+        const name = input.value.trim();
+        if (name && name !== p.name && !chat.profiles.some(x => x.name === name)) { if (doc.activeProfile === p.name) doc.activeProfile = name; p.name = name; saveSettingsSoon(); await saveProfiles(); }
+        chat.profRename = null; renderProfiles();
+      };
+      row.append(input, miniBtn("check", "Save name", e => { e.stopPropagation(); commit(); }));
+      queueMicrotask(() => { input.focus(); input.select(); });
+    } else {
+      row.append(el("span", { class: "pname" }, p.name));
+      if (!locked) row.append(
+        miniBtn("pencil", "Rename profile", e => { e.stopPropagation(); chat.profRename = p.name; renderProfiles(); }),
+        chat.profArmed === p.name
+          ? el("button", { type: "button", class: "mini armed", onclick: async e => { e.stopPropagation(); chat.profiles = chat.profiles.filter(x => x !== p); chat.profArmed = null; if (doc.activeProfile === p.name) { doc.activeProfile = null; saveSettingsSoon(); } await saveProfiles(); } }, "Delete?")
+          : miniBtn("trash", "Delete profile", e => { e.stopPropagation(); chat.profArmed = p.name; renderProfiles(); setTimeout(() => { if (chat.profArmed === p.name) { chat.profArmed = null; renderProfiles(); } }, 3500); }, "danger"));
+    }
+    return row;
+  }));
+  $("profSave").disabled = !profileDirty();
+}
+$("csProfile").onchange = () => selectProfile($("csProfile").value);
+$("sysPrompt").addEventListener("input", () => { chat.cur.systemPrompt = $("sysPrompt").value; $("profSave").disabled = !profileDirty(); saveSettingsSoon(); });
+$("profSave").onclick = async () => { const p = chat.profiles.find(x => x.name === chat.cur.activeProfile); if (p) { p.content = chat.cur.systemPrompt || ""; await saveProfiles(); } };
+$("profAdd").onclick = async () => {
+  let n = 1; while (chat.profiles.some(p => p.name === "New profile " + n)) n++;
+  const p = { name: "New profile " + n, content: chat.cur.systemPrompt || "" };
+  chat.profiles.push(p); selectProfile(p.name); chat.profRename = p.name; await saveProfiles();
+};
+$("prefThink").checked = chat.expandThinking;
+$("prefThink").onchange = () => { chat.expandThinking = $("prefThink").checked; try { localStorage.setItem("chatExpandThinking", chat.expandThinking ? "1" : "0"); } catch {} if (chat.cur) renderMessages(); };
+const historyNote = text => { $("historyMsg").textContent = text; };
+$("exportChats").onclick = async () => {
+  try {
+    const docs = [];
+    for (const c of (await chatJson(CHAT_API)).chats || []) docs.push(await chatJson(`${CHAT_API}/${c.id}`));
+    const url = URL.createObjectURL(new Blob([JSON.stringify({ version: 1, chats: docs }, null, 2)], { type: "application/json" }));
+    el("a", { href: url, download: `maxtoken-chats-${new Date().toISOString().slice(0, 10)}.json` }).click();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    historyNote(`Exported ${docs.length} chat${docs.length === 1 ? "" : "s"}.`);
+  } catch (e) { historyNote("Export failed: " + e.message); }
+};
+$("importChatsBtn").onclick = () => $("importChats").click();
+$("importChats").onchange = async () => {
+  const file = $("importChats").files[0]; $("importChats").value = "";
+  if (!file) return;
+  try {
+    const data = JSON.parse(await file.text());
+    const docs = Array.isArray(data) ? data : data.chats;
+    if (!Array.isArray(docs)) throw new Error("not a MaxToken chat export");
+    const taken = new Set(chat.list.map(c => c.id));
+    let count = 0;
+    for (const raw of docs) {
+      if (!raw || !Array.isArray(raw.messages)) continue;
+      const doc = { settings: {}, ...raw, id: /^[A-Za-z0-9_-]{1,80}$/.test(raw.id) && !taken.has(raw.id) ? raw.id : newChatId() };
+      taken.add(doc.id);
+      await chatJson(`${CHAT_API}/${doc.id}`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(doc) });
+      count++;
+    }
+    await loadChatList();
+    historyNote(`Imported ${count} chat${count === 1 ? "" : "s"}.`);
+  } catch (e) { historyNote("Import failed: " + e.message); }
+};
+$("deleteAllChats").onclick = async () => {
+  const button = $("deleteAllChats");
+  if (button.dataset.armed !== "1") {
+    button.dataset.armed = "1"; button.textContent = `Click again to delete ${chat.list.length} chat${chat.list.length === 1 ? "" : "s"}`;
+    setTimeout(() => { button.dataset.armed = ""; button.textContent = "Delete all chats"; }, 4000);
+    return;
+  }
+  button.dataset.armed = ""; button.textContent = "Delete all chats";
+  try {
+    stopAllChats();
+    await chatJson(`${CHAT_API}?all=true`, { method: "DELETE" });
+    chat.list = []; chat.docs = {}; setCurrent(blankChat()); historyNote("All chats deleted.");
+  } catch (e) { historyNote("Delete failed: " + e.message); }
+};
+
+/* ---- start ---- */
+function openChatView() { return chat.ready ??= startChat(); }
+async function startChat() {
+  $("chatView").classList.toggle("hide-side", innerWidth < 760);
+  $("chatView").classList.toggle("hide-panel", innerWidth < 1100);
+  try { chat.profiles = (await chatJson("/admin/chat-profiles")).profiles || chat.profiles; } catch {}
+  if (!chat.profiles.length) chat.profiles = [{ name: DEFAULT_PROFILE, content: "" }];
+  await loadChatList();
+  let remembered = ""; try { remembered = localStorage.getItem("chatCurrent") || ""; } catch {}
+  let doc = null;
+  if (remembered && chat.list.some(c => c.id === remembered)) {
+    try { doc = await getDoc(remembered); } catch (e) { chatNote("Could not reopen your last chat: " + e.message); }
+  }
+  setCurrent(doc || blankChat());
+}
 
 viewFromHash();
 updateSettingsStatus();

@@ -104,9 +104,10 @@ def test_a_waiting_turn_shows_a_spinner_and_a_clock():
     assert ".spinner" in page and "@keyframes spin" in page
     assert "Processing prompt" in page
     assert "prefers-reduced-motion" in page, "an infinite spinner needs the opt-out"
-    # started once, cleared on the first content token and again in `finally`
-    assert page.count("endStatus()") >= 2
-    assert "clearInterval(ticker)" in page
+    # The status line is derived from the message's streaming flag, and `finally` always clears
+    # it (abort, HTTP error and success alike), so the clock cannot outlive the turn.
+    assert "msg._streaming = false; delete chat.streams[doc.id]" in page
+    assert "status.hidden = !(msg._streaming && !msg.content)" in page
 
 
 def test_root_redirects_to_console():

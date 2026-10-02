@@ -7,6 +7,21 @@ before its first tagged release.
 
 ## [Unreleased]
 
+### Changed
+
+- **Chat rebuilt after oMLX's chat**: a conversation list with search, pin,
+  rename and delete; per-message copy, edit (rewrites from that message),
+  regenerate (kept as switchable responses), branch and delete; collapsible
+  reasoning; a timeline rail with one dot per question (hover for the text, click
+  to jump); markdown with code blocks, lists and tables; context usage and
+  per-response speed; and a settings panel on the right (Model: temperature,
+  max tokens, top p / k, presence / frequency penalty, thinking; Profile:
+  named system prompts; Chat). Conversations and their settings are saved on
+  the server in `~/.maxtoken/chats` (`MAXTOKEN_CHATS_DIR`), so they survive a
+  reload or a changed port; profiles live in `~/.maxtoken/chat-profiles.json`.
+  The system prompt moved out of the conversation into the Profile tab. Routes:
+  `/admin/chats`, `/admin/chat-profiles`.
+
 ### Added
 
 - **Downloads tab in the web console**, with the functionality of oMLX's

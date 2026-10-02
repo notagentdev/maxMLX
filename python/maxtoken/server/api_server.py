@@ -44,6 +44,7 @@ from .args import ServerArgs
 from .settings import LIVE_FIELDS, SERVER_FIELDS, SettingsPatch, SettingsStore
 from .anthropic_api import register_anthropic_routes
 from .accounting import AdmissionClosedError, register_accounting_routes
+from .chat_store import register_chat_routes
 from .downloader.routes import register_download_routes
 from .control_api import register_control_routes
 from .lmstudio_api import register_lmstudio_routes
@@ -471,6 +472,7 @@ def _served_model_path() -> str | None:
 
 
 _DOWNLOADS = register_download_routes(app, _served_model_path)
+register_chat_routes(app)
 
 # Built-in web console (chat, live stats, elastic cache control) served from the
 # same origin as the APIs — `mt serve` then has a GUI at http://host:port/.

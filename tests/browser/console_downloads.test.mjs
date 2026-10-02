@@ -61,6 +61,11 @@ test('downloads tab browses, searches, queues and configures', { skip: !browserA
     assert.match(fits[0], /^fit\|13% of memory/);
     assert.match(fits[1], /^fit over\|97% of memory/);
 
+    // The name stands alone; who published the model sits under it in small type.
+    assert.equal(await evaluate('document.querySelector("#dlList .title").textContent'), 'Alpha-4bit');
+    assert.equal(await evaluate('document.querySelector("#dlList .sub").textContent'), 'mlx-community  ·  7.0B params  ·  4.0 GB');
+    assert.equal(await evaluate('document.querySelector("#dlList .sub .owner").textContent'), 'mlx-community');
+
     // Repo names are remote data: markup in them must stay text.
     assert.equal(await evaluate('window.pwned'), undefined);
     assert.equal(await evaluate('document.querySelectorAll("#dlList img").length'), 0);
@@ -87,7 +92,8 @@ test('downloads tab browses, searches, queues and configures', { skip: !browserA
     ];
     await evaluate('pollDownloads()');
     await waitFor('document.querySelectorAll("#dlQueue .dl-job").length === 2');
-    assert.equal(await evaluate('document.querySelector("#dlQueue .dl-job .name").textContent'), 'mlx-community/Running-4bitdownloading');
+    assert.equal(await evaluate('document.querySelector("#dlQueue .dl-job .name").textContent'), 'Running-4bitdownloading');
+    assert.equal(await evaluate('document.querySelector("#dlQueue .dl-job .owner").textContent'), 'mlx-community');
     const running = await evaluate('document.querySelector("#dlQueue .dl-job .stat").textContent');
     assert.match(running, /50%/); assert.match(running, /4\.0 GB \/ 8\.0 GB/); assert.match(running, /50\.0 MB\/s/); assert.match(running, /left/);
     assert.equal(await evaluate('document.querySelector("#dlQueue .dl-job .dl-bar > i").style.width'), '50%');
@@ -107,7 +113,7 @@ test('downloads tab browses, searches, queues and configures', { skip: !browserA
     await evaluate('document.getElementById("dlSort").value = "largest"');
     await type('dlQuery', 'qwen');
     await evaluate('document.getElementById("dlSearchForm").requestSubmit()');
-    await waitFor('document.querySelector("#dlList .title")?.textContent === "mlx-community/Found-4bit"');
+    await waitFor('document.querySelector("#dlList .title")?.textContent === "Found-4bit"');
     const search = requests.filter(r => r.path === '/admin/downloads/hf/search').at(-1).query;
     assert.deepEqual(search, { q: 'qwen', sort: 'largest', limit: '100', mlx_only: 'true', min_params: String(3e9), max_size: String(2 * GIB) });
     assert.equal(await evaluate('document.querySelector("#dlBrowse [aria-pressed=true]").dataset.tab'), 'search');

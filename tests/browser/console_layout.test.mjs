@@ -214,7 +214,7 @@ await screenshot('settings');
     await evaluate('document.getElementById("input").value = "Hello"; document.getElementById("sendBtn").click()');
     await waitFor('document.querySelector(".msg.assistant")?.textContent.includes("Hello from the local model.")');
     assert.equal(await evaluate('document.getElementById("chatEmpty").hidden'), true);
-    assert.equal(await evaluate('document.querySelectorAll(".spinner").length'), 0);
+    assert.equal(await evaluate('[...document.querySelectorAll(".spinner")].filter(node => node.offsetParent !== null).length'), 0);
     assert.equal(await evaluate('document.getElementById("stopBtnTop").disabled'), true);
     const request = mutations.find(item => item.path === '/v1/chat/completions').body;
     assert.equal(request.model, 'fixture-model');
@@ -224,7 +224,7 @@ await screenshot('settings');
     await waitFor('!document.getElementById("stopBtn").disabled');
     await evaluate('document.getElementById("stopBtn").click()');
     await waitFor('document.getElementById("stopBtn").disabled');
-    assert.equal(await evaluate('document.querySelectorAll(".spinner").length'), 0);
+    assert.equal(await evaluate('[...document.querySelectorAll(".spinner")].filter(node => node.offsetParent !== null).length'), 0);
 
     await evaluate('location.hash = "logs"');
     await waitFor('document.getElementById("requestLog").open && document.getElementById("logRows").textContent.includes("fixture-model")');
