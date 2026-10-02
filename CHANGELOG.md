@@ -5,6 +5,22 @@ All notable changes to MaxToken. The project forked from
 history before that is upstream's. `0.0.1` was the fork's working version
 before its first tagged release.
 
+## [Unreleased]
+
+### Added
+
+- **Downloads tab in the web console**, with the functionality of oMLX's
+  downloader tab: Hugging Face and ModelScope sources, trending / popular /
+  search lists (sort, parameter and size filters, MLX-only, search history,
+  memory-fit bar), model info with files, a download queue with progress,
+  speed, ETA, cancel / retry / remove and stall detection with an HTTP
+  fallback for Xet failures, and a Folder & mirror dialog. Routes live under
+  `/admin/downloads/{hf,ms}/...`; settings in `~/.maxtoken/downloads.json`
+  (`MAXTOKEN_MODELS_DIR` overrides the folder). A restart marks interrupted
+  downloads as cancelled for an explicit Retry instead of resuming them.
+  ModelScope needs `pip install "maxtoken[modelscope]"`. `huggingface_hub`
+  floor raised to 1.19.
+
 ## [0.2.1] - 2026-09-07
 
 ### Added

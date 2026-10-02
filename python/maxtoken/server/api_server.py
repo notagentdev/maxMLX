@@ -44,6 +44,7 @@ from .args import ServerArgs
 from .settings import LIVE_FIELDS, SERVER_FIELDS, SettingsPatch, SettingsStore
 from .anthropic_api import register_anthropic_routes
 from .accounting import AdmissionClosedError, register_accounting_routes
+from .downloader.routes import register_download_routes
 from .control_api import register_control_routes
 from .lmstudio_api import register_lmstudio_routes
 from .openai_api import register_openai_routes
@@ -410,6 +411,7 @@ async def lifespan(_: FastAPI):
     # BEFORE tearing anything down so the backend supervisor treats the workers' ensuing
     # exit as expected rather than a crash — no spurious ERROR / "failed" latch during stop.
     _SHUTTING_DOWN.set()
+    await _DOWNLOADS.shutdown()
     global _GLOBAL_STATE
     if _GLOBAL_STATE is not None:
         _GLOBAL_STATE.shutdown()
@@ -461,6 +463,14 @@ register_responses_routes(app, get_global_state, effective_sampling)
 register_control_routes(app, get_global_state, effective_sampling)
 register_lmstudio_routes(app, get_global_state, effective_sampling)
 register_accounting_routes(app, get_global_state)
+
+
+def _served_model_path() -> str | None:
+    config = getattr(_GLOBAL_STATE, "config", None)
+    return getattr(config, "model_path", None)
+
+
+_DOWNLOADS = register_download_routes(app, _served_model_path)
 
 # Built-in web console (chat, live stats, elastic cache control) served from the
 # same origin as the APIs — `mt serve` then has a GUI at http://host:port/.

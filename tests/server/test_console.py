@@ -32,11 +32,11 @@ class ConsoleStructure(HTMLParser):
         self.stack.pop()
 
 
-def test_three_views_have_separate_responsibilities():
+def test_four_views_have_separate_responsibilities():
     page = TestClient(app).get("/console").text
     structure = ConsoleStructure(page)
     views = {key for key, (_, attrs) in structure.elements.items() if "view" in attrs.get("class", "").split()}
-    assert views == {"dashboardView", "settingsView", "chatView"}
+    assert views == {"dashboardView", "settingsView", "downloadsView", "chatView"}
     for key in views:
         tag, attrs = structure.elements[key]
         assert tag == "section" and attrs["aria-labelledby"] in structure.elements
@@ -47,6 +47,8 @@ def test_three_views_have_separate_responsibilities():
         assert "settingsView" in structure.ancestors[element]
     for element in ("sysPrompt", "messages", "input", "sendBtn", "stopBtn"):
         assert "chatView" in structure.ancestors[element]
+    for element in ("dlRepo", "dlStart", "dlQueue", "dlList", "dlQuery", "dlDetail", "dlSettings"):
+        assert "downloadsView" in structure.ancestors[element]
     assert 'id="logsView"' not in page and 'id="sidebar"' not in page
 
 

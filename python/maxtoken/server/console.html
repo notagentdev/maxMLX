@@ -250,6 +250,94 @@
   th { color: var(--text-3); font-weight: 500; font-size: 10.5px; letter-spacing: .6px; }
   td { color: var(--text-2); }
   td.ok { color: var(--good); }
+
+  /* ---------- downloads view ---------- */
+  .seg { display: inline-flex; padding: 3px; gap: 2px; border-radius: 10px; background: var(--bg); border: 1px solid var(--border); }
+  .dl .head > div:first-child { flex: 1; min-width: 0; }
+  .dl .head { flex-wrap: wrap; }
+  .dl .btn, .seg button { white-space: nowrap; }
+  .seg button { border: 0; background: transparent; color: var(--text-3); border-radius: 8px; padding: 6px 14px; font-size: 12px; font-weight: 600; cursor: pointer; }
+  .seg button:hover { color: var(--text-1); }
+  .seg button[aria-pressed=true] { background: var(--panel-2); color: var(--text-1); }
+  .dl-add { display: grid; grid-template-columns: minmax(0, 1fr) 220px auto; gap: 12px; align-items: end; }
+  .dl-add label, .dl-filters label { display: block; font-size: 10.5px; letter-spacing: .6px; text-transform: uppercase; color: var(--text-3); margin-bottom: 6px; }
+  .dl input[type=text], .dl input[type=password], .dl input[type=search], .dl select, .dl-dialog input[type=text] {
+    width: 100%; background: var(--bg); color: var(--text-1); border: 1px solid var(--border); border-radius: 8px; padding: 9px 11px;
+  }
+  .dl input.mono { font: 12px var(--mono); }
+  .dl-note { margin-top: 12px; padding: 9px 12px; border-radius: 8px; font-size: 12px; }
+  .dl-note.err { color: var(--bad); background: var(--bad-dim); }
+  .dl-note.ok { color: var(--good); background: var(--good-dim); }
+  .dl-note.warn { color: var(--warning); background: #e8b45d12; }
+  .dl-queue { display: grid; gap: 10px; }
+  .dl-job { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 6px 16px; align-items: center; padding: 14px 16px; border: 1px solid var(--border); border-radius: 12px; background: var(--bg); }
+  .dl-job .name { font: 600 13px var(--mono); overflow-wrap: anywhere; }
+  .dl-job .name .org { color: var(--text-3); font-weight: 400; }
+  .dl-job .stat { grid-column: 1; font: 11.5px var(--mono); color: var(--text-3); }
+  .dl-job .stat.error { color: var(--bad); white-space: normal; }
+  .dl-job .acts { grid-column: 2; grid-row: 1 / span 3; display: flex; gap: 6px; }
+  .dl-job .acts .btn { padding: 6px 11px; }
+  .dl-bar { grid-column: 1; height: 5px; border-radius: 4px; background: var(--border); overflow: hidden; }
+  .dl-bar > i { display: block; height: 100%; background: var(--accent); border-radius: 4px; transition: width .4s; }
+  .dl-bar.indeterminate > i { width: 35% !important; animation: slide 1.2s ease-in-out infinite alternate; }
+  @keyframes slide { from { margin-left: 0; } to { margin-left: 65%; } }
+  @media (prefers-reduced-motion: reduce) { .dl-bar.indeterminate > i { animation: none; } }
+  .dl-state { display: inline-block; margin-left: 8px; padding: 2px 7px; border-radius: 5px; font: 600 9.5px var(--mono); letter-spacing: .6px; text-transform: uppercase; background: var(--panel-2); color: var(--text-2); }
+  .dl-state.downloading { color: var(--accent); background: var(--accent-dim); }
+  .dl-state.completed { color: var(--good); background: var(--good-dim); }
+  .dl-state.failed { color: var(--bad); background: var(--bad-dim); }
+  .dl-state.cancelled { color: var(--warning); background: #e8b45d12; }
+  .dl-toolbar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 14px; }
+  .dl-toolbar .search { position: relative; flex: 1 1 260px; min-width: 0; }
+  .dl-toolbar select { width: auto; }
+  .dl-history { position: absolute; top: calc(100% + 4px); left: 0; right: 0; z-index: 5; padding: 4px; background: var(--panel-2); border: 1px solid var(--border); border-radius: 10px; }
+  .dl-history button { display: block; width: 100%; text-align: left; border: 0; background: transparent; color: var(--text-2); padding: 7px 9px; border-radius: 6px; cursor: pointer; }
+  .dl-history button:hover { background: var(--bg); color: var(--text-1); }
+  .dl-filters { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; padding: 14px; margin-bottom: 14px; border: 1px solid var(--border); border-radius: 10px; background: var(--bg); }
+  .dl-filters input[type=number] { width: 100%; }
+  .dl-tools { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 8px; color: var(--text-3); font-size: 12px; }
+  .dl-tools .spacer { flex: 1; }
+  .dl-tools select { width: auto; }
+  .dl-tools label { display: inline-flex; align-items: center; gap: 6px; cursor: pointer; }
+  .dl-list { border-top: 1px solid var(--border); }
+  .dl-row { display: grid; grid-template-columns: 26px minmax(0, 1fr) 150px 150px auto; gap: 14px; align-items: center; padding: 13px 4px; border-bottom: 1px solid var(--border); }
+  .dl-row .rank { font: 11px var(--mono); color: var(--text-3); text-align: right; }
+  .dl-row .title { font-weight: 600; overflow-wrap: anywhere; }
+  .dl-row .title .org { color: var(--text-3); font-weight: 400; }
+  .dl-row .sub { margin-top: 3px; font: 11px var(--mono); color: var(--text-3); }
+  .dl-row .acts { display: flex; gap: 6px; }
+  .dl-row .acts .btn { padding: 6px 12px; }
+  .fit, .dl-row .stats { font: 11px var(--mono); color: var(--text-3); }
+  .fit .dl-bar { margin-top: 5px; height: 4px; }
+  .fit.tight .dl-bar > i { background: var(--warning); }
+  .fit.over .dl-bar > i { background: var(--bad); }
+  .fit.over b { color: var(--bad); }
+  .dl-empty { padding: 36px 12px; text-align: center; color: var(--text-3); }
+  .dl-pager { display: flex; gap: 6px; justify-content: center; margin-top: 16px; }
+  .dl-pager .btn { min-width: 34px; padding: 6px 10px; }
+  .dl-pager .btn.current { background: var(--panel-2); color: var(--text-1); border-color: var(--text-3); }
+  .dl-dialog { margin: auto; width: min(820px, calc(100vw - 32px)); max-height: 80vh; padding: 0; border: 1px solid var(--border); border-radius: 16px; background: var(--panel); color: var(--text-1); }
+  .dl-dialog::backdrop { background: #000a; }
+  .dl-dialog[open] { display: flex; flex-direction: column; }
+  .dl-dialog header, .dl-dialog footer { display: flex; align-items: center; gap: 12px; padding: 18px 22px; }
+  .dl-dialog header { border-bottom: 1px solid var(--border); }
+  .dl-dialog footer { border-top: 1px solid var(--border); justify-content: flex-end; }
+  .dl-dialog header h2 { font-size: 15px; overflow-wrap: anywhere; }
+  .dl-dialog .body { padding: 20px 22px; overflow-y: auto; min-height: 120px; }
+  .dl-dialog .body pre { white-space: pre-wrap; overflow-wrap: anywhere; font: 12px/1.65 var(--mono); color: var(--text-2); }
+  .dl-dialog .field { margin-bottom: 18px; }
+  .dl-dialog .field label { display: block; font-weight: 600; margin-bottom: 4px; }
+  .dl-dialog .field .hint { font-size: 11.5px; color: var(--text-3); margin-bottom: 8px; }
+  .dl-files { font: 12px var(--mono); }
+  .dl-files div { display: flex; justify-content: space-between; gap: 16px; padding: 6px 0; border-bottom: 1px solid var(--border); }
+  .dl-files span:first-child { overflow-wrap: anywhere; }
+  @media (max-width: 900px) {
+    .dl-add { grid-template-columns: 1fr; }
+    .dl-filters { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .dl-row { grid-template-columns: minmax(0, 1fr) auto; }
+    .dl-row .rank, .dl-row .stats { display: none; }
+    .dl-row .fit { grid-column: 1; }
+  }
 </style>
 </head>
 <body>
@@ -262,6 +350,9 @@
     </button>
     <button type="button" class="nav" data-view="settingsView" aria-controls="settingsView">
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 17h16"/><circle cx="9" cy="7" r="3"/><circle cx="15" cy="17" r="3"/></svg>Settings
+    </button>
+    <button type="button" class="nav" data-view="downloadsView" aria-controls="downloadsView">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11m0 0-4-4m4 4 4-4M5 20h14"/></svg>Downloads
     </button>
     <button type="button" class="nav" data-view="chatView" aria-controls="chatView">
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12a8 8 0 0 1-8 8H4l2-3a8 8 0 1 1 15-5z"/></svg>Chat
@@ -511,6 +602,101 @@
   <div class="settings-file" id="settingsFile"></div>
   </section>
   <!-- ================= CHAT ================= -->
+  <!-- ================= DOWNLOADS ================= -->
+  <section class="view dl" id="downloadsView" aria-labelledby="downloadsTitle">
+    <div class="head">
+      <div>
+        <div class="eyebrow">Models</div>
+        <h1 id="downloadsTitle">Downloads</h1>
+        <div class="sub">Saved to <code id="dlDir">…</code></div>
+      </div>
+      <div class="spacer"></div>
+      <div class="seg" role="group" aria-label="Model source">
+        <button type="button" id="dlSrcHf" data-source="hf" aria-pressed="true">Hugging Face</button>
+        <button type="button" id="dlSrcMs" data-source="ms" aria-pressed="false">ModelScope</button>
+      </div>
+      <button type="button" class="btn ghost" id="dlSettingsBtn">Folder &amp; mirror</button>
+    </div>
+
+    <div class="dl-note warn" id="dlTokenWarn" hidden>The saved Hugging Face token was rejected, so listings were fetched anonymously. Public models still work.</div>
+    <div class="dl-note warn" id="dlMsMissing" hidden>ModelScope support is not installed. Run <code>pip install "maxtoken[modelscope]"</code> and restart the server.</div>
+
+    <div class="panelcard" id="dlAddCard" style="margin-top:0">
+      <div class="title">Download a model</div>
+      <div class="desc">Paste a repository id, or pick one from the lists below.</div>
+      <form class="dl-add" id="dlAdd" style="margin-top:16px" autocomplete="off">
+        <div><label for="dlRepo">Repository</label><input type="text" id="dlRepo" class="mono" placeholder="mlx-community/Qwen3-8B-4bit" spellcheck="false"></div>
+        <div><label for="dlToken">Token <span id="dlTokenOpt">(optional)</span></label><input type="password" id="dlToken" class="mono" placeholder="hf_…" spellcheck="false"></div>
+        <button type="submit" class="btn" id="dlStart" disabled>Download</button>
+      </form>
+      <div class="dl-note err" id="dlError" role="alert" hidden></div>
+      <div class="dl-note ok" id="dlOk" role="status" hidden></div>
+    </div>
+
+    <div class="panelcard" id="dlQueueCard" hidden>
+      <div class="title">Queue <span class="tag" id="dlQueueCount">0</span></div>
+      <div class="dl-queue" id="dlQueue" style="margin-top:16px"></div>
+    </div>
+
+    <div class="panelcard" id="dlBrowse">
+      <div class="seg" role="group" aria-label="List" style="margin-bottom:16px">
+        <button type="button" data-tab="trending" aria-pressed="true">Trending</button>
+        <button type="button" data-tab="popular" aria-pressed="false">Popular</button>
+        <button type="button" data-tab="search" aria-pressed="false">Search results <span id="dlResultCount"></span></button>
+      </div>
+      <form class="dl-toolbar" id="dlSearchForm" role="search">
+        <div class="search">
+          <input type="search" id="dlQuery" placeholder="Search models…" aria-label="Search models" autocomplete="off">
+          <div class="dl-history" id="dlHistory" hidden></div>
+        </div>
+        <select id="dlSort" aria-label="Sort search by">
+          <option value="trending">Trending</option><option value="downloads">Most downloaded</option>
+          <option value="created">Newest</option><option value="updated">Recently updated</option>
+          <option value="most_params">Most parameters</option><option value="least_params">Fewest parameters</option>
+          <option value="largest">Largest</option><option value="smallest">Smallest</option>
+        </select>
+        <button type="submit" class="btn" id="dlSearchBtn" disabled>Search</button>
+        <button type="button" class="btn ghost" id="dlFilterBtn" aria-expanded="false" aria-controls="dlFilters">Filters</button>
+      </form>
+      <div class="dl-filters" id="dlFilters" hidden>
+        <div><label for="dlMinParams">Min params (B)</label><input type="number" id="dlMinParams" min="0" step="any" placeholder="0"></div>
+        <div><label for="dlMaxParams">Max params (B)</label><input type="number" id="dlMaxParams" min="0" step="any" placeholder="∞"></div>
+        <div><label for="dlMinSize">Min size (GB)</label><input type="number" id="dlMinSize" min="0" step="any" placeholder="0"></div>
+        <div><label for="dlMaxSize">Max size (GB)</label><input type="number" id="dlMaxSize" min="0" step="any" placeholder="∞"></div>
+      </div>
+      <div class="dl-tools">
+        <label><input type="checkbox" id="dlMlxOnly" checked> MLX only</label>
+        <span id="dlMemNote"></span>
+        <span class="spacer"></span>
+        <label for="dlOrder">Order</label>
+        <select id="dlOrder" aria-label="Order the list">
+          <option value="rank">List order</option><option value="name">Name</option><option value="size">Size</option>
+          <option value="downloads">Downloads</option><option value="params">Parameters</option><option value="likes">Likes</option>
+        </select>
+        <button type="button" class="btn ghost" id="dlDir2" aria-label="Reverse order">↑</button>
+      </div>
+      <div class="dl-list" id="dlList" aria-live="polite"></div>
+      <div class="dl-pager" id="dlPager"></div>
+    </div>
+
+    <dialog class="dl-dialog" id="dlDetail" aria-labelledby="dlDetailTitle">
+      <header><h2 id="dlDetailTitle"></h2><span class="spacer" style="flex:1"></span><button type="button" class="btn ghost" id="dlDetailClose">Close</button></header>
+      <div class="body" id="dlDetailBody"></div>
+      <footer><button type="button" class="btn" id="dlDetailGet">Download</button></footer>
+    </dialog>
+
+    <dialog class="dl-dialog" id="dlSettings" aria-labelledby="dlSettingsTitle">
+      <header><h2 id="dlSettingsTitle">Folder &amp; mirror</h2></header>
+      <div class="body">
+        <div class="dl-note err" style="margin:0 0 16px" id="dlCfgError" role="alert" hidden></div>
+        <div class="field"><label for="dlCfgDir">Models folder</label><div class="hint">Models are stored as <code>owner/name</code> inside it. Empty uses the folder of the model being served.</div><input type="text" id="dlCfgDir" class="mono" placeholder="~/.maxtoken/models" spellcheck="false"></div>
+        <div class="field"><label for="dlCfgHf">Hugging Face endpoint</label><div class="hint">A mirror such as <code>https://hf-mirror.com</code>. Empty uses huggingface.co.</div><input type="text" id="dlCfgHf" class="mono" placeholder="https://huggingface.co" spellcheck="false"></div>
+        <div class="field"><label for="dlCfgMs">ModelScope endpoint</label><div class="hint">Empty uses modelscope.cn.</div><input type="text" id="dlCfgMs" class="mono" placeholder="https://modelscope.cn" spellcheck="false"></div>
+      </div>
+      <footer><button type="button" class="btn ghost" id="dlCfgCancel">Cancel</button><button type="button" class="btn" id="dlCfgSave">Save</button></footer>
+    </dialog>
+  </section>
+
   <section class="view" id="chatView" aria-labelledby="chatTitle">
     <div class="head">
       <div><div class="eyebrow">Playground</div><h1 id="chatTitle">Chat</h1><div class="sub" id="chatModel">Connecting to your model…</div></div>
@@ -544,7 +730,7 @@ const human = n => n == null ? "–" : n >= 1e6 ? (n/1e6).toFixed(1)+"M" : n >= 
 $("apiPort").textContent = ":" + (location.port || "80");
 
 /* ---------------- view switching ---------------- */
-const VIEW_HASHES = { dashboardView: "#dashboard", settingsView: "#settings", chatView: "#chat" };
+const VIEW_HASHES = { dashboardView: "#dashboard", settingsView: "#settings", downloadsView: "#downloads", chatView: "#chat" };
 function showView(id, updateHash = true) {
   if (!Object.hasOwn(VIEW_HASHES, id)) id = "dashboardView";
   document.querySelectorAll(".view").forEach(v => v.classList.toggle("active", v.id === id));
@@ -556,6 +742,7 @@ function showView(id, updateHash = true) {
   });
   if (updateHash && location.hash !== VIEW_HASHES[id]) history.pushState(null, "", VIEW_HASHES[id]);
   if (id === "dashboardView" && $("requestLog").open) pollLogs();
+  if (id === "downloadsView") openDownloads();
 }
 function viewFromHash() {
   const id = Object.keys(VIEW_HASHES).find(key => VIEW_HASHES[key] === location.hash) || "dashboardView";
@@ -1136,6 +1323,352 @@ async function send() {
 $("sendBtn").onclick = send;
 $("stopBtn").onclick = () => aborter?.abort();
 $("input").addEventListener("keydown", e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(); } });
+
+/* ---------------- downloads ---------------- */
+const GIB = 1024 ** 3;
+const DL_API = "/admin/downloads";
+const DL_PAGE = 10;
+const DL_SOURCES = {
+  hf: { name: "Hugging Face", repoPlaceholder: "mlx-community/Qwen3-8B-4bit", tokenPlaceholder: "hf_…" },
+  ms: { name: "ModelScope", repoPlaceholder: "mlx-community/Qwen3-8B-4bit", tokenPlaceholder: "ModelScope token" },
+};
+const dl = {
+  source: "hf", tab: "trending", mlxOnly: true, order: "rank", dir: "asc", page: 1,
+  config: null, msLoaded: false,
+  lists: {}, // per source: { trending, popular, results, loaded, loading }
+  tasks: { hf: [], ms: [] },
+  history: {},
+  detail: null, timer: null, searchTimer: null, busy: false,
+};
+for (const key of Object.keys(DL_SOURCES)) {
+  dl.lists[key] = { trending: [], popular: [], results: [], loaded: false, loading: false, error: "" };
+  try { dl.history[key] = JSON.parse(localStorage.getItem(key + "SearchHistory") || "[]"); } catch { dl.history[key] = []; }
+}
+
+function el(tag, props = {}, ...children) {
+  const node = document.createElement(tag);
+  for (const [key, value] of Object.entries(props)) {
+    if (value == null || value === false) continue;
+    if (key === "class") node.className = value;
+    else if (key.startsWith("on")) node.addEventListener(key.slice(2), value);
+    else node.setAttribute(key, value === true ? "" : value);
+  }
+  for (const child of children.flat()) if (child != null && child !== false) node.append(child);
+  return node;
+}
+const dlJson = async (path, options = {}) => {
+  const response = await fetch(DL_API + path, options);
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) throw new Error(data.detail || `Request failed (${response.status})`);
+  return data;
+};
+const post = (path, body) => dlJson(path, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+
+function formatBytes(bytes) {
+  if (!bytes) return "";
+  const units = ["B", "KB", "MB", "GB", "TB"];
+  let value = bytes, unit = 0;
+  while (value >= 1024 && unit < units.length - 1) { value /= 1024; unit++; }
+  return `${value.toFixed(unit < 3 ? 0 : 1)} ${units[unit]}`;
+}
+function formatSpeed(bps) {
+  let value = bps || 0, unit = 0;
+  while (value >= 1024 && unit < 4) { value /= 1024; unit++; }
+  return `${value.toFixed(unit === 0 || value >= 100 ? 0 : 1)} ${["B", "KB", "MB", "GB", "TB"][unit]}/s`;
+}
+function formatEta(task) {
+  if (!task.speed_bps || task.total_size <= task.downloaded_size) return "";
+  const s = Math.round((task.total_size - task.downloaded_size) / task.speed_bps);
+  return s >= 3600 ? `${Math.floor(s / 3600)}h ${Math.floor(s % 3600 / 60)}m left` : s >= 60 ? `${Math.floor(s / 60)}m ${s % 60}s left` : `${s}s left`;
+}
+function splitRepo(id) {
+  const slash = id.indexOf("/");
+  return slash < 0 ? ["", id] : [id.slice(0, slash + 1), id.slice(slash + 1)];
+}
+function showNote(id, text, ms = 6000) {
+  const node = $(id);
+  node.textContent = text; node.hidden = !text;
+  clearTimeout(node._timer);
+  if (text && ms) node._timer = setTimeout(() => { node.hidden = true; }, ms);
+}
+
+/* queue */
+function taskRow(task) {
+  const [org, name] = splitRepo(task.repo_id);
+  const active = task.status === "downloading", queued = task.status === "pending";
+  const known = task.total_size > 0;
+  const stat = active
+    ? [known ? `${Math.round(task.progress)}%  ·  ${formatBytes(task.downloaded_size)} / ${formatBytes(task.total_size)}` : "Downloading", formatSpeed(task.speed_bps), formatEta(task)].filter(Boolean).join("  ·  ")
+    : queued ? "Waiting for the running download" : task.status === "completed" ? formatBytes(task.downloaded_size) : "";
+  const acts = el("div", { class: "acts" });
+  if (active || queued) acts.append(el("button", { type: "button", class: "btn ghost", onclick: () => taskAction("cancel", task) }, "Cancel"));
+  if (task.status === "failed" || task.status === "cancelled") acts.append(el("button", { type: "button", class: "btn ghost", onclick: () => taskAction("retry", task) }, "Retry"));
+  if (!active && !queued) acts.append(el("button", { type: "button", class: "btn ghost", onclick: () => taskAction("remove", task) }, "Remove"));
+  return el("div", { class: "dl-job" },
+    el("div", { class: "name" }, el("span", { class: "org" }, org), name, el("span", { class: "dl-state " + task.status }, task.status)),
+    acts,
+    (active || queued) && el("div", { class: "dl-bar" + (active && !known ? " indeterminate" : "") }, el("i", { style: `width:${active && known ? task.progress : 0}%` })),
+    stat && el("div", { class: "stat" }, stat),
+    task.error && el("div", { class: "stat error" }, task.error));
+}
+function renderQueue() {
+  const tasks = dl.tasks[dl.source];
+  $("dlQueueCard").hidden = !tasks.length;
+  $("dlQueueCount").textContent = tasks.filter(t => t.status === "downloading" || t.status === "pending").length || tasks.length;
+  // Running work first, then what is waiting, then history, newest first within each.
+  const rank = t => ({ downloading: 0, pending: 1 })[t.status] ?? 2;
+  $("dlQueue").replaceChildren(...[...tasks].sort((a, b) => rank(a) - rank(b) || b.created_at - a.created_at).map(taskRow));
+}
+async function taskAction(action, task) {
+  const path = `/${dl.source}/${action === "remove" ? "task" : action}/${encodeURIComponent(task.task_id)}`;
+  try {
+    if (action === "remove") await dlJson(path, { method: "DELETE" });
+    else await post(path, action === "retry" ? { token: $("dlToken").value } : {});
+  } catch (e) { showNote("dlError", e.message); }
+  await pollDownloads();
+}
+const hasActive = tasks => tasks.some(t => t.status === "pending" || t.status === "downloading");
+async function pollDownloads() {
+  const sources = ["hf", ...(dl.msLoaded ? ["ms"] : [])];
+  await Promise.all(sources.map(async source => {
+    try { dl.tasks[source] = (await dlJson(`/${source}/tasks`)).tasks; } catch (e) { if (source === "hf") showNote("dlError", e.message); }
+  }));
+  renderQueue();
+  clearTimeout(dl.timer);
+  const live = Object.values(dl.tasks).some(hasActive);
+  dl.timer = setTimeout(pollDownloads, live ? 700 : 5000);
+}
+
+/* start */
+async function startDownload(repoId) {
+  repoId = (repoId ?? $("dlRepo").value).trim();
+  if (!repoId || dl.busy) return;
+  if (dl.source === "ms" && !repoId.includes("/")) repoId = "mlx-community/" + repoId;
+  dl.busy = true; updateStartButton();
+  showNote("dlError", ""); showNote("dlOk", "");
+  try {
+    await post(`/${dl.source}/start`, { repo_id: repoId, token: $("dlToken").value });
+    $("dlRepo").value = "";
+    showNote("dlOk", `Download started: ${repoId}`);
+    await pollDownloads();
+  } catch (e) { showNote("dlError", e.message); }
+  dl.busy = false; updateStartButton();
+}
+function updateStartButton() { $("dlStart").disabled = dl.busy || !$("dlRepo").value.trim(); }
+
+/* browse */
+const dlCurrent = () => dl.lists[dl.source];
+function sortedRows() {
+  const list = dlCurrent();
+  const rows = (dl.tab === "search" ? list.results : list[dl.tab]) || [];
+  const sign = dl.dir === "asc" ? 1 : -1;
+  const key = dl.order;
+  const value = row => key === "name" ? row.name || "" : key === "rank" ? row.rank || 0 : row[key] || 0;
+  return [...rows].sort((a, b) => sign * (key === "name" ? value(a).localeCompare(value(b)) : value(a) - value(b)));
+}
+function fitInfo(size) {
+  const total = dl.config?.system_memory_bytes || 0;
+  if (!total || !size) return null;
+  const ratio = size / total;
+  return { ratio, cls: ratio > .95 ? "over" : ratio > .8 ? "tight" : "" };
+}
+function modelRow(model, index) {
+  const [org, name] = splitRepo(model.repo_id);
+  const fit = fitInfo(model.size);
+  const subs = [model.params_formatted && model.params_formatted + " params", model.size_formatted].filter(Boolean).join("  ·  ");
+  return el("div", { class: "dl-row" },
+    el("div", { class: "rank" }, model.rank || (index + 1)),
+    el("div", {}, el("div", { class: "title" }, el("span", { class: "org" }, org), name), subs && el("div", { class: "sub" }, subs)),
+    el("div", { class: "stats" }, `↓ ${human(model.downloads)}   ♥ ${human(model.likes)}`),
+    el("div", { class: fit?.cls ? "fit " + fit.cls : "fit" },
+      fit ? [el("b", {}, Math.round(fit.ratio * 100) + "%"), " of memory", el("div", { class: "dl-bar" }, el("i", { style: `width:${Math.min(100, fit.ratio * 100)}%` }))] : "—"),
+    el("div", { class: "acts" },
+      el("button", { type: "button", class: "btn ghost", onclick: () => openDetail(model.repo_id) }, "Info"),
+      el("button", { type: "button", class: "btn", onclick: () => startDownload(model.repo_id) }, "Download")));
+}
+function renderBrowse() {
+  const list = dlCurrent();
+  document.querySelectorAll("#dlBrowse [data-tab]").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.tab === dl.tab)));
+  $("dlResultCount").textContent = list.results.length ? `(${list.results.length})` : "";
+  $("dlFilterBtn").hidden = dl.source !== "hf";
+  if (dl.source !== "hf") $("dlFilters").hidden = true;
+  $("dlDir2").textContent = dl.dir === "asc" ? "↑" : "↓";
+  const loading = dl.tab === "search" ? list.loading : list.loading && !list.loaded;
+  const rows = sortedRows();
+  const pages = Math.max(1, Math.min(Math.ceil(rows.length / DL_PAGE), dl.tab === "search" ? 10 : 5));
+  dl.page = Math.min(dl.page, pages);
+  let body;
+  if (loading) body = el("div", { class: "dl-empty" }, el("span", { class: "spinner" }), " Loading…");
+  else if (list.error) body = el("div", { class: "dl-empty" }, list.error);
+  else if (dl.tab === "search" && !list.searched) body = el("div", { class: "dl-empty" }, "Search for a model name, family or quantization.");
+  else if (!rows.length) body = el("div", { class: "dl-empty" }, dl.tab === "search" ? "No models matched." : "No models to show.");
+  else {
+    const start = (dl.page - 1) * DL_PAGE;
+    body = rows.slice(start, start + DL_PAGE).map((model, i) => modelRow(model, start + i));
+  }
+  $("dlList").replaceChildren(...[body].flat());
+  const pager = [];
+  if (pages > 1) for (let p = 1; p <= pages; p++) pager.push(el("button", { type: "button", class: "btn ghost" + (p === dl.page ? " current" : ""), "aria-current": p === dl.page ? "page" : null, onclick: () => { dl.page = p; renderBrowse(); } }, p));
+  $("dlPager").replaceChildren(...pager);
+  $("dlMemNote").textContent = dl.config?.system_memory_bytes ? `Showing models up to ${formatBytes(dl.config.system_memory_bytes)} (this Mac's memory)` : "";
+}
+async function loadRecommended(force = false) {
+  const list = dlCurrent(), source = dl.source;
+  if (list.loading || (list.loaded && !force)) return;
+  list.loading = true; list.error = ""; renderBrowse();
+  try {
+    const data = await dlJson(`/${source}/recommended?mlx_only=${dl.mlxOnly}`);
+    if (source === "hf") $("dlTokenWarn").hidden = !data.hf_token_invalid;
+    const rank = rows => (rows || []).map((m, i) => ({ ...m, rank: i + 1 }));
+    Object.assign(list, { trending: rank(data.trending), popular: rank(data.popular), loaded: true });
+  } catch (e) { list.error = e.message; }
+  list.loading = false;
+  if (dl.source === source) renderBrowse();
+}
+function rememberSearch(query) {
+  const history = [query, ...dl.history[dl.source].filter(q => q !== query)].slice(0, 5);
+  dl.history[dl.source] = history;
+  try { localStorage.setItem(dl.source + "SearchHistory", JSON.stringify(history)); } catch {}
+}
+async function runSearch() {
+  const query = $("dlQuery").value.trim(), source = dl.source, list = dlCurrent();
+  if (!query) return;
+  clearTimeout(dl.searchTimer);
+  $("dlHistory").hidden = true;
+  dl.tab = "search"; dl.page = 1;
+  // Re-sorting on the client would undo what the server was asked for, so follow the choice.
+  const follow = { largest: ["size", "desc"], smallest: ["size", "asc"], most_params: ["params", "desc"], least_params: ["params", "asc"] }[$("dlSort").value] || ["downloads", "desc"];
+  [dl.order, dl.dir] = follow;
+  $("dlOrder").value = dl.order;
+  list.loading = true; list.error = ""; renderBrowse();
+  const params = new URLSearchParams({ q: query, sort: $("dlSort").value, limit: "100", mlx_only: dl.mlxOnly });
+  if (source === "hf") {
+    const set = (name, id, scale) => { const v = parseFloat($(id).value); if (v >= 0) params.set(name, Math.round(v * scale)); };
+    set("min_params", "dlMinParams", 1e9); set("max_params", "dlMaxParams", 1e9);
+    set("min_size", "dlMinSize", GIB); set("max_size", "dlMaxSize", GIB);
+  }
+  try {
+    const data = await dlJson(`/${source}/search?${params}`);
+    if (source === "hf") $("dlTokenWarn").hidden = !data.hf_token_invalid;
+    list.results = data.models || []; list.searched = true;
+    rememberSearch(query);
+  } catch (e) { list.error = e.message; }
+  list.loading = false;
+  if (dl.source === source) renderBrowse();
+}
+function renderHistory() {
+  const items = dl.history[dl.source];
+  const box = $("dlHistory");
+  box.replaceChildren(...items.map(q => el("button", { type: "button", onmousedown: e => { e.preventDefault(); $("dlQuery").value = q; $("dlSearchBtn").disabled = false; runSearch(); } }, q)));
+  box.hidden = !items.length || !!$("dlQuery").value.trim();
+}
+
+/* model detail */
+async function openDetail(repoId) {
+  const dialog = $("dlDetail"), source = dl.source;
+  $("dlDetailTitle").textContent = repoId;
+  $("dlDetailBody").replaceChildren(el("div", { class: "dl-empty" }, el("span", { class: "spinner" }), " Loading…"));
+  $("dlDetailGet").onclick = () => { dialog.close(); startDownload(repoId); };
+  dialog.showModal();
+  try {
+    const info = await dlJson(`/${source}/model-info?repo_id=${encodeURIComponent(repoId)}`);
+    if (!dialog.open || $("dlDetailTitle").textContent !== repoId) return;
+    const facts = [info.params_formatted && info.params_formatted + " params", info.size_formatted, info.pipeline_tag, `↓ ${human(info.downloads)}`, `♥ ${human(info.likes)}`].filter(Boolean);
+    const files = (info.files || []).map(f => el("div", {}, el("span", {}, f.name), el("span", {}, f.size_formatted)));
+    $("dlDetailBody").replaceChildren(
+      el("div", { class: "sub", style: "margin-bottom:14px;color:var(--text-3)" }, facts.join("  ·  ")),
+      info.tags?.length && el("div", { style: "display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px" }, info.tags.slice(0, 16).map(t => el("span", { class: "tag" }, t))),
+      info.model_card ? el("pre", {}, info.model_card) : el("div", { class: "dl-empty" }, "No model card."),
+      files.length && el("h3", { style: "margin:20px 0 8px;font-size:13px" }, `Files (${files.length})`),
+      files.length && el("div", { class: "dl-files" }, files));
+  } catch (e) { $("dlDetailBody").replaceChildren(el("div", { class: "dl-empty" }, e.message)); }
+}
+
+/* folder and mirror */
+function openDownloadSettings() {
+  const configured = dl.config?.configured || {};
+  $("dlCfgDir").value = configured.models_dir || ""; $("dlCfgHf").value = configured.hf_endpoint || ""; $("dlCfgMs").value = configured.ms_endpoint || "";
+  $("dlCfgDir").placeholder = dl.config?.models_dir || "~/.maxtoken/models";
+  $("dlCfgDir").disabled = !!dl.config?.env_models_dir;
+  $("dlCfgDir").title = dl.config?.env_models_dir ? "Set by the MAXTOKEN_MODELS_DIR environment variable" : "";
+  showNote("dlCfgError", "");
+  $("dlSettings").showModal();
+}
+async function saveDownloadSettings() {
+  try {
+    const body = { hf_endpoint: $("dlCfgHf").value, ms_endpoint: $("dlCfgMs").value };
+    if (!$("dlCfgDir").disabled) body.models_dir = $("dlCfgDir").value;
+    await post("/config", body);
+    $("dlSettings").close();
+    await loadDownloadConfig();
+    // A new mirror changes what the lists mean.
+    for (const list of Object.values(dl.lists)) Object.assign(list, { loaded: false, trending: [], popular: [] });
+    loadRecommended(true);
+  } catch (e) { showNote("dlCfgError", e.message, 0); }
+}
+async function loadDownloadConfig() {
+  try {
+    dl.config = await dlJson("/config");
+    $("dlDir").textContent = dl.config.models_dir;
+    $("dlMsMissing").hidden = dl.source !== "ms" || dl.config.ms_available;
+    renderBrowse();
+  } catch (e) { showNote("dlError", e.message); }
+}
+
+function setSource(source) {
+  dl.source = source; dl.tab = "trending"; dl.page = 1; dl.order = "rank"; dl.dir = "asc"; $("dlOrder").value = "rank";
+  document.querySelectorAll("#downloadsView [data-source]").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.source === source)));
+  $("dlRepo").placeholder = DL_SOURCES[source].repoPlaceholder; $("dlToken").placeholder = DL_SOURCES[source].tokenPlaceholder;
+  $("dlSort").querySelectorAll("option").forEach(o => { o.hidden = source === "ms" && !["trending", "downloads", "created", "updated"].includes(o.value); });
+  if (!$("dlSort").selectedOptions[0] || $("dlSort").selectedOptions[0].hidden) $("dlSort").value = "trending";
+  $("dlMsMissing").hidden = source !== "ms" || !dl.config || dl.config.ms_available;
+  if (source === "ms" && !dl.msLoaded && dl.config?.ms_available) { dl.msLoaded = true; pollDownloads(); }
+  showNote("dlError", ""); showNote("dlOk", "");
+  renderQueue(); renderBrowse();
+  if (source === "hf" || dl.config?.ms_available) loadRecommended();
+}
+let downloadsStarted = false;
+function openDownloads() {
+  if (downloadsStarted) return;
+  downloadsStarted = true;
+  loadDownloadConfig().then(() => { renderBrowse(); });
+  pollDownloads();
+  loadRecommended();
+}
+
+document.querySelectorAll("#downloadsView [data-source]").forEach(b => b.onclick = () => setSource(b.dataset.source));
+document.querySelectorAll("#dlBrowse [data-tab]").forEach(b => b.onclick = () => {
+  dl.tab = b.dataset.tab; dl.page = 1;
+  if (dl.tab !== "search") { dl.order = "rank"; dl.dir = "asc"; $("dlOrder").value = "rank"; }
+  renderBrowse(); if (dl.tab !== "search") loadRecommended();
+});
+$("dlAdd").onsubmit = e => { e.preventDefault(); startDownload(); };
+$("dlRepo").addEventListener("input", updateStartButton);
+$("dlSearchForm").onsubmit = e => { e.preventDefault(); runSearch(); };
+$("dlQuery").addEventListener("input", () => {
+  $("dlSearchBtn").disabled = !$("dlQuery").value.trim();
+  clearTimeout(dl.searchTimer);
+  if ($("dlQuery").value.trim()) dl.searchTimer = setTimeout(runSearch, 600);
+  renderHistory();
+});
+$("dlQuery").addEventListener("focus", renderHistory);
+$("dlQuery").addEventListener("blur", () => setTimeout(() => { $("dlHistory").hidden = true; }, 150));
+$("dlSort").onchange = () => { if ($("dlQuery").value.trim()) runSearch(); };
+$("dlFilterBtn").onclick = () => { const open = $("dlFilters").hidden; $("dlFilters").hidden = !open; $("dlFilterBtn").setAttribute("aria-expanded", String(open)); };
+$("dlFilters").addEventListener("input", () => { clearTimeout(dl.searchTimer); if ($("dlQuery").value.trim()) dl.searchTimer = setTimeout(runSearch, 600); });
+$("dlMlxOnly").onchange = () => {
+  dl.mlxOnly = $("dlMlxOnly").checked;
+  for (const list of Object.values(dl.lists)) Object.assign(list, { loaded: false, trending: [], popular: [] });
+  loadRecommended(true);
+  if ($("dlQuery").value.trim() && dl.tab === "search") runSearch();
+};
+$("dlOrder").onchange = () => { dl.order = $("dlOrder").value; dl.dir = dl.order === "name" || dl.order === "rank" ? "asc" : "desc"; dl.page = 1; renderBrowse(); };
+$("dlDir2").onclick = () => { dl.dir = dl.dir === "asc" ? "desc" : "asc"; renderBrowse(); };
+$("dlDetailClose").onclick = () => $("dlDetail").close();
+$("dlSettingsBtn").onclick = openDownloadSettings;
+$("dlCfgCancel").onclick = () => $("dlSettings").close();
+$("dlCfgSave").onclick = saveDownloadSettings;
+for (const dialog of [$("dlDetail"), $("dlSettings")]) dialog.addEventListener("click", e => { if (e.target === dialog) dialog.close(); });
 
 viewFromHash();
 updateSettingsStatus();

@@ -137,7 +137,7 @@ test('dashboard, settings and chat work in a real browser', { skip: !available, 
     assert.equal(await evaluate('document.querySelector(".view.active").id'), 'dashboardView');
     assert.equal(await evaluate('document.getElementById("mTps").textContent'), '78.5');
     assert.equal(await evaluate('document.getElementById("genTemp").closest("section").id'), 'settingsView');
-    assert.equal(await evaluate('document.querySelectorAll(".nav").length'), 3);
+    assert.equal(await evaluate('document.querySelectorAll(".nav").length'), 4);
     await screenshot('dashboard');
 
     await evaluate('document.querySelector("[data-view=settingsView]").click()');

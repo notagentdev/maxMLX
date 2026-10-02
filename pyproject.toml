@@ -35,7 +35,7 @@ classifiers = [
 # there is no lockfile.
 dependencies = [
     "fastapi>=0.115,<1",
-    "huggingface_hub>=1.5,<2",
+    "huggingface_hub>=1.19,<2",
     "mlx>=0.30",
     "mlx-lm>=0.31,<1",
     "msgpack>=1.1,<2",
@@ -64,6 +64,7 @@ maxtoken = "maxtoken.cli:main"
 
 [project.optional-dependencies]
 dev = ["pytest>=6.0"]
+modelscope = ["modelscope>=1.10.0"]
 
 [tool.setuptools]
 include-package-data = true
