@@ -65,6 +65,18 @@ maxtoken = "maxtoken.cli:main"
 [project.optional-dependencies]
 dev = ["pytest>=6.0"]
 modelscope = ["modelscope>=1.10.0"]
+# Structured output (response_format json_object/json_schema) on the MLX backend.
+# Pinned to the pair oMLX validated: xgrammar 0.2.3 crashes at import with
+# apache-tvm-ffi 0.1.13 on macOS arm64. Needs torch at import time.
+grammar = ["xgrammar==0.2.3", "apache-tvm-ffi==0.1.11"]
+# Image generation in the chat and /v1/images/generations (FLUX.2 Klein via mflux).
+# mflux needs torch>=2.13; nothing else in the engine pins torch.
+images = ["mflux==0.21.0"]
+# Video generation in the chat (LTX-2.x via ltx-2-mlx, MIT; not on PyPI, pinned to a commit).
+videos = [
+    "ltx-core-mlx @ git+https://github.com/dgrauet/ltx-2-mlx@75c463e#subdirectory=packages/ltx-core-mlx",
+    "ltx-pipelines-mlx @ git+https://github.com/dgrauet/ltx-2-mlx@75c463e#subdirectory=packages/ltx-pipelines-mlx",
+]
 
 [tool.setuptools]
 include-package-data = true

@@ -68,6 +68,26 @@ def _pack_enabled() -> bool:
     return os.environ.get("MAXTOKEN_MLX_FTW_PACK", "1") != "0"
 
 
+def expert_residency() -> str:
+    """How much of the store a forward pulls into memory (MAXTOKEN_MLX_EXPERT_RESIDENCY).
+
+    ``layer`` (default): one Metal buffer per stacked tensor. The GPU cannot
+    fault pages in, so Metal makes a buffer wholly resident before a command
+    buffer that uses it runs — a gather over 8 of 256 experts makes the whole
+    layer resident (measured: 256 of 256 MiB after one 8-expert gather). Every
+    token passes all MoE layers, so the whole store must sit in memory; under
+    pressure its clean file pages are the first to be evicted and every token
+    reads them back (Ornith at 3 tok/s beside ~12 GB of apps).
+
+    ``expert``: one buffer per expert. A MoE block reads its routing to the
+    host (one sync per layer), stacks only the experts it selected and gathers
+    over that stack, so only experts actually used are made resident (8 of 256
+    MiB measured). Costs the per-layer sync and the small stack copy, and
+    skips the fused/compiled decode paths that bind the stacked tensors."""
+    value = os.environ.get("MAXTOKEN_MLX_EXPERT_RESIDENCY", "layer").strip().lower()
+    return "expert" if value == "expert" else "layer"
+
+
 def _expert_slice(src, e: int, E: int, stacked: bool) -> Tuple[str, int, int]:
     """Byte range of expert ``e`` inside one source tensor."""
     if stacked:
@@ -213,13 +233,18 @@ class MappedExpertStore:
     dangling device pointers.
     """
 
-    def __init__(self, store_dir: str):
+    def __init__(self, store_dir: str, per_expert: bool = False):
         import mlx.core as mx
 
         self._mx = mx
         self._bases: List[Any] = []
+        self._base_by_name: Dict[str, Any] = {}
+        self._dtype: Dict[str, str] = {}
         manifest = json.load(open(os.path.join(store_dir, "manifest.json")))
         self.path = os.path.join(store_dir, "experts.ftwm")
+        self.per_expert = per_expert
+        # Stacked views are built on first use: in per-expert mode none may
+        # ever reach a command buffer (it would make its whole layer resident).
         self.tensors: Dict[str, Any] = {}
         for name, meta in manifest["tensors"].items():
             np_dt = _NP_DTYPES[meta["dtype"]]
@@ -231,13 +256,28 @@ class MappedExpertStore:
                 shape=tuple(meta["shape"]),
             )
             self._bases.append(base)
-            arr = mx.from_dlpack(base)
-            if meta["dtype"] == "BF16":
-                arr = arr.view(mx.bfloat16)
-            self.tensors[name] = arr
+            self._base_by_name[name] = base
+            self._dtype[name] = meta["dtype"]
+            if not per_expert:
+                self.tensors[name] = self._wrap(name, base)
         self._prefetch_lock = threading.Lock()
         self._prefetching = False
         self._advise_map: Any = None
+
+    def _wrap(self, name: str, view) -> Any:
+        arr = self._mx.from_dlpack(view)
+        return arr.view(self._mx.bfloat16) if self._dtype[name] == "BF16" else arr
+
+    def expert_views(self, name: str) -> List[Any]:
+        """One zero-copy mx array per expert of a stacked tensor, each its own
+        Metal buffer, so a forward makes only the experts it uses resident.
+        Raises ValueError when an expert's bytes are not page-aligned (a buffer
+        that is not would be imported as a copy)."""
+        base = self._base_by_name[name]
+        stride = base.nbytes // base.shape[0]
+        if stride % _PAGE or (base.ctypes.data % _PAGE):
+            raise ValueError(f"{name}: experts are not page-aligned ({stride} B each)")
+        return [self._wrap(name, base[e]) for e in range(base.shape[0])]
 
     # -------------------------------------------------------------- prefetch
 
@@ -261,6 +301,10 @@ class MappedExpertStore:
         its evals. Idempotent while a sweep is running; near-free when warm."""
         import mmap as mmap_mod
 
+        if self.per_expert:
+            # Reading the whole store back in is what per-expert residency
+            # exists to avoid; hot experts come back on demand.
+            return
         with self._prefetch_lock:
             if self._prefetching:
                 return
@@ -336,6 +380,128 @@ class MappedExpertStore:
         return out
 
 
+class _ExpertViews:
+    """Per-expert arrays of one switch-GLU. A plain holder, not an nn.Module
+    attribute value, so 256 x 6 arrays per layer never join the model's
+    parameter tree (parameters() walks, evals and quantize predicates)."""
+
+    def __init__(self, gate_up: List[List[Any]], down: List[List[Any]]):
+        self.gate_up = gate_up  # [weight, scales, biases?], each a list per expert
+        self.down = down
+
+
+_PER_EXPERT_CLS: Any = None
+# MAXTOKEN_MLX_EXPERT_TRACE=<file>: one line per per-expert MoE call,
+# "<layer> <rows> <expert ids...>", for studying routing predictability.
+_TRACE: Any = (
+    open(os.environ["MAXTOKEN_MLX_EXPERT_TRACE"], "a", buffering=1)
+    if os.environ.get("MAXTOKEN_MLX_EXPERT_TRACE")
+    else None
+)
+
+
+def _per_expert_switch_glu():
+    """SwitchGLU over per-expert buffers (defined lazily: importing this module
+    must not pull mlx). Same math as moe_pack.PackedSwitchGLU — gate+up as one
+    gathered projection, the token sort for wide inputs — over a stack of
+    only the experts the routing selected."""
+    global _PER_EXPERT_CLS
+    if _PER_EXPERT_CLS is not None:
+        return _PER_EXPERT_CLS
+    import mlx.core as mx
+    import mlx.nn as nn
+    from mlx_lm.models.switch_layers import _gather_sort, _scatter_unsort
+
+    class PerExpertSwitchGLU(nn.Module):
+        # Read by decode_fusion and whole_moe: they bind stacked tensors and
+        # compile the block, and this forward syncs on its routing.
+        per_expert = True
+
+        def __init__(self, views, activation, split_at, q_gate_up, q_down):
+            super().__init__()
+            self._views = views
+            self.activation = activation
+            self._split_at = int(split_at)
+            self._q_gate_up = q_gate_up
+            self._q_down = q_down
+            self._layer = -1  # set at attach; names the block in the routing trace
+
+        def _gather(self, x, parts, q, used, idx, do_sort):
+            stacked = [mx.stack([p[e] for e in used]) for p in parts]
+            return mx.gather_qmm(
+                x,
+                stacked[0],
+                stacked[1],
+                stacked[2] if len(stacked) > 2 else None,
+                rhs_indices=idx,
+                transpose=True,
+                sorted_indices=do_sort,
+                **q,
+            )
+
+        def __call__(self, x, indices):
+            # The one host sync per layer: which experts this forward needs.
+            flat = np.asarray(indices).reshape(-1)
+            used, local = np.unique(flat, return_inverse=True)
+            used = used.tolist()
+            if _TRACE is not None:
+                _TRACE.write(f"{self._layer} {flat.size // indices.shape[-1]} {' '.join(map(str, used))}\n")
+            idx = mx.array(local.reshape(indices.shape).astype(np.uint32))
+            x = mx.expand_dims(x, (-2, -3))
+            do_sort = indices.size >= 64
+            inv_order = None
+            if do_sort:
+                x, idx, inv_order = _gather_sort(x, idx)
+            packed = self._gather(x, self._views.gate_up, self._q_gate_up, used, idx, do_sort)
+            x_gate, x_up = mx.split(packed, [self._split_at], axis=-1)
+            x = self._gather(
+                self.activation(x_up, x_gate), self._views.down, self._q_down, used, idx, do_sort
+            )
+            if do_sort:
+                x = _scatter_unsort(x, inv_order, indices.shape)
+            return x.squeeze(-2)
+
+    _PER_EXPERT_CLS = PerExpertSwitchGLU
+    return PerExpertSwitchGLU
+
+
+def _quant(lin) -> Dict[str, Any]:
+    return {
+        "group_size": int(getattr(lin, "group_size", 64)),
+        "bits": int(getattr(lin, "bits", 4)),
+        "mode": str(getattr(lin, "mode", "affine")),
+    }
+
+
+def _attach_per_expert(model, store: "MappedExpertStore", glu_paths, glu_mods) -> None:
+    """Replace every switch-GLU by a PerExpertSwitchGLU over ``store``'s
+    per-expert views. All views are built before any module is touched, so a
+    store this mode cannot serve raises with the model unchanged."""
+    built = []
+    for path, mod in zip(glu_paths, glu_mods, strict=True):
+        names = {
+            proj: [f"{path}.{proj}.{part}" for part in _PARTS
+                   if f"{path}.{proj}.{part}" in store._base_by_name]
+            for proj in ("gate_up_proj", "down_proj")
+        }
+        if not names["gate_up_proj"] or not names["down_proj"]:
+            raise ValueError("per-expert residency needs the packed store (MAXTOKEN_MLX_FTW_PACK=1)")
+        views = _ExpertViews(
+            [store.expert_views(n) for n in names["gate_up_proj"]],
+            [store.expert_views(n) for n in names["down_proj"]],
+        )
+        split_at = int(store._base_by_name[names["gate_up_proj"][0]].shape[1]) // 2
+        built.append((path, mod, views, split_at))
+    cls = _per_expert_switch_glu()
+    for layer, (path, mod, views, split_at) in enumerate(built):
+        parent_path, attr = path.rsplit(".", 1)
+        # The whole SwitchGLU goes, so its lazy checkpoint arrays are never
+        # materialized (the same reason the packed path replaces it).
+        glu = cls(views, mod.activation, split_at, _quant(mod.gate_proj), _quant(mod.down_proj))
+        glu._layer = layer
+        setattr(_resolve_module(model, parent_path), attr, glu)
+
+
 def _resolve_module(model, path: str):
     """Walk a dotted parameter path (list indices included) to its module."""
     obj = model
@@ -367,6 +533,20 @@ def attach_mapped_experts(model, model_dir: str) -> int:
         raise ValueError("no switch-GLU expert tensors found for the mapped store")
 
     store_dir = repack_experts(model_dir, glu_paths)
+    if expert_residency() == "expert":
+        store = MappedExpertStore(store_dir, per_expert=True)
+        try:
+            _attach_per_expert(model, store, glu_paths, glu_mods)
+        except ValueError as exc:
+            logger.warning(f"per-expert residency unavailable ({exc}); stacked layers instead")
+        else:
+            model._maxtoken_mapped_store = store
+            logger.info(
+                f"expert serving: zero-copy mmap store, per-expert residency "
+                f"({len(glu_paths)} MoE layers, {os.path.getsize(store.path) / 2**30:.2f} GiB "
+                "file-backed; only the experts a forward routes to are made resident)"
+            )
+            return len(glu_paths)
     store = MappedExpertStore(store_dir)
     packed_count = 0
     for path, mod in zip(glu_paths, glu_mods, strict=True):

@@ -227,6 +227,9 @@ def _compile_moe_blocks(model) -> int:
         layer.mlp for layer in _layers(model)
         if isinstance(getattr(layer, "mlp", None), classes)
         and getattr(layer.mlp, "sharding_group", None) is None
+        # Per-expert residency reads its routing to the host mid-block,
+        # which a compiled trace cannot do.
+        and not getattr(getattr(layer.mlp, "switch_mlp", None), "per_expert", False)
     ]
     if not blocks:
         return 0

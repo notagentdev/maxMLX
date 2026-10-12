@@ -33,6 +33,7 @@ from .anthropic_models import (
     AnthropicUsage,
 )
 from .generation import (
+    IMAGE_PLACEHOLDER,
     KEEPALIVE,
     ContentDelta,
     GenDone,
@@ -217,8 +218,9 @@ def convert_anthropic_prompt(
                 # -> reasoning_content; redacted_thinking stays skipped (opaque payload).
                 thinking_parts.append(block.thinking)
             elif block.type == "image":
-                # Text-only server: drop image blocks rather than failing the request.
-                continue
+                # Text-only server: a note in place of the image, so the model
+                # knows a picture was sent and that it cannot see it.
+                content_parts.append({"type": "text", "text": IMAGE_PLACEHOLDER})
             elif block.type == "tool_use":
                 tool_calls.append(
                     {

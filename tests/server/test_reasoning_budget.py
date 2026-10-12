@@ -130,3 +130,89 @@ def test_budget_applies_to_the_non_streaming_path():
     assert result.reasoning.count("think") == 4
     assert result.content == ""
     assert result.finish_reason == "length"
+
+
+# -- "answer" mode: an exhausted budget hands over to a continuation that answers --
+
+
+class _Manager:
+    def render_prompt(self, msg):
+        return "<|im_start|>user\nhi<|im_end|>\n<|im_start|>assistant\n<think>\n"
+
+
+class _ContinuingState(_State):
+    """The first uid thinks forever; the continuation (uid 43) answers."""
+
+    def __init__(self, chunks, answer, **kw):
+        super().__init__(chunks, **kw)
+        self.answer = answer
+        self.next_uid = 42
+        self.sent_msgs = []
+        self.aborted = []
+
+    def new_user(self) -> int:
+        uid = self.next_uid
+        self.next_uid += 1
+        return uid
+
+    def frontend_tokenizer(self):
+        return _Manager()
+
+    async def send_one(self, msg):
+        self.sent_msgs.append(msg)
+
+    async def abort_user(self, uid):
+        self.aborted.append(uid)
+
+    async def wait_for_ack(self, uid: int):
+        chunks = self.chunks if uid == 42 else self.answer
+        for i, text in enumerate(chunks):
+            yield UserReply(
+                uid=uid, incremental_output=text, finished=(i == len(chunks) - 1),
+                prompt_tokens_delta=3 if i == 0 else 0, completion_tokens_delta=1, cached_tokens=0,
+                finish_reason="stop" if i == len(chunks) - 1 else None,
+            )
+
+
+def test_exhausted_budget_closes_the_thinking_and_answers():
+    state = _ContinuingState(["think "] * 10, ["The ", "answer."], max_reasoning_tokens=4)
+    state.new_user()  # uid 42 belongs to the original request
+    events = _run(generate_events(42, _spec(), state))
+
+    reasoning = "".join(e.text for e in events if isinstance(e, ReasoningDelta))
+    content = "".join(e.text for e in events if isinstance(e, ContentDelta))
+    done = [e for e in events if isinstance(e, GenDone)][-1]
+
+    assert reasoning.count("think ") == 4
+    assert "give the solution based on the thinking directly now" in reasoning
+    assert content == "The answer."
+    assert done.finish_reason == "stop"
+    assert state.aborted == [42]  # the thinking request no longer runs
+    cont = state.sent_msgs[-1]
+    assert cont.uid == 43 and cont.prerendered
+    assert cont.text.startswith("<|im_start|>user\nhi")
+    assert cont.text.endswith("think " * 4 + "\n\nConsidering the limited time, I have to give the solution "
+                              "based on the thinking directly now.\n</think>\n\n")
+    assert cont.sampling_params.max_tokens == 64 - 4  # what the thinking already spent
+    assert done.prompt_tokens == 3  # the continuation re-reads the prompt; not counted twice
+    assert done.completion_tokens == 4 + 2
+
+
+def test_exhausted_budget_answers_on_the_non_streaming_path():
+    state = _ContinuingState(["think "] * 10, ["The ", "answer."], max_reasoning_tokens=4)
+    state.new_user()
+    result = asyncio.run(generate_full(42, _spec(), state))
+    assert result.reasoning.count("think ") == 4
+    assert result.content == "The answer."
+    assert result.finish_reason == "stop"
+
+
+def test_stop_mode_keeps_the_truncation(monkeypatch):
+    monkeypatch.setenv("MAXTOKEN_REASONING_BUDGET_MODE", "stop")
+    state = _ContinuingState(["think "] * 10, ["The ", "answer."], max_reasoning_tokens=4)
+    state.new_user()
+    events = _run(generate_events(42, _spec(), state))
+    content = "".join(e.text for e in events if isinstance(e, ContentDelta))
+    done = [e for e in events if isinstance(e, GenDone)][-1]
+    assert content == "" and done.finish_reason == "length"
+    assert state.sent_msgs == []

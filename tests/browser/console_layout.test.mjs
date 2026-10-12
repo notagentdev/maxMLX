@@ -206,7 +206,7 @@ await screenshot('settings');
   await evaluate('showView("settingsView"); window.setInput = (id, value) => { const input = document.getElementById(id); input.value = value; input.dispatchEvent(new Event("input", {bubbles:true})); }; showSettingsTab("memorySettings"); setInput("maxRequests", "0"); showSettingsTab("modelSettings"); setInput("genTemp", "1.3"); document.getElementById("settingsSave").click()');
   assert.equal(await evaluate('document.querySelector(".settings-panel.active").id'), 'memorySettings');
   assert.equal(mutations.filter(item => item.path === '/admin/settings').length, beforeInvalid);
-  await evaluate('document.querySelector("[data-discard=performance]").click(); document.querySelector("[data-discard=generation]").click()');
+  await evaluate('showSettingsTab("memorySettings"); setInput("maxRequests", "2"); showSettingsTab("modelSettings"); setInput("genTemp", "1.2"); document.getElementById("settingsSave").click()');
   await waitFor('dirtySettings.size === 0 && document.getElementById("settingsSave").disabled');
 
     await evaluate('document.querySelector("[data-view=chatView]").click()');

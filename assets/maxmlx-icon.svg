@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="maxMLX Oktopus">
+  <title>maxMLX – Oktopus</title>
+  <path d="M4 18C4 10 9 5 16 5s12 5 12 13v3c0 6-8 6-8 0 0 6-8 6-8 0 0 6-8 6-8 0Z"/>
+  <circle cx="11" cy="16" r="1.6" fill="currentColor" stroke="none"/>
+  <circle cx="21" cy="16" r="1.6" fill="currentColor" stroke="none"/>
+</svg>

@@ -13,6 +13,10 @@ class SamplingParams:
     # Stop strings (OpenAI `stop` / Anthropic `stop_sequences`). Generation finishes when one
     # appears in the decoded output; the matched substring (and anything after) is trimmed.
     stop_strs: list[str] = field(default_factory=list)
+    # Structured output (response_format), decoded under a grammar on the MLX
+    # backend: {"type": "json_object" | "json_schema", "schema": {...},
+    # "strict": bool, "start_after": "</think>" for a thinking model}. None = free text.
+    grammar: dict | None = None
 
     @property
     def is_greedy(self) -> bool:

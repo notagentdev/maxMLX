@@ -73,11 +73,8 @@ def launch_server(
     from .api_server import run_api_server
     from .args import parse_args
 
-    server_args, run_shell = parse_args(
-        sys.argv[1:] if argv is None else argv,
-        run_shell,
-        prog=prog,
-    )
+    argv = list(sys.argv[1:] if argv is None else argv)
+    server_args, run_shell = parse_args(argv, run_shell, prog=prog)
     logger = init_logger(__name__, "initializer")
 
     def start_subprocess(server_args: ServerArgs) -> "BackendHandle":
@@ -147,7 +144,7 @@ def launch_server(
             expected_acks=num_tokenizers + 2,
         )
 
-    run_api_server(server_args, start_subprocess, run_shell=run_shell)
+    run_api_server(server_args, start_subprocess, run_shell=run_shell, launch_argv=argv)
 
 
 if __name__ == "__main__":

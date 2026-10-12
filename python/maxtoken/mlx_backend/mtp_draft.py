@@ -166,15 +166,28 @@ class MtpDrafter:
             # beside a quantized trunk (Ornith-1.5-35B) skips this and runs
             # in bf16 — the precision its acceptance was validated at.
             scheme = head_quant_scheme(cfg, renamed)
+
+            def _packed_as_shipped(path, m):
+                # Quantize exactly the modules the sidecar ships packed, each
+                # at the bits and group its own tensors imply: heads can mix
+                # schemes (Qwen3.6-35B-A3B's MTPLX head packs its 256 experts
+                # at 4-bit g32 and keeps attention and the shared expert in
+                # bf16), and the stacked experts are SwitchLinear, not
+                # nn.Linear. Norms carry no .scales and are never touched.
+                if not hasattr(m, "to_quantized") or f"{path}.scales" not in renamed:
+                    return False
+                packed, scales = renamed[f"{path}.weight"], renamed[f"{path}.scales"]
+                in_features = int(m.weight.shape[-1])
+                bits = int(packed.shape[-1]) * 32 // in_features
+                group = in_features // int(scales.shape[-1])
+                return {"group_size": group, "bits": bits, "mode": scheme["mode"]}
+
             nn.quantize(
                 head,
                 group_size=scheme["group_size"],
                 bits=scheme["bits"],
                 mode=scheme["mode"],
-                # Only the projections carry weights to quantize; the norms
-                # (and any name that merely CONTAINS "norm") must be skipped by
-                # type, not by name — pre_fc_norm_embedding is an RMSNorm.
-                class_predicate=lambda _path, m: isinstance(m, nn.Linear),
+                class_predicate=_packed_as_shipped,
             )
         head.update(tree_unflatten(list(renamed.items())))
         if quant and not prequantized and os.environ.get(

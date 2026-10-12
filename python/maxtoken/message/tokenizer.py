@@ -72,6 +72,9 @@ class TokenizeMsg(BaseTokenizerMsg):
     sampling_params: SamplingParams
     chat_template_kwargs: Dict[str, Any] | None = None
     tools: List[Dict[str, Any]] | None = None
+    # ``text`` is a string the chat template already rendered (a continuation of
+    # an earlier prompt): it carries its own special tokens, like a templated one.
+    prerendered: bool = False
 
 
 @dataclass

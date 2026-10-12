@@ -250,12 +250,20 @@ def _render_message(message: dict[str, Any]) -> dict[str, Any]:
     return m
 
 
+# What the model reads in place of an image on this text-only server, so it can
+# tell the user it cannot see the picture instead of guessing what it shows.
+IMAGE_PLACEHOLDER = "[An image was attached here, but this model cannot see images; it was left out.]"
+_IMAGE_PART_TYPES = ("image_url", "input_image", "image")
+
+
 def _flatten_text_parts(parts: list[Any]) -> str:
     texts: list[str] = []
     for part in parts:
         ptype = part.get("type") if isinstance(part, dict) else None
         if ptype == "text":
             texts.append((part.get("text") if isinstance(part, dict) else None) or "")
+        elif ptype in _IMAGE_PART_TYPES:
+            texts.append(("\n" if texts else "") + IMAGE_PLACEHOLDER)
         else:
             raise ValueError(f"Unsupported content part type for text-only server: {ptype}")
     return "".join(texts)
@@ -439,6 +447,66 @@ def _reasoning_budget(spec: GenSpec, state: Any) -> int | None:
         ) if v
     ]
     return min(limits) if limits else None
+
+
+# When the reasoning budget runs out, the thinking block is closed for the model
+# and it answers from what it has thought so far (Qwen's recommended wrap-up for
+# a thinking budget; Strata does the same). The wrap-up is part of the visible
+# reasoning. MAXTOKEN_REASONING_BUDGET_MODE=stop keeps the old behavior: the
+# request ends with finish_reason "length" and no answer.
+BUDGET_WRAPUP = (
+    "\n\nConsidering the limited time, I have to give the solution based on the "
+    "thinking directly now.\n"
+)
+
+
+def _think_end_token(parser: Any) -> str:
+    """The marker that closes the reasoning block (``</think>``), or "" when the
+    format has none a continuation could append (gpt-oss channels)."""
+    detector = getattr(parser, "detector", parser)
+    return getattr(detector, "think_end_token", "") or ""
+
+
+def _budget_answers() -> bool:
+    import os
+
+    return os.environ.get("MAXTOKEN_REASONING_BUDGET_MODE", "answer").lower() != "stop"
+
+
+async def _continue_after_budget(
+    spec: GenSpec, state: Any, generated: str, used_tokens: int, end_token: str
+) -> int | None:
+    """Submit the answer phase of a request whose reasoning budget ran out: the
+    rendered prompt, the reasoning generated so far, the wrap-up and the closing
+    marker, as one prerendered prompt (the prefix cache serves the prompt part;
+    only the reasoning is prefilled again). Returns the new uid, or None when a
+    continuation is not possible (no frontend tokenizer, no output budget left)."""
+    remaining = int(spec.sampling_params.max_tokens) - int(used_tokens)
+    build = getattr(state, "frontend_tokenizer", None)
+    if build is None or remaining < 1 or not end_token:
+        return None
+    manager = await asyncio.to_thread(build)
+    prompt = await asyncio.to_thread(
+        manager.render_prompt,
+        TokenizeMsg(
+            uid=0, text=spec.messages, sampling_params=SamplingParams(),
+            chat_template_kwargs=spec.chat_template_kwargs, tools=spec.template_tools,
+        ),
+    )
+    from dataclasses import replace
+
+    text = prompt + generated + BUDGET_WRAPUP + end_token + "\n\n"
+    logger.debug("reasoning budget continuation: %r ... %r", text[-len(generated) - 400:][:400], text[-200:])
+    uid = state.new_user()
+    await state.send_one(
+        TokenizeMsg(
+            uid=uid,
+            text=text,
+            sampling_params=replace(spec.sampling_params, max_tokens=remaining),
+            prerendered=True,
+        )
+    )
+    return uid
 
 
 def _split_reasoning(text: str, spec: GenSpec, state: Any) -> tuple[str, str]:
@@ -759,41 +827,68 @@ async def _generate_events_impl(uid: int, spec: GenSpec, state: Any) -> AsyncIte
     reasoning_tokens = 0
     reasoning_budget = _reasoning_budget(spec, state)
     reasoning_exhausted = False
-    async for ack in state.wait_for_ack(uid):
-        if getattr(ack, "error", None):
-            raise GenerationError(ack.error, getattr(ack, "error_code", None))
-        prompt_tokens += ack.prompt_tokens_delta
-        completion_tokens += ack.completion_tokens_delta
-        cached_tokens += ack.cached_tokens
-        content_delta = ack.incremental_output
-        if reasoning_parser is not None and content_delta:
-            reasoning_delta, content_delta = reasoning_parser.parse_stream_chunk(content_delta)
-            if reasoning_delta:
-                stripped_reasoning = strip_special_tokens(reasoning_delta, specials)
-                if stripped_reasoning:  # a bare special token must not open a thinking block
-                    yield ReasoningDelta(stripped_reasoning)
-                if reasoning_budget:
-                    reasoning_tokens += ack.completion_tokens_delta
-                    if reasoning_tokens >= reasoning_budget:
-                        logger.info(
-                            "reasoning budget exhausted for user %s "
-                            "(%d/%d tokens); stopping generation",
-                            uid, reasoning_tokens, reasoning_budget,
-                        )
-                        reasoning_exhausted = True
-                        break
-        if content_delta:
-            if tool_parser is not None:
-                for ev in _route_tool_text(content_delta):
-                    yield ev
-            elif parse_tools:
-                pending += content_delta
-            else:
-                yield ContentDelta(strip_special_tokens(content_delta, specials))
-        if ack.finished:
-            engine_finish_reason = getattr(ack, "finish_reason", None)
-            engine_matched_stop = getattr(ack, "matched_stop", None)
-            break
+    # With the budget in "answer" mode, an exhausted budget hands over to a second
+    # engine request (_continue_after_budget) whose tokens are the answer.
+    current_uid = uid
+    generated_raw = ""
+    while True:
+        try:
+            async for ack in state.wait_for_ack(current_uid):
+                if getattr(ack, "error", None):
+                    raise GenerationError(ack.error, getattr(ack, "error_code", None))
+                if current_uid == uid:  # the continuation's prompt re-counts the same prompt
+                    prompt_tokens += ack.prompt_tokens_delta
+                    cached_tokens += ack.cached_tokens
+                completion_tokens += ack.completion_tokens_delta
+                content_delta = ack.incremental_output
+                generated_raw += content_delta or ""
+                if reasoning_parser is not None and content_delta:
+                    reasoning_delta, content_delta = reasoning_parser.parse_stream_chunk(content_delta)
+                    if reasoning_delta:
+                        stripped_reasoning = strip_special_tokens(reasoning_delta, specials)
+                        if stripped_reasoning:  # a bare special token must not open a thinking block
+                            yield ReasoningDelta(stripped_reasoning)
+                        if reasoning_budget:
+                            reasoning_tokens += ack.completion_tokens_delta
+                            if reasoning_tokens >= reasoning_budget:
+                                logger.info(
+                                    "reasoning budget exhausted for user %s "
+                                    "(%d/%d tokens); stopping generation",
+                                    uid, reasoning_tokens, reasoning_budget,
+                                )
+                                reasoning_exhausted = True
+                                break
+                if content_delta:
+                    if tool_parser is not None:
+                        for ev in _route_tool_text(content_delta):
+                            yield ev
+                    elif parse_tools:
+                        pending += content_delta
+                    else:
+                        yield ContentDelta(strip_special_tokens(content_delta, specials))
+                if ack.finished:
+                    engine_finish_reason = getattr(ack, "finish_reason", None)
+                    engine_matched_stop = getattr(ack, "matched_stop", None)
+                    break
+        except asyncio.CancelledError:
+            # The adapters abort the first uid on a disconnect; a continuation is ours.
+            if current_uid != uid and getattr(state, "abort_user", None) is not None:
+                asyncio.create_task(state.abort_user(current_uid))
+            raise
+        if reasoning_exhausted and current_uid == uid and _budget_answers():
+            end_token = _think_end_token(reasoning_parser)
+            abort = getattr(state, "abort_user", None)
+            if abort is not None:  # stop the engine from thinking on
+                await abort(uid)
+            cont = await _continue_after_budget(spec, state, generated_raw, completion_tokens, end_token)
+            if cont is not None:
+                logger.info("reasoning budget: user %s answers as continuation %s", uid, cont)
+                reasoning_delta, _ = reasoning_parser.parse_stream_chunk(BUDGET_WRAPUP + end_token)
+                if reasoning_delta:
+                    yield ReasoningDelta(strip_special_tokens(reasoning_delta, specials))
+                current_uid, reasoning_budget, reasoning_exhausted = cont, None, False
+                continue
+        break
 
     # Drain residue held in the reasoning parser (a deferred tool block, or a
     # trailing partial token) so it is not silently dropped.
@@ -876,29 +971,49 @@ async def _generate_full_impl(uid: int, spec: GenSpec, state: Any) -> GenResult:
     reasoning_exhausted = False
     reasoning_budget = _reasoning_budget(spec, state)
     budget_parser = _make_reasoning_parser(spec, state) if reasoning_budget else None
-    async for ack in state.wait_for_ack(uid):
-        if getattr(ack, "error", None):
-            raise GenerationError(ack.error, getattr(ack, "error_code", None))
-        prompt_tokens += ack.prompt_tokens_delta
-        completion_tokens += ack.completion_tokens_delta
-        cached_tokens += ack.cached_tokens
-        full_content += ack.incremental_output
-        if budget_parser is not None and ack.incremental_output:
-            reasoning_delta, _ = budget_parser.parse_stream_chunk(ack.incremental_output)
-            if reasoning_delta:
-                reasoning_tokens += ack.completion_tokens_delta
-                if reasoning_tokens >= reasoning_budget:
-                    logger.info(
-                        "reasoning budget exhausted for user %s (%d/%d tokens); "
-                        "stopping generation",
-                        uid, reasoning_tokens, reasoning_budget,
-                    )
-                    reasoning_exhausted = True
+    current_uid = uid
+    while True:
+        try:
+            async for ack in state.wait_for_ack(current_uid):
+                if getattr(ack, "error", None):
+                    raise GenerationError(ack.error, getattr(ack, "error_code", None))
+                if current_uid == uid:  # the continuation's prompt re-counts the same prompt
+                    prompt_tokens += ack.prompt_tokens_delta
+                    cached_tokens += ack.cached_tokens
+                completion_tokens += ack.completion_tokens_delta
+                full_content += ack.incremental_output
+                if budget_parser is not None and ack.incremental_output and current_uid == uid:
+                    reasoning_delta, _ = budget_parser.parse_stream_chunk(ack.incremental_output)
+                    if reasoning_delta:
+                        reasoning_tokens += ack.completion_tokens_delta
+                        if reasoning_tokens >= reasoning_budget:
+                            logger.info(
+                                "reasoning budget exhausted for user %s (%d/%d tokens); "
+                                "stopping generation",
+                                uid, reasoning_tokens, reasoning_budget,
+                            )
+                            reasoning_exhausted = True
+                            break
+                if ack.finished:
+                    engine_finish_reason = getattr(ack, "finish_reason", None)
+                    engine_matched_stop = getattr(ack, "matched_stop", None)
                     break
-        if ack.finished:
-            engine_finish_reason = getattr(ack, "finish_reason", None)
-            engine_matched_stop = getattr(ack, "matched_stop", None)
-            break
+        except asyncio.CancelledError:
+            if current_uid != uid and getattr(state, "abort_user", None) is not None:
+                asyncio.create_task(state.abort_user(current_uid))
+            raise
+        if reasoning_exhausted and current_uid == uid and _budget_answers():
+            end_token = _think_end_token(budget_parser)
+            abort = getattr(state, "abort_user", None)
+            if abort is not None:  # stop the engine from thinking on
+                await abort(uid)
+            cont = await _continue_after_budget(spec, state, full_content, completion_tokens, end_token)
+            if cont is not None:
+                logger.info("reasoning budget: user %s answers as continuation %s", uid, cont)
+                full_content += BUDGET_WRAPUP + end_token + "\n\n"
+                current_uid, reasoning_exhausted = cont, False
+                continue
+        break
 
     reasoning_text, content_text = _split_reasoning(full_content, spec, state)
     # Engine reason ("stop"/"length"); a tool call overrides it, but a truncation (length) wins.

@@ -18,6 +18,7 @@ OPENAI = {
     "/v1",
     "/v1/chat/completions",
     "/v1/completions",
+    "/v1/images/generations",
     "/v1/models",
     "/v1/models/{model_id:path}",
     "/v1/responses",

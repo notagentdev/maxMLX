@@ -58,6 +58,7 @@ from openai.types.responses.response_usage import (
 from pydantic import BaseModel, ConfigDict
 
 from .generation import (
+    IMAGE_PLACEHOLDER,
     DEFAULT_MAX_OUTPUT_TOKENS,
     KEEPALIVE,
     ContentDelta,
@@ -345,6 +346,8 @@ def _input_text(content: Any) -> str:
         if isinstance(part, dict):
             if part.get("type") in ("input_text", "output_text", "text") or "text" in part:
                 parts.append(part.get("text") or "")
+            elif part.get("type") in ("input_image", "image_url", "image"):
+                parts.append(("\n" if parts else "") + IMAGE_PLACEHOLDER)
         else:
             parts.append(str(part))
     return "".join(parts)

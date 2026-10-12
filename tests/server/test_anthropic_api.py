@@ -738,9 +738,9 @@ def test_count_tokens_excluded_from_request_ring():
     request_ring.reset()
 
 
-def test_count_tokens_image_only_message_400():
-    # Message list is non-empty on the wire but empty after block filtering: the neutral
-    # count_prompt_tokens raises ValueError -> 400, not a 500 from an empty chat template.
+def test_count_tokens_image_only_message_counts_the_placeholder():
+    # Images are no longer dropped: the model reads a note in their place (it cannot
+    # see them), so an image-only message has content and is counted like text.
     client, _ = _count_client(_FakeTokenizeManager())
     r = client.post(
         "/v1/messages/count_tokens",
@@ -751,8 +751,8 @@ def test_count_tokens_image_only_message_400():
             ],
         },
     )
-    assert r.status_code == 400
-    assert r.json()["error"]["type"] == "invalid_request_error"
+    assert r.status_code == 200
+    assert r.json()["input_tokens"] > 0
 
 
 def test_tool_choice_none_hides_tools():

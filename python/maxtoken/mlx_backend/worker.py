@@ -42,7 +42,7 @@ from maxtoken.message import (
 )
 from maxtoken.utils import ZmqPullQueue, ZmqPushQueue, init_logger, load_eos_token_ids
 
-from . import gdn_capture, spec_sample
+from . import gdn_capture, lookup_draft, spec_sample
 
 # Longest verify window a speculative round will build.
 #
@@ -57,6 +57,18 @@ try:
     MAX_WINDOW = max(2, min(8, int(os.environ.get("MAXTOKEN_MLX_SPEC_MAX_WINDOW", "4") or 4)))
 except ValueError:
     MAX_WINDOW = 4
+
+# Prompt lookup beside the MTP drafter (lookup_draft.py): MAXTOKEN_MLX_LOOKUP=1
+# turns it on (off until measured on this machine). A lookup window may be
+# wider than the MTP's; MAXTOKEN_MLX_LOOKUP_MAX_WINDOW caps it (default: the
+# speculative window above, which the verify kernels compile for).
+LOOKUP_ON = os.environ.get("MAXTOKEN_MLX_LOOKUP", "0") == "1"
+try:
+    LOOKUP_MAX_WINDOW = max(
+        2, min(8, int(os.environ.get("MAXTOKEN_MLX_LOOKUP_MAX_WINDOW", "0") or 0) or MAX_WINDOW)
+    )
+except ValueError:
+    LOOKUP_MAX_WINDOW = MAX_WINDOW
 
 
 def offload_prefill_plan(
@@ -202,6 +214,10 @@ class MlxScheduler:
         self.draft = None
         self._spec_steps = 0
         self._spec_tokens = 0
+        self._lookup_policy = None
+        self._lookup_rounds = 0
+        self._lookup_drafts = 0
+        self._lookup_accepted = 0
         import os as _os
 
         if _os.environ.get("MAXTOKEN_MLX_SPEC_TRACE", "") == "1":
@@ -447,6 +463,13 @@ class MlxScheduler:
             f"speculative decoding: draft model {config.draft_model}, "
             f"k={k} tokens per verify"
         )
+        # Prompt lookup rides on the lazy MTP round (it needs the head's first
+        # draft to agree) and on mapped/resident serving (the slot cache sizes
+        # its window to k + 1).
+        if LOOKUP_ON and hasattr(self.draft, "draft_lazy") and self.offload_state is None:
+            cap = max(k + 1, MAX_WINDOW, LOOKUP_MAX_WINDOW)
+            self._lookup_policy = lookup_draft.DraftPolicy(cap)
+            logger.info(f"prompt lookup: on, windows up to {cap} tokens")
 
     @staticmethod
     def _model_dir(config: SchedulerConfig) -> str:
@@ -535,6 +558,29 @@ class MlxScheduler:
                 },
             )
         )
+
+    def _grammar_processors(self, sp: SamplingParams):
+        """Logits processors for a structured-output request (grammar.py), or
+        None for free text. The compiler is built on the first such request."""
+        spec = getattr(sp, "grammar", None)
+        if not spec:
+            return None
+        from . import grammar as grammar_mod
+
+        if not grammar_mod.available():
+            raise ValueError(
+                "response_format needs xgrammar on the server (pip install 'maxtoken[grammar]')"
+            )
+        compiler = getattr(self, "_grammar_compiler", None)
+        if compiler is None:
+            text = getattr(self.model, "language_model", self.model)
+            vocab = int(text.model.embed_tokens.weight.shape[0])
+            hf = getattr(self.tokenizer, "_tokenizer", self.tokenizer)
+            compiler = self._grammar_compiler = grammar_mod.GrammarCompiler(
+                hf, vocab, self.eos_token_ids
+            )
+            logger.info(f"structured output: xgrammar compiler ready (vocab {vocab})")
+        return [compiler.processor(spec)]
 
     def _lookup_prefix(self, input_ids: List[int]) -> tuple:
         """(restored cache | None, cached_tokens) from the prefix store: the
@@ -669,8 +715,14 @@ class MlxScheduler:
         from mlx_lm.models.cache import make_prompt_cache
 
         mx = self._mx
+        # Structured output decodes token by token under its grammar: it takes
+        # the plain path even when a drafter is attached (a verify window would
+        # need the matcher rolled back on every rejected draft).
+        processors = self._grammar_processors(sp)
+        if processors and self.offload_state is not None:
+            raise ValueError("response_format is not supported with the expert slot cache")
         cache, cached = self._lookup_prefix(input_ids)
-        if self.draft is not None:
+        if self.draft is not None and not processors:
             cache = cache or make_prompt_cache(self.model)
             return self._generate_spec(input_ids, sp, cache, cached), cache, cached
         if self.offload_state is not None:
@@ -682,7 +734,10 @@ class MlxScheduler:
         # ignore_eos and the exact CUDA-scheduler semantics stay in one place.
         kwargs = _filter_kwargs(
             generate_step,
-            {"max_tokens": -1, "sampler": self._build_sampler(sp), "prompt_cache": cache},
+            {
+                "max_tokens": -1, "sampler": self._build_sampler(sp), "prompt_cache": cache,
+                "logits_processors": processors,
+            },
         )
         gen = generate_step(mx.array(input_ids[-1:]), self.model, **kwargs)
         return gen, cache, cached
@@ -921,6 +976,15 @@ class MlxScheduler:
         trace = getattr(self, "_spec_trace", None)
         clock = _time.perf_counter if trace is not None else None
 
+        # Prompt lookup (lookup_draft.py): the history is the whole prompt plus
+        # every committed token; the policy is the process's.
+        policy = getattr(self, "_lookup_policy", None) if lazy_round and state is None else None
+        lookup = None
+        if policy is not None:
+            lookup = lookup_draft.SuffixDrafter()
+            lookup.append(input_ids)
+            lookup_cap = policy.max_t
+
         def draft_next(room: int):
             """Build the next round's draft chain and dispatch it. Called BEFORE
             the round's tokens are handed out, so the GPU drafts while the
@@ -939,8 +1003,25 @@ class MlxScheduler:
         t_resume = clock() if clock else 0.0
         while True:
             room = max_window - len(pending)
+            t_round0 = _time.perf_counter() if lookup is not None else 0.0
+            from_lookup, lk_match = False, 0
             if lazy_round:
                 drafts_arr, n_drafts, drafts = lazy.tokens, lazy.n, None
+                # A repeat of earlier context, where the MTP's own first guess
+                # agrees: the policy takes it when its expected tokens per ms
+                # beat the MTP window's. Only then does the round pay the
+                # extra sync on the chain's first token, and the chain is
+                # usually done by now (dispatched before the last yield).
+                if lookup is not None and n_drafts and len(pending) == 1:
+                    proposal = lookup.propose(lookup_cap - 1)
+                    if proposal and int(drafts_arr[0].item()) == proposal[0]:
+                        lk_match = lookup.last_match
+                        use, t = policy.choose(1 + n_drafts, len(proposal), lk_match)
+                        if use:
+                            drafts = proposal[: t - 1]
+                            drafts_arr = mx.array(drafts, dtype=mx.int32)
+                            n_drafts = len(drafts)
+                            from_lookup = True
             else:
                 drafts = []
                 if room > 0:
@@ -987,7 +1068,12 @@ class MlxScheduler:
                 t_done = clock() if clock else 0.0
                 drafts = drafts_arr.tolist()
                 P = spec_sample.shape_rows(p_ids, p_probs, spec)
-                Q = spec_sample.rows_of(*lazy.q) if n_drafts else []
+                if from_lookup:
+                    # A lookup draft is a point mass: min(1, p/q) is p(d), and a
+                    # rejection redraws from p without d. Still exactly p.
+                    Q = spec_sample.point_rows(drafts)
+                else:
+                    Q = spec_sample.rows_of(*lazy.q) if n_drafts else []
                 accepted, nxt = spec_sample.accept(drafts, P, Q, rng)
                 committed = drafts[:accepted] + [nxt]
             elif can_reject_sample and drafts and len(drafter.q) >= len(drafts):
@@ -1012,10 +1098,12 @@ class MlxScheduler:
             # Stop the window at EOS: everything after it would over-advance the
             # caches past what the scheduler will ever consume (ignore_eos
             # requests keep the full window and let the scheduler decide).
+            hit_eos = False
             if not sp.ignore_eos:
                 for i, tok in enumerate(committed):
                     if tok in eos:
                         committed, accepted = committed[: i + 1], min(accepted, i)
+                        hit_eos = True
                         break
 
             # The drafter keeps its own history of what was committed; row
@@ -1063,6 +1151,20 @@ class MlxScheduler:
                 drafter.set_hidden(hidden[:, j : j + 1, :])
             t_post = clock() if clock else 0.0
 
+            if lookup is not None:
+                lookup.append(committed)
+                # Rounds without drafts (the first) and the EOS round say
+                # nothing about a window's cost or yield.
+                if n_drafts and not hit_eos:
+                    policy.observe(
+                        from_lookup, window_len, accepted, lk_match,
+                        (_time.perf_counter() - t_round0) * 1e3,
+                    )
+                if from_lookup:
+                    self._lookup_rounds += 1
+                    self._lookup_drafts += n_drafts
+                    self._lookup_accepted += accepted
+
             self._spec_steps += 1
             self._spec_tokens += len(committed)
             # The next chain is dispatched before this round's tokens leave the
@@ -1078,6 +1180,7 @@ class MlxScheduler:
                     "build": t_built - t_resume, "wait": t_done - t_built,
                     "post": t_post - t_done, "draft": t_drafted - t_post,
                     "tokens": len(committed), "accepted": accepted,
+                    "lookup": from_lookup,
                 })
             for i, tok in enumerate(committed):
                 # Normalize only the row being emitted: the scheduler wants one
@@ -1233,11 +1336,17 @@ class MlxScheduler:
                         f"{k}={v:.1f}" for k, v in means.items()
                     )
                     del trace[: len(trace) - 1]
+                lookup = ""
+                if getattr(self, "_lookup_policy", None) is not None:
+                    lookup = (
+                        f", lookup rounds {self._lookup_rounds} "
+                        f"(drafts {self._lookup_accepted}/{self._lookup_drafts} accepted)"
+                    )
                 logger.info(
                     f"speculative accept "
                     f"{self._spec_tokens / self._spec_steps:.2f} tok/verify "
                     f"({self._spec_tokens}/{self._spec_steps}), "
-                    f"active mem {gpu_mem / 2**30:.2f} GiB{phases}"
+                    f"active mem {gpu_mem / 2**30:.2f} GiB{lookup}{phases}"
                 )
         if self.batch_gen is not None:
             try:
@@ -1645,11 +1754,17 @@ class MlxScheduler:
         # Output budget: the request's own cap plus the model context ceiling;
         # the engine reports "length" and hands the cache back at the boundary.
         cap = max(1, min(sp.max_tokens, self.max_seq_len - len(input_ids)))
+        processors = self._grammar_processors(sp)
+        if processors:
+            from .grammar import patch_batch_generation
+
+            patch_batch_generation()
         buid = self.batch_gen.insert_segments(
             [segments],
             max_tokens=[cap],
             caches=[cache],
             samplers=[self._build_sampler(sp)],
+            logits_processors=[processors] if processors else None,
         )[0]
         self._batch_uid[uid] = buid
         self._our_uid[buid] = uid

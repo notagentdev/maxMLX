@@ -192,9 +192,12 @@ async def handle_chat_completion(
         return create_error_response("function_call is not supported; use tools/tool_choice instead")
     if req.logit_bias is not None:
         return create_error_response("logit_bias is not supported")
-    if _response_format_unsupported(req.response_format):
+    grammar, grammar_error = _response_format_grammar(req.response_format)
+    if grammar_error:
+        return create_error_response(grammar_error, param="response_format")
+    if grammar and req.tools and req.tool_choice != "none":
         return create_error_response(
-            "response_format json_object/json_schema is not supported (no constrained decoding)",
+            "response_format json_object/json_schema cannot be combined with tools",
             param="response_format",
         )
     if req.n != 1:
@@ -220,6 +223,8 @@ async def handle_chat_completion(
         spec = chat_request_to_genspec(req, model_sampling)
     except ValueError as exc:
         return create_error_response(str(exc))
+    if grammar:
+        spec.sampling_params.grammar = _with_thinking_phase(grammar, spec, state)
 
     if req.stream:
         # Non-stream requests already surface render failures as a clean 400
@@ -678,6 +683,42 @@ def _usage(prompt_tokens: int, completion_tokens: int, cached_tokens: int = 0) -
     if cached_tokens > 0:
         usage["prompt_tokens_details"] = {"cached_tokens": cached_tokens}
     return usage
+
+
+def _response_format_grammar(
+    response_format: dict[str, Any] | None,
+) -> tuple[dict[str, Any] | None, str | None]:
+    """(grammar for SamplingParams.grammar, error). ``text``/unset is free text;
+    ``json_object`` and ``json_schema`` are decoded under a grammar on the MLX
+    backend (mlx_backend/grammar.py), so the answer is valid JSON by construction."""
+    if response_format is None:
+        return None, None
+    kind = response_format.get("type")
+    if kind in (None, "text"):
+        return None, None
+    if kind == "json_object":
+        return {"type": "json_object"}, None
+    if kind == "json_schema":
+        js = response_format.get("json_schema") or {}
+        schema = js.get("schema")
+        if not isinstance(schema, dict):
+            return None, "response_format json_schema needs json_schema.schema (an object)"
+        return {"type": "json_schema", "schema": schema, "strict": bool(js.get("strict", True))}, None
+    return None, f"response_format type {kind!r} is not supported"
+
+
+def _with_thinking_phase(grammar: dict[str, Any], spec: Any, state: Any) -> dict[str, Any]:
+    """A thinking model thinks freely and is constrained after its reasoning
+    block closes: the grammar starts after the parser's end marker."""
+    from .generation import _make_reasoning_parser, _think_end_token
+
+    parser = _make_reasoning_parser(spec, state)
+    detector = getattr(parser, "detector", None)
+    if detector is not None and getattr(detector, "force_reasoning", False):
+        end = _think_end_token(parser)
+        if end:
+            return {**grammar, "start_after": end}
+    return grammar
 
 
 def _response_format_unsupported(response_format: dict[str, Any] | None) -> bool:

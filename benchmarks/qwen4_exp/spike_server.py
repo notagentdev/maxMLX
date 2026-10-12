@@ -19,6 +19,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import queue
 import sys
 import threading
 import time
@@ -42,7 +43,10 @@ from fastapi.responses import FileResponse, JSONResponse, StreamingResponse  # n
 
 VERSION = "0.2.0-spike"
 THINK = os.environ.get("MAXTOKEN_SPIKE_THINK", "0") == "1"
-PREFILL_STEP = int(os.environ.get("PREFILL_STEP", "256"))
+# 64-token chunks: a 256-token chunk touches so many experts at once that Metal
+# wired 26.6 GB and the watchdog stopped the server (2026-10-03); 128 peaked at
+# 26.3, 64 at 25.0 GB (prefill ~186 tok/s on a 2k prompt).
+PREFILL_STEP = int(os.environ.get("PREFILL_STEP", "64"))
 STATE: dict = {
     "lock": threading.Lock(),
     "requests": 0,
@@ -105,10 +109,10 @@ def _record(rec: dict) -> None:
     STATE["ring_next"] += 1
 
 
-def _split_thinking(chunks):
+def _split_thinking(chunks, think: bool):
     """Yield (kind, text) with kind in {reasoning, content}; the <think> block
     that a thinking-mode template opens becomes reasoning."""
-    if not THINK:
+    if not think:
         for c in chunks:
             yield "content", c
         return
@@ -141,6 +145,55 @@ def _split_thinking(chunks):
         yield ("reasoning" if phase == "reasoning" else "content"), pending
 
 
+# Every MLX call runs on the MAIN thread: MLX 0.32 binds streams (and the
+# compiled decode graphs traced in warm-up) to the thread that created them,
+# and a request generated on a server worker thread failed with "There is no
+# Stream(gpu, 2) in current thread". HTTP handlers queue a job and read the
+# results from their own queue.
+JOBS: "queue.Queue" = queue.Queue()
+_END = object()
+
+
+def _generate_on_main(messages, params, *, stream=True):
+    out: "queue.Queue" = queue.Queue()
+    JOBS.put((messages, params, stream, out))
+    while True:
+        item = out.get()
+        if item is _END:
+            return
+        yield item
+
+
+def _serve_jobs_forever() -> None:
+    while True:
+        messages, params, stream, out = JOBS.get()
+        try:
+            for item in _generate(messages, params, stream=stream):
+                out.put(item)
+        except Exception as exc:  # noqa: BLE001 -- report to the waiting request
+            out.put(("done", "", {"prompt_tokens": 0, "completion_tokens": 0, "finish_reason": "error",
+                                  "error": f"{type(exc).__name__}: {exc}"}))
+        finally:
+            out.put(_END)
+
+
+def _wants_thinking(params) -> bool:
+    """Per request, as the MaxToken console and OpenAI/Anthropic clients send
+    it: Anthropic-style ``thinking: {type: enabled|disabled}``,
+    ``chat_template_kwargs.enable_thinking``, or ``reasoning_effort: none``.
+    Without any, the server default (MAXTOKEN_SPIKE_THINK)."""
+    t = params.get("thinking")
+    if isinstance(t, dict) and t.get("type") in ("enabled", "disabled"):
+        return t["type"] == "enabled"
+    kw = params.get("chat_template_kwargs") or {}
+    if "enable_thinking" in kw:
+        return bool(kw["enable_thinking"])
+    effort = params.get("reasoning_effort") or (params.get("reasoning") or {}).get("effort")
+    if effort is not None:
+        return str(effort).lower() not in ("none", "off", "minimal")
+    return THINK
+
+
 def _generate(messages, params, *, path="/v1/chat/completions", stream=True):
     """Yields (kind, text, info); the last item is ("done", "", stats). Records
     the request in the ring and the totals whatever happens."""
@@ -149,7 +202,9 @@ def _generate(messages, params, *, path="/v1/chat/completions", stream=True):
     model, processor, d = STATE["model"], STATE["processor"], STATE["defaults"]
     g = d["generation"]
     tok = getattr(processor, "tokenizer", processor)
-    prompt = tok.apply_chat_template(messages, add_generation_prompt=True, tokenize=False, enable_thinking=THINK)
+    think = _wants_thinking(params)
+    prompt = tok.apply_chat_template(messages, add_generation_prompt=True, tokenize=False,
+                                     enable_thinking=think)
     kwargs = dict(
         max_tokens=int(params.get("max_tokens") or g["max_output_tokens"]),
         temperature=float(params.get("temperature", g["temperature"])),
@@ -186,7 +241,7 @@ def _generate(messages, params, *, path="/v1/chat/completions", stream=True):
                 yield ch.text
 
     try:
-        for kind, text in _split_thinking(chunks()):
+        for kind, text in _split_thinking(chunks(), think):
             yield kind, text, None
     except Exception as exc:  # noqa: BLE001 -- the probe must report, not die
         error = f"{type(exc).__name__}: {exc}"
@@ -354,8 +409,7 @@ def build_app(name: str):
             return f"data: {json.dumps(payload)}\n\n"
 
         def run():
-            with STATE["lock"]:
-                yield from _generate(messages, body, stream=stream)
+            yield from _generate_on_main(messages, body, stream=stream)
 
         if stream:
             def sse():
@@ -393,6 +447,11 @@ def build_app(name: str):
                              "usage": {"prompt_tokens": stats["prompt_tokens"], "completion_tokens": stats["completion_tokens"],
                                        "total_tokens": stats["prompt_tokens"] + stats["completion_tokens"]}})
 
+    # The MaxToken console saves and lists chats under /admin/chats; same
+    # store as `mt serve` (~/.maxtoken/chats), so old chats show up here too.
+    from maxtoken.server.chat_store import register_chat_routes
+
+    register_chat_routes(app)
     return app
 
 
@@ -417,6 +476,21 @@ def main() -> None:
     log(f"loading {name} (thinking {'on' if THINK else 'off'}, prefill step {PREFILL_STEP}, "
         f"sampling {g['temperature']}/{g['top_p']}/{g['top_k']})")
     model, processor = load_niwaki_with_stores(model_dir, cache_rate=args.cache_rate, log=log)
+    import mlx.core as mx
+
+    # Freed buffers stay in MLX's cache (and wired) unless capped; this model
+    # leaves ~1-2 GB of headroom under the working-set limit.
+    mx.set_cache_limit(int(float(os.environ.get("MLX_CACHE_MB", "512")) * 2**20))
+    if os.environ.get("NIWAKI_FAST", "1") == "1" and args.cache_rate is None:
+        # The decode levers measured in profile_decode.py (2026-10-03): 17.9 -> 28.8 tok/s.
+        import hc_kernel
+        import niwaki_fusion
+
+        log(f"hyper-connection kernels: {hc_kernel.install(model)}")
+        log(f"healing maps: {niwaki_fusion.quantize_maps(model)}")
+        log(f"gdn projections fused: {niwaki_fusion.fuse_gdn_projections(model)}")
+        log(f"layer fusion: {niwaki_fusion.install(model)}")
+        log(f"gdn layers compiled whole: {niwaki_fusion.compile_gdn_layers(model)}")
     STATE["model"], STATE["processor"] = model, processor
     store = getattr(model, "_maxtoken_mapped_store", None)
     if store is not None:
@@ -435,7 +509,12 @@ def main() -> None:
     import uvicorn
 
     log(f"serving {name} on http://{args.host}:{args.port}  (OpenAI /v1/chat/completions, /v1/models, /health, /admin/*)")
-    uvicorn.run(build_app(name), host=args.host, port=args.port, log_level="warning")
+    server = uvicorn.Server(uvicorn.Config(build_app(name), host=args.host, port=args.port, log_level="warning"))
+    threading.Thread(target=server.run, name="http", daemon=True).start()
+    try:
+        _serve_jobs_forever()
+    except KeyboardInterrupt:
+        server.should_exit = True
 
 
 if __name__ == "__main__":

@@ -17,10 +17,9 @@ The backend has three serving modes:
   memory-mapped straight into MLX via DLPack — the GPU reads the file-backed
   pages through unified memory, the same trick llama.cpp's Metal backend uses.
   Serving is a plain `gather_qmm` over the mapped store: **resident-kernel
-  speed**, zero copies, no cache management. Residency is OS-managed: hot
-  experts live in the page cache, cold ones fault in from SSD once, and under
-  memory pressure clean pages are evicted (never swapped) — graceful
-  degradation instead of OOM. This only holds for a read-only *shared*
+  speed**, zero copies, no cache management. Residency is OS-managed (page
+  cache, evicted rather than swapped under pressure), but per *layer*, not per
+  expert — see below. This only holds for a read-only *shared*
   mapping (`np.memmap(mode="r")`). Up to 0.2.1 the store was mapped
   copy-on-write (`mode="c"`): the process footprint looked the same, but the
   first GPU touch turned every page into anonymous, driver-owned memory
@@ -40,6 +39,30 @@ The backend has three serving modes:
   `MAXTOKEN_MLX_PREFETCH=1` (experimental madvise read-ahead before big
   prefills, inspired by llama.cpp's second-stream expert uploads) measured
   net-negative on this hardware and stays off by default.
+
+  **The whole store must be resident, not just the hot experts.** The GPU
+  cannot fault pages in, so Metal makes every buffer a command buffer uses
+  wholly resident first, and each stacked expert tensor is one buffer: one
+  `gather_qmm` over 8 of a layer's 256 experts made all 256 MiB of that tensor
+  resident (measured 2026-10-10, `0 → 256 of 256 MiB`). A token passes every
+  MoE layer, so serving needs the full store (16.9 GiB on Ornith-35B) in
+  memory. If it fits, decode runs at full speed. If it does not, the store's
+  clean file pages are the first thing evicted, every token reads them back,
+  and Ornith fell to 3 tok/s beside ~12 GB of apps, with cold starts of 6–9
+  minutes in the first forward.
+
+  `MAXTOKEN_MLX_EXPERT_RESIDENCY=expert` (opt-in) imports one buffer per
+  expert instead. Each MoE block reads its routing to the host (one sync per
+  layer), stacks only the selected experts and gathers over that stack, so
+  only experts actually used are made resident (`8 of 256 MiB` in the same
+  test). Expert pages are wired while in use and released after a few seconds
+  idle. The idle reheat sweep is off in this mode. The compiled MoE blocks and
+  the whole-MoE verify kernels bind the stacked tensors and are skipped.
+  Measured on Ornith-35B (MTP k=2, German prose, M1 Max with ~12 GB of apps
+  open): **16.5–17 tok/s**, start in 23 s. That is flat under memory pressure,
+  against ~80 tok/s for the default layer residency when the store fits and
+  3 tok/s when it does not. The per-layer sync and the per-layer stack copy
+  are the cost.
 - **expert slot cache** (`--moe-backend offload` plus an explicit
   `--moe-cache-size`/`--moe-cache-rate`): MaxToken's core idea on Apple
   silicon. Only the dense weights stay resident; the MoE experts are served from a
@@ -87,6 +110,67 @@ The console remains a single self-contained HTML file, with no external assets.
 It requires the running API server for saving and inference; a static preview
 only displays the layout. Persistence endpoints accept same-origin loopback
 clients only, and the UI offers local-only network binds.
+
+**Switching models.** Dashboard → *Models* lists every checkpoint in the
+downloads folder and the Hugging Face cache. **Load** relaunches the workers on
+the same port (`POST /admin/models/load`). The running server's flags carry
+over, and each model's own flags (draft model, draft depth, parsers) are
+remembered per checkpoint in `~/.maxtoken/launch-profiles.json`. A model
+without a remembered launch drafts with its own MTP head when it ships one (k=2
+on MoE, k=3 on dense). A model that fails to load hands the port back to the
+one it replaced.
+
+**Images in the chat.** With a FLUX.2 Klein checkpoint in the downloads
+folder (mflux layout, e.g. `mflux-community/flux2-klein-4b-mflux-q4`, 4.6 GB,
+Apache-2.0), the chat creates images:
+
+- Turn on the picture button in the composer, or start a message with `/image`.
+- Size, steps and seed are per-chat settings in the side panel.
+- The language model is told in text that an image was made; it never sees the pixels.
+- Reference images (up to 4): attach them with the paperclip, paste or drop them
+  into the composer, or click *Use as reference* under a generated image. The
+  image model then follows them, e.g. "the same café in summer daylight".
+  - Uploads go to `POST /admin/images/uploads`, re-encoded as PNG with the long
+    side capped at 2048 px.
+  - API clients pass ids in `references` on `/v1/images/generations`.
+  - Reference renders use mflux's edit variant on the same loaded weights, not a
+    second copy: ~55 s at 768² on the M1 Max.
+**Videos in the chat.** With an LTX-2.x pack from ltx-2-mlx in the downloads folder
+(e.g. `dgrauet/ltx-2.3-mlx-q4`: distilled transformer, VAE, upscalers, plus
+`mlx-community/gemma-3-12b-it-4bit` as text encoder; LTX-2 Community License), the
+chat makes short clips with sound:
+
+- Turn on the film button, start a message with `/video`, or click *Animate* under
+  a generated image to use it as the first frame.
+- Length and size are per-chat settings.
+- A render is a background job (`POST /admin/videos`, polled at
+  `GET /admin/videos/<id>`). The message stores the job id, so the chat keeps
+  working meanwhile and a reload resumes watching.
+- Each job runs in a worker process of its own that exits afterwards, returning
+  all its memory. With less than `MAXTOKEN_VIDEO_STREAM_BELOW_GB` (20) free at
+  the start, the transformer streams its blocks from disk.
+- ltx-2-mlx reports ~12 min for a 10 s 576×1024 clip on an M1 Max (q8,
+  distilled, image to video).
+
+- The dashboard's *Image model* row and a dot on the chat's image button show
+  whether the model is loaded, its memory, and when it unloads. *Load* and
+  *Unload* control it by hand.
+- Clients use the OpenAI endpoint `POST /v1/images/generations` (plus `seed`,
+  `steps`); files are served from `/admin/images/files/<id>.png` and stored
+  under `~/.maxtoken/images`.
+
+Rendering runs in its own worker process via [mflux](https://github.com/filipstrand/mflux)
+(`pip install -e .[images]`). The worker starts on the first image and exits
+after `MAXTOKEN_IMAGE_IDLE_S` (600 s) idle, so its ~10 GB go back to the
+language model. On the M1 Max, Klein 4B at 4-bit:
+
+| | Time |
+|---|---|
+| Load | ~8 s |
+| 1024² image, 4 steps | ~30 s |
+| 512² image | ~9 s |
+
+Peak memory is 10.2 GB.
 
 ## Serve
 
@@ -688,11 +772,16 @@ uses.
   drop cancels it and sends the scheduler an abort (`client_disconnected` in
   the log).
 - **Reasoning budget** (`--max-reasoning-tokens N`, or Anthropic's
-  `thinking.budget_tokens` per request — the lower wins): stops a request once
-  it has spent N tokens inside its thinking block, reporting
-  `finish_reason: "length"`. Guards against a model looping in `<think>` until
-  its whole output budget is gone and answering nothing (seen on research-grade
-  MoEs). Tokens in the answer never count against it; unlimited by default.
+  `thinking.budget_tokens` per request — the lower wins): once a request has
+  spent N tokens inside its thinking block, the server closes the block for the
+  model — a short wrap-up line ("Considering the limited time, I have to give
+  the solution based on the thinking directly now.") and `</think>`, visible in
+  the reasoning — and the model answers from what it has thought so far (a
+  continuation request; the prefix cache serves the prompt, only the reasoning
+  is read again). Guards against a model looping in `<think>` until its whole
+  output budget is gone and answering nothing (seen on research-grade MoEs).
+  `MAXTOKEN_REASONING_BUDGET_MODE=stop` restores the old behavior: the request
+  ends there with `finish_reason: "length"` and no answer. Tokens in the answer never count against it; unlimited by default.
   Adjustable at runtime without a restart — the console has a slider for it,
   or `POST /admin/cache/rebuild {"max_reasoning_tokens": N}` (0 = no cap). It
   is a cap, not a switch: whether a request thinks at all is decided by its
@@ -704,6 +793,30 @@ uses.
   the template); a request's explicit flag always wins. Unlike the
   other knobs there it needs no engine work: the budget is enforced in the
   frontend, so it applies to the next request immediately.
+- **Structured output** (`response_format` on `/v1/chat/completions`):
+  `{"type": "json_object"}` and `{"type": "json_schema", "json_schema":
+  {"schema": {...}}}` are decoded under a grammar (`mlx_backend/grammar.py`,
+  xgrammar; `pip install 'maxtoken[grammar]'`): every step masks the logits to
+  the tokens the schema allows, so the answer is valid JSON matching the schema
+  by construction. A thinking model thinks freely and is constrained from the
+  token after `</think>`. Whitespace between JSON tokens is capped at 16
+  characters (unbounded whitespace let random logits run to max_tokens). Such
+  requests decode token by token (no speculative window) and are refused with
+  the expert slot cache and together with tools.
+- **Prompt lookup** (`MAXTOKEN_MLX_LOOKUP=1`, opt-in, with `--draft-model` on
+  an MTP head in mapped/resident serving): when the answer repeats an earlier
+  stretch of its context (code edits, quoted input, tool-call JSON), the verify
+  window may be filled with the tokens that followed that stretch instead of
+  the head's drafts (`lookup_draft.py`, ported from Strata's suffix drafter and
+  draft policy). It is considered only where the head's own first draft agrees
+  with the lookup's first token. A cost model then takes it when its expected
+  tokens per ms beat the MTP window's, learned online from measured round times
+  and acceptance. Verification is unchanged, so the output is too: a lookup
+  draft is a point mass in the rejection rule. `MAXTOKEN_MLX_LOOKUP_MAX_WINDOW`
+  lets a lookup window grow past the speculative window (the verify kernels
+  compile for 4 rows by default, see `MAXTOKEN_VERIFY_QMM_MROWS`). The
+  periodic `speculative accept` line reports `lookup rounds N (drafts a/b
+  accepted)`. Not yet measured on this machine.
 - Remaining CUDA-specific flags (`--attention-backend`, `--cuda-graph-*`,
   `--num-pages`, …) are accepted but ignored by the MLX scheduler;
   `--moe-backend offload` and the `--moe-cache-*` sizing flags are honored.

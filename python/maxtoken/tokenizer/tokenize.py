@@ -65,7 +65,9 @@ class TokenizeManager:
             # that auto-add bos (muse-glimmer's, llama's) would otherwise double it --
             # the template already rendered one. Raw-string prompts and the dsv4
             # encoder path keep the default.
-            templated = isinstance(msg.text, list) and self._dsv4_encoder is None
+            templated = (
+                isinstance(msg.text, list) or getattr(msg, "prerendered", False)
+            ) and self._dsv4_encoder is None
             ids = self.tokenizer.encode(prompt, add_special_tokens=not templated)
             results.append(np.asarray(ids, dtype=np.int32).reshape(-1))
         return results

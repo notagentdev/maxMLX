@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import asyncio
+import base64
+import binascii
 import contextlib
 import json
 import os
@@ -54,6 +56,8 @@ from .access_log_filter import install_polling_access_log_filter
 from .request_logger import init as init_request_logging, log_request
 from .responses_api import register_responses_routes
 from .stats import StatsTracker
+from .images import DEFAULT_STEPS as IMAGE_DEFAULT_STEPS, ImageError, ImageService, b64_png, image_path, parse_size, reference_path, save_upload
+from .videos import VideoError, VideoService, parse_video_size, video_path
 
 logger = init_logger(__name__, "FrontendAPI")
 
@@ -195,6 +199,15 @@ class FrontendManager:
     start_backend: Any = None
     supervise: Any = None
     backend_generation: int = 0
+    # The ``mt serve`` arguments the running model was launched with; a model switch
+    # (/admin/models/load) keeps their server part and swaps the model part.
+    launch_argv: List[str] = field(default_factory=list)
+    # A switch in flight: {"generation", "target", "argv", "previous_config",
+    # "previous_argv", "loop"}. If that generation dies while loading, the previous
+    # model is brought back instead of the server going down. None otherwise.
+    model_switch: Dict[str, Any] | None = None
+    # The last switch that failed, for the console: {"target", "error"}.
+    model_switch_error: Dict[str, str] | None = None
     settings_lock: Any = field(default_factory=asyncio.Lock)
     # Event loop the listener runs on, captured when the listener starts (_create_listener_once).
     # Lets a cross-thread caller — the supervisor thread's failure callback — marshal rebuild
@@ -413,6 +426,8 @@ async def lifespan(_: FastAPI):
     # exit as expected rather than a crash — no spurious ERROR / "failed" latch during stop.
     _SHUTTING_DOWN.set()
     await _DOWNLOADS.shutdown()
+    await _IMAGES.shutdown()
+    await _VIDEOS.shutdown()
     global _GLOBAL_STATE
     if _GLOBAL_STATE is not None:
         _GLOBAL_STATE.shutdown()
@@ -836,6 +851,324 @@ async def save_settings(req: SettingsPatch, request: Request):
                 if key in live and live[key] is None:
                     (getattr(state, "generation_override", None) or {}).pop("max_tokens" if key == "max_output_tokens" else key, None)
         return {"status": "ok", "settings": settings_document(state)}
+
+
+def _remember_launch(model_path: str, argv: List[str]) -> None:
+    """Keep the model-specific flags this checkpoint was served with (model_switch.py)."""
+    if not argv:
+        return
+    try:
+        from .model_switch import record_profile
+
+        record_profile(model_path, argv)
+    except Exception as exc:  # noqa: BLE001 -- a convenience; never block serving on it
+        logger.warning("could not record the launch profile of %s: %s", model_path, exc)
+
+
+def _activate_model_frontend(state: Any, config: ServerArgs, argv: List[str]) -> None:
+    """Point the API side at another checkpoint: its generation_config sampling defaults,
+    its saved settings, and its tokenizer (the count_tokens / thinking-profile copy is
+    rebuilt lazily on next use)."""
+    global _MODEL_SAMPLING
+    if config.sampling_defaults == "model" and not config.use_dummy_weight:
+        _MODEL_SAMPLING = load_generation_sampling(config.model_path)
+    else:
+        _MODEL_SAMPLING = {}
+    with state._frontend_tokenizer_lock:
+        state._frontend_tokenizer = None
+    state._frontend_warm_started = False
+    state.launch_argv = list(argv)
+    try:
+        state.settings_applied = settings_store(state).load(config.model_path)
+    except (OSError, ValueError):
+        state.settings_applied = {}
+
+
+async def _restore_previous_model(state: Any, switch: Dict[str, Any]) -> None:
+    _activate_model_frontend(state, switch["previous_config"], switch["previous_argv"])
+    body, status = await reload_backend(state, switch["previous_config"])
+    if status != 200:
+        logger.error("Could not restore %s after a failed model switch: %s",
+                     switch["previous_config"].model_path, body.get("error"))
+        _exit_after_backend_death(BACKEND_DEATH_EXIT_GRACE_S)
+
+
+def _model_folders(state: Any) -> List[str]:
+    """The downloads folder, plus every folder a model was ever launched from (a server
+    started on a hub repo id has no folder of its own to point at)."""
+    from . import model_switch as ms
+    from .downloader.config import resolve_models_dir
+
+    folders = [resolve_models_dir(state.config.model_path)]
+    folders += [os.path.dirname(key) for key in ms.load_profiles() if os.path.isdir(key)]
+    return list(dict.fromkeys(str(f) for f in folders))
+
+
+def _scan_local_models(state: Any) -> List[Dict[str, Any]]:
+    """Local checkpoints with the flags a switch would launch each one with."""
+    from . import model_switch as ms
+
+    profiles = ms.load_profiles()
+    models = ms.local_models(_model_folders(state), state.config.model_path)
+    store = settings_store(state)
+    for entry in models:
+        try:
+            saved = store.load(entry["id"])
+        except (OSError, ValueError):
+            saved = {}
+        entry["launch"] = ms.model_flags_for(entry, profiles, saved)
+        entry["profile"] = ms.identity(entry["id"]) in profiles
+    return models
+
+
+@app.get("/admin/models")
+async def list_local_models():
+    from .downloader.routes import system_memory_bytes
+
+    state = get_global_state()
+    models = await asyncio.to_thread(_scan_local_models, state)
+    switch = state.model_switch
+    return {
+        "current": state.config.model_path,
+        "maintenance": state.maintenance_state,
+        "loading": switch["target"] if switch else None,
+        "last_error": state.model_switch_error,
+        "memory_bytes": system_memory_bytes(),
+        "models": models,
+    }
+
+
+class ModelLoadRequest(BaseModel):
+    model: str = Field(min_length=1, max_length=4096)
+
+
+@app.post("/admin/models/load")
+async def load_local_model(req: ModelLoadRequest, request: Request):
+    """Serve another local checkpoint on this port. The workers are relaunched with the
+    running server's flags and the model's own launch profile; running requests end with
+    an error, caches start over. Returns once the load has started -- /health and
+    /admin/models report its progress. A model that fails to load hands the port back to
+    the one it replaced."""
+    if not local_settings_request(request):
+        return JSONResponse({"error": "model changes require a same-origin loopback request"}, status_code=403)
+    state = get_global_state()
+    if not state.launch_argv:
+        return JSONResponse({"error": "this server has no launch command to reuse; restart it with mt serve"}, status_code=503)
+    from . import model_switch as ms
+    from .args import parse_args
+
+    models = await asyncio.to_thread(_scan_local_models, state)
+    entry = next((m for m in models if m["id"] == req.model), None)
+    if entry is None:
+        return JSONResponse({"error": f"{req.model} is not a local model"}, status_code=404)
+    if not entry["complete"]:
+        return JSONResponse({"error": f"{entry['name']} is incomplete ({entry['missing_shards']} weight files missing)"}, status_code=422)
+    if not entry["supported"]:
+        return JSONResponse({"error": f"{entry['name']} is a {entry['model_type']} checkpoint, which mlx-lm cannot load"}, status_code=422)
+    if entry["active"]:
+        return {"status": "current", "model": entry["name"]}
+    async with settings_lock(state):
+        if state.maintenance_state != "serving":
+            return JSONResponse({"error": f"engine is {state.maintenance_state}"}, status_code=409)
+        argv = ms.server_argv_with(state.launch_argv, entry["launch"])
+        try:
+            parsed, _ = await asyncio.to_thread(parse_args, argv)
+        except (SystemExit, ValueError, OSError, ValidationError) as exc:
+            return JSONResponse({"error": f"{entry['name']} cannot be configured: {exc}"}, status_code=422)
+        # Same socket, same settings file: only the model may change here.
+        config = replace(parsed, server_host=state.config.server_host, server_port=state.config.server_port,
+                         settings_file=state.config.settings_file)
+        previous_config, previous_argv = state.config, list(state.launch_argv)
+        state.model_switch = {
+            "generation": int(state.backend_generation) + 1, "target": entry["name"], "argv": argv,
+            "previous_config": previous_config, "previous_argv": previous_argv,
+            "loop": asyncio.get_running_loop(),
+        }
+        state.model_switch_error = None
+        _activate_model_frontend(state, config, argv)
+        body, status = await reload_backend(state, config)
+        if status != 200:
+            switch, state.model_switch = state.model_switch, None
+            if state.config is config and switch is not None:
+                await _restore_previous_model(state, switch)  # workers were already torn down
+            else:
+                _activate_model_frontend(state, previous_config, previous_argv)
+            return JSONResponse(body, status_code=status)
+    logger.info("Model switch: loading %s (%s)", entry["name"], " ".join(argv))
+    return {"status": "loading", "model": entry["name"], "generation": body.get("generation"), "argv": argv}
+
+
+# -- images (images.py) ----------------------------------------------------------------
+
+_IMAGES = ImageService(folders=lambda: _model_folders(get_global_state()))
+
+
+class ImageGenerationRequest(BaseModel):
+    """OpenAI's images API, plus ``seed``, ``steps`` and ``request_id`` (for progress
+    and cancellation from the console)."""
+    prompt: str = Field(min_length=1, max_length=8000)
+    model: str | None = None
+    n: int = Field(default=1, ge=1, le=4)
+    size: str | None = "1024x1024"
+    response_format: Literal["url", "b64_json"] = "b64_json"
+    seed: int | None = Field(default=None, ge=0, le=2**31 - 1)
+    steps: int | None = Field(default=None, ge=1, le=50)
+    request_id: str | None = Field(default=None, max_length=64)
+    # Reference images (ids or /admin/images/files URLs of uploaded or generated images):
+    # the result follows them, e.g. "make this photo a watercolor".
+    references: List[str] | None = Field(default=None, max_length=4)
+    quality: str | None = None
+    style: str | None = None
+    user: str | None = None
+
+
+def _image_error(exc: ImageError) -> JSONResponse:
+    return JSONResponse({"error": {"message": str(exc), "type": "image_generation_error"}}, status_code=exc.status)
+
+
+@app.post("/v1/images/generations")
+async def create_images(req: ImageGenerationRequest):
+    try:
+        width, height = parse_size(req.size)
+    except ValueError as exc:
+        return JSONResponse({"error": {"message": str(exc), "type": "invalid_request_error"}}, status_code=400)
+    data = []
+    for i in range(req.n):
+        try:
+            result = await _IMAGES.generate(
+                req.prompt, width=width, height=height, steps=req.steps or IMAGE_DEFAULT_STEPS,
+                seed=None if req.seed is None else req.seed + i, model=req.model, request_id=req.request_id,
+                references=req.references,
+            )
+        except ImageError as exc:
+            return _image_error(exc)
+        item = {"revised_prompt": req.prompt, "seed": result["seed"], "width": width, "height": height,
+                "steps": result["steps"], "seconds": result["seconds"], "model": result["model"], "id": result["id"]}
+        if req.response_format == "url":
+            item["url"] = result["url"]
+        else:
+            item["b64_json"] = await asyncio.to_thread(b64_png, result["path"])
+        data.append(item)
+    return {"created": int(time.time()), "data": data}
+
+
+@app.get("/admin/images/files/{name}")
+async def image_file(name: str):
+    path = image_path(name[:-4] if name.endswith(".png") else name)
+    if path is None:
+        return JSONResponse({"error": "no such image"}, status_code=404)
+    return FileResponse(path, media_type="image/png", headers={"Cache-Control": "private, max-age=31536000, immutable"})
+
+
+@app.get("/admin/images/status")
+async def image_status():
+    return await asyncio.to_thread(_IMAGES.status)
+
+
+class ImageUploadRequest(BaseModel):
+    # A data URL ("data:image/png;base64,...") or bare base64.
+    data: str = Field(min_length=16, max_length=36 * 1024 * 1024)
+
+
+@app.post("/admin/images/uploads")
+async def image_upload(request: Request, req: ImageUploadRequest):
+    """Store a reference image for /v1/images/generations' ``references``."""
+    if not local_settings_request(request):
+        return JSONResponse({"error": "uploads require a same-origin loopback request"}, status_code=403)
+    payload = req.data.split(",", 1)[1] if req.data.startswith("data:") else req.data
+    try:
+        raw = base64.b64decode(payload, validate=True)
+        return await asyncio.to_thread(save_upload, raw)
+    except (ValueError, binascii.Error) as exc:
+        return JSONResponse({"error": str(exc)}, status_code=400)
+    except ImportError:
+        return JSONResponse({"error": "image support is not installed (pip install -e .[images])"}, status_code=503)
+
+
+class ImageLoadRequest(BaseModel):
+    model: str | None = None
+
+
+@app.post("/admin/images/load")
+async def image_load(request: Request, req: ImageLoadRequest | None = None):
+    if not local_settings_request(request):
+        return JSONResponse({"error": "image model changes require a same-origin loopback request"}, status_code=403)
+    try:
+        return await _IMAGES.load(req.model if req else None)
+    except ImageError as exc:
+        return JSONResponse({"error": str(exc)}, status_code=exc.status)
+
+
+@app.post("/admin/images/unload")
+async def image_unload(request: Request):
+    if not local_settings_request(request):
+        return JSONResponse({"error": "image model changes require a same-origin loopback request"}, status_code=403)
+    return await _IMAGES.unload()
+
+
+class ImageCancelRequest(BaseModel):
+    request_id: str = Field(min_length=1, max_length=64)
+
+
+@app.post("/admin/images/cancel")
+async def image_cancel(req: ImageCancelRequest):
+    return {"cancelled": _IMAGES.cancel(req.request_id)}
+
+
+# -- videos (videos.py) ----------------------------------------------------------------
+
+_VIDEOS = VideoService(folders=lambda: _model_folders(get_global_state()))
+
+
+class VideoRequest(BaseModel):
+    prompt: str = Field(min_length=1, max_length=8000)
+    size: str | None = "768x512"
+    seconds: float = Field(default=4, ge=1, le=10)
+    seed: int | None = Field(default=None, ge=0, le=2**31 - 1)
+    # Start frame: the id or /admin/images/files URL of an uploaded or generated image.
+    image: str | None = Field(default=None, max_length=256)
+    model: str | None = None
+
+
+@app.post("/admin/videos")
+async def create_video(req: VideoRequest, request: Request):
+    if not local_settings_request(request):
+        return JSONResponse({"error": "video jobs require a same-origin loopback request"}, status_code=403)
+    try:
+        width, height = parse_video_size(req.size)
+        image = await asyncio.to_thread(reference_path, req.image) if req.image else None
+        return _VIDEOS.submit(req.prompt, width=width, height=height, seconds=req.seconds,
+                              seed=req.seed, image=image, model=req.model)
+    except ValueError as exc:
+        return JSONResponse({"error": str(exc)}, status_code=400)
+    except VideoError as exc:
+        return JSONResponse({"error": str(exc)}, status_code=exc.status)
+
+
+@app.get("/admin/videos/status")
+async def video_status():
+    return await asyncio.to_thread(_VIDEOS.status)
+
+
+@app.get("/admin/videos/files/{name}")
+async def video_file(name: str):
+    path = video_path(name[:-4] if name.endswith(".mp4") else name)
+    if path is None:
+        return JSONResponse({"error": "no such video"}, status_code=404)
+    return FileResponse(path, media_type="video/mp4", headers={"Cache-Control": "private, max-age=31536000, immutable"})
+
+
+@app.get("/admin/videos/{job_id}")
+async def video_job(job_id: str):
+    job = _VIDEOS.get(job_id)
+    if job is None:
+        return JSONResponse({"error": "unknown video job (the server may have restarted)"}, status_code=404)
+    return job
+
+
+@app.post("/admin/videos/{job_id}/cancel")
+async def video_cancel(job_id: str):
+    return {"cancelled": _VIDEOS.cancel(job_id)}
 
 
 class ReloadRequest(BaseModel):
@@ -1334,7 +1667,12 @@ def _serve_and_run_shell(host: str, port: int) -> None:
         _reap_backend_workers(_GLOBAL_STATE.backend_processes)
 
 
-def run_api_server(config: ServerArgs, start_backend: Callable[[ServerArgs], "Any"], run_shell: bool) -> None:
+def run_api_server(
+    config: ServerArgs,
+    start_backend: Callable[[ServerArgs], "Any"],
+    run_shell: bool,
+    launch_argv: List[str] | None = None,
+) -> None:
     """
     Run the frontend API server (FastAPI + uvicorn) and wire it to the tokenizer process via ZMQ.
 
@@ -1408,9 +1746,26 @@ def run_api_server(config: ServerArgs, start_backend: Callable[[ServerArgs], "An
                 _GLOBAL_STATE.maintenance_state = "serving"
                 _GLOBAL_STATE.ready_at = time.monotonic()
                 logger.info(f"API server is ready to serve on {host}:{port}")
+                switch = _GLOBAL_STATE.model_switch
+                if switch is not None and switch["generation"] == generation:
+                    _GLOBAL_STATE.model_switch = None
+                    _remember_launch(_GLOBAL_STATE.config.model_path, switch["argv"])
 
         def _on_failure(message: str) -> None:
             if not _current():
+                return
+            switch = _GLOBAL_STATE.model_switch
+            if switch is not None and switch["generation"] == generation:
+                # The model just picked in the console did not come up. Bring the one
+                # it replaced back rather than taking the server down with it.
+                _GLOBAL_STATE.model_switch = None
+                _GLOBAL_STATE.model_switch_error = {"target": switch["target"], "error": message}
+                _GLOBAL_STATE.fatal_error = message
+                _GLOBAL_STATE.maintenance_state = "failed"
+                _GLOBAL_STATE.fail_pending_rebuilds(message)
+                logger.error("Model switch to %s failed (%s); restoring %s",
+                             switch["target"], message, switch["previous_config"].model_path)
+                asyncio.run_coroutine_threadsafe(_restore_previous_model(_GLOBAL_STATE, switch), switch["loop"])
                 return
             _GLOBAL_STATE.fatal_error = message
             _GLOBAL_STATE.maintenance_state = "failed"
@@ -1462,6 +1817,8 @@ def run_api_server(config: ServerArgs, start_backend: Callable[[ServerArgs], "An
         ).start()
 
     _GLOBAL_STATE.settings_applied = settings_store(_GLOBAL_STATE).load(config.model_path)
+    _GLOBAL_STATE.launch_argv = list(launch_argv or [])
+    _remember_launch(config.model_path, _GLOBAL_STATE.launch_argv)
     _GLOBAL_STATE.start_backend = start_backend
     _GLOBAL_STATE.supervise = _supervise
     _GLOBAL_STATE.load_progress = LoadProgress()

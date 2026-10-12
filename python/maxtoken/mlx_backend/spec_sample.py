@@ -155,6 +155,14 @@ def rows_of(ids, probs) -> List[Row]:
     ]
 
 
+def point_rows(tokens: Sequence[int]) -> List[Row]:
+    """Rows for deterministic drafts (prompt lookup): all mass on the token."""
+    return [
+        (np.array([int(t)], dtype=np.int64), np.array([1.0], dtype=np.float64))
+        for t in tokens
+    ]
+
+
 def _prob(row: Row, token: int) -> float:
     ids, probs = row
     hit = np.nonzero(ids == token)[0]

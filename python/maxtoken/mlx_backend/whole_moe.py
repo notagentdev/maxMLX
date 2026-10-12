@@ -114,6 +114,8 @@ def _binding(block) -> _Binding | str:
         return "sharded blocks unsupported"
     switch = block.switch_mlp
     shared = block.shared_expert
+    if getattr(switch, "per_expert", False):
+        return "per-expert residency"
     if not hasattr(switch, "gate_up_proj") or not hasattr(shared, "gate_up_proj"):
         return "gate/up not packed (moe_pack)"
     router = _quantized(
