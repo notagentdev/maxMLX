@@ -13,6 +13,13 @@ import sys
 import pytest
 
 
+@pytest.fixture(autouse=True)
+def _private_home(monkeypatch, tmp_path):
+    # Every start moves pre-rename state directories (maxmlx/paths.py); the
+    # spawned CLI must not do that to the real home.
+    monkeypatch.setenv("HOME", str(tmp_path))
+
+
 def _run(args):
     return subprocess.run(
         [sys.executable, "-m", "maxmlx", *args],
