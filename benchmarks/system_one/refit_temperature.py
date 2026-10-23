@@ -19,7 +19,7 @@ sys.path.insert(0, "/Users/dev/projects/jevbench")
 
 from jevbench.metrics import ece_top_label  # noqa: E402
 
-from maxtoken.system_one import fit_temperature  # noqa: E402
+from maxmlx.system_one import fit_temperature  # noqa: E402
 
 
 def rescale(probs, t):

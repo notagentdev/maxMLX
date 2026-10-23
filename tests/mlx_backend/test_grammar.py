@@ -18,10 +18,10 @@ import pytest
 mx = pytest.importorskip("mlx.core")
 pytest.importorskip("xgrammar")
 
-from maxtoken.mlx_backend import grammar as G  # noqa: E402
-from maxtoken.server.generation import GenSpec  # noqa: E402
-from maxtoken.server.openai_api import _response_format_grammar, _with_thinking_phase  # noqa: E402
-from maxtoken.core import SamplingParams  # noqa: E402
+from maxmlx.mlx_backend import grammar as G  # noqa: E402
+from maxmlx.server.generation import GenSpec  # noqa: E402
+from maxmlx.server.openai_api import _response_format_grammar, _with_thinking_phase  # noqa: E402
+from maxmlx.core import SamplingParams  # noqa: E402
 
 _SNAPSHOTS = glob.glob(os.path.expanduser(
     "~/.cache/huggingface/hub/models--ornith-ai--Ornith-1.5-35B-A3B-MLX-4bit/snapshots/*/tokenizer.json"))

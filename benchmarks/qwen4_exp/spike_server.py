@@ -1,15 +1,15 @@
 """Spike server: Qwen3.8-Flash-Next (Niwaki, qwen4_exp) over an OpenAI-style
-API, one request at a time, on MaxToken's stores (niwaki_stores.py).
+API, one request at a time, on maxMLX's stores (niwaki_stores.py).
 
-This is the feasibility path, NOT MaxToken's serving engine: no prefix cache,
+This is the feasibility path, NOT maxMLX's serving engine: no prefix cache,
 no batching, no reload — but enough of /v1 and /admin for a chat client and
-for the MaxToken web console (already open in a browser tab) to show live
+for the maxMLX web console (already open in a browser tab) to show live
 numbers.
 
     MLX_MAX_OPS_PER_BUFFER=40 MLX_MAX_MB_PER_BUFFER=256 \\
     ~/.venvs/qwen4-spike/bin/python benchmarks/qwen4_exp/spike_server.py <model_dir> --port 1234
 
-Env: MAXTOKEN_SPIKE_THINK=1 enables the chat template's thinking mode
+Env: MAXMLX_SPIKE_THINK=1 enables the chat template's thinking mode
 (reasoning streams as reasoning_content); MAX_WIRED_GB / MIN_FREE_GB tune the
 memory watchdog (aborts before the GPU driver does); PREFILL_STEP sets the
 prefill chunk (256).
@@ -42,7 +42,7 @@ from fastapi.middleware.cors import CORSMiddleware  # noqa: E402
 from fastapi.responses import FileResponse, JSONResponse, StreamingResponse  # noqa: E402
 
 VERSION = "0.2.0-spike"
-THINK = os.environ.get("MAXTOKEN_SPIKE_THINK", "0") == "1"
+THINK = os.environ.get("MAXMLX_SPIKE_THINK", "0") == "1"
 # 64-token chunks: a 256-token chunk touches so many experts at once that Metal
 # wired 26.6 GB and the watchdog stopped the server (2026-10-03); 128 peaked at
 # 26.3, 64 at 25.0 GB (prefill ~186 tok/s on a 2k prompt).
@@ -178,10 +178,10 @@ def _serve_jobs_forever() -> None:
 
 
 def _wants_thinking(params) -> bool:
-    """Per request, as the MaxToken console and OpenAI/Anthropic clients send
+    """Per request, as the maxMLX console and OpenAI/Anthropic clients send
     it: Anthropic-style ``thinking: {type: enabled|disabled}``,
     ``chat_template_kwargs.enable_thinking``, or ``reasoning_effort: none``.
-    Without any, the server default (MAXTOKEN_SPIKE_THINK)."""
+    Without any, the server default (MAXMLX_SPIKE_THINK)."""
     t = params.get("thinking")
     if isinstance(t, dict) and t.get("type") in ("enabled", "disabled"):
         return t["type"] == "enabled"
@@ -286,12 +286,12 @@ def build_app(name: str):
     def uptime() -> int:
         return max(0, int(time.monotonic() - STATE["ready_at"])) if STATE["ready_at"] else 0
 
-    console = os.path.join(_HERE, "..", "..", "python", "maxtoken", "server", "console.html")
+    console = os.path.join(_HERE, "..", "..", "python", "maxmlx", "server", "console.html")
 
     @app.get("/", include_in_schema=False)
     @app.get("/console", include_in_schema=False)
     def root():
-        # The MaxToken web console, the same single file `mt serve` ships (at
+        # The maxMLX web console, the same single file `mt serve` ships (at
         # /console there, / as well here); it polls /health, /admin/stats,
         # /admin/requests and /admin/cache/status.
         if os.path.exists(console):
@@ -301,23 +301,23 @@ def build_app(name: str):
     @app.get("/v1/models/{model_id}")
     def model_by_id(model_id: str):
         ctx = STATE["context_override"] or d["context"]
-        return {"id": name, "object": "model", "owned_by": "MaxToken", "max_model_len": ctx, "context_length": ctx}
+        return {"id": name, "object": "model", "owned_by": "maxMLX", "max_model_len": ctx, "context_length": ctx}
 
     @app.get("/health")
     def health():
         return {"status": "ok", "model": name, "instance_id": STATE["instance_id"], "uptime_s": uptime(),
-                "maintenance": "serving", "version": VERSION, "engine": "maxtoken-spike-qwen4_exp"}
+                "maintenance": "serving", "version": VERSION, "engine": "maxmlx-spike-qwen4_exp"}
 
     @app.get("/v1/models")
     def models():
         ctx = STATE["context_override"] or d["context"]
-        return {"object": "list", "data": [{"id": name, "object": "model", "owned_by": "MaxToken",
+        return {"object": "list", "data": [{"id": name, "object": "model", "owned_by": "maxMLX",
                                             "max_model_len": ctx, "context_length": ctx}]}
 
     @app.get("/api/v0/models")
     def lms_models():
         ctx = STATE["context_override"] or d["context"]
-        return {"object": "list", "data": [{"id": name, "object": "model", "type": "llm", "publisher": "MaxToken",
+        return {"object": "list", "data": [{"id": name, "object": "model", "type": "llm", "publisher": "maxMLX",
                                             "arch": "qwen4_exp", "quantization": "3bit", "state": "loaded",
                                             "max_context_length": ctx, "loaded_context_length": ctx}]}
 
@@ -447,9 +447,9 @@ def build_app(name: str):
                              "usage": {"prompt_tokens": stats["prompt_tokens"], "completion_tokens": stats["completion_tokens"],
                                        "total_tokens": stats["prompt_tokens"] + stats["completion_tokens"]}})
 
-    # The MaxToken console saves and lists chats under /admin/chats; same
-    # store as `mt serve` (~/.maxtoken/chats), so old chats show up here too.
-    from maxtoken.server.chat_store import register_chat_routes
+    # The maxMLX console saves and lists chats under /admin/chats; same
+    # store as `mt serve` (~/.maxmlx/chats), so old chats show up here too.
+    from maxmlx.server.chat_store import register_chat_routes
 
     register_chat_routes(app)
     return app
@@ -492,7 +492,7 @@ def main() -> None:
         log(f"layer fusion: {niwaki_fusion.install(model)}")
         log(f"gdn layers compiled whole: {niwaki_fusion.compile_gdn_layers(model)}")
     STATE["model"], STATE["processor"] = model, processor
-    store = getattr(model, "_maxtoken_mapped_store", None)
+    store = getattr(model, "_maxmlx_mapped_store", None)
     if store is not None:
         try:
             STATE["store_bytes"] = os.path.getsize(store.path)

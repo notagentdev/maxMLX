@@ -9,7 +9,7 @@ the web console grew a spinner.
 
 import pytest
 
-from maxtoken.shell.tui import ShellStats
+from maxmlx.shell.tui import ShellStats
 
 
 def _stats() -> ShellStats:

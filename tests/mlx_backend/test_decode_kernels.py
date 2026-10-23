@@ -19,7 +19,7 @@ import mlx.nn as nn  # noqa: E402
 from mlx_lm.models.cache import KVCache, make_prompt_cache  # noqa: E402
 from mlx_lm.models.switch_layers import SwitchGLU  # noqa: E402
 
-from maxtoken.mlx_backend import (  # noqa: E402
+from maxmlx.mlx_backend import (  # noqa: E402
     archs,
     decode_attention,
     decode_fusion,

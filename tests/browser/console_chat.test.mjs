@@ -4,7 +4,7 @@ import test from 'node:test';
 import { browserAvailable, withBrowser } from './harness.mjs';
 
 test('chat persists conversations and their settings, and works like omlx', { skip: !browserAvailable, timeout: 90000 }, async () => {
-  const page = await readFile(new URL('../../python/maxtoken/server/console.html', import.meta.url));
+  const page = await readFile(new URL('../../python/maxmlx/server/console.html', import.meta.url));
   const store = new Map();        // the server's chat files
   let profiles = [{ name: 'System Default', content: '' }];
   const completions = [];          // request bodies of /v1/chat/completions

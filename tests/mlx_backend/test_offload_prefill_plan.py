@@ -1,6 +1,6 @@
 """The slot-cache prefill's chunk plan: few full passes, fine restore points."""
 
-from maxtoken.mlx_backend.worker import offload_prefill_plan
+from maxmlx.mlx_backend.worker import offload_prefill_plan
 
 
 def test_long_prompt_takes_few_passes_and_keeps_the_last_boundary():
@@ -45,7 +45,7 @@ def test_restart_mid_chunk_realigns_to_absolute_boundaries():
 
 
 def test_env_default_is_2048(monkeypatch):
-    monkeypatch.delenv("MAXTOKEN_MLX_OFFLOAD_PREFILL_CHUNK", raising=False)
+    monkeypatch.delenv("MAXMLX_MLX_OFFLOAD_PREFILL_CHUNK", raising=False)
     assert [n for _, n, _ in offload_prefill_plan(0, 5000)][0] == 2048
-    monkeypatch.setenv("MAXTOKEN_MLX_OFFLOAD_PREFILL_CHUNK", "1024")
+    monkeypatch.setenv("MAXMLX_MLX_OFFLOAD_PREFILL_CHUNK", "1024")
     assert [n for _, n, _ in offload_prefill_plan(0, 5000)][0] == 1024

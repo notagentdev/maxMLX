@@ -55,7 +55,7 @@ class Decision:
 
 
 class JevStyleHead:
-    """Same surface as `maxtoken.system_one.SystemOne`, different weights."""
+    """Same surface as `maxmlx.system_one.SystemOne`, different weights."""
 
     def __init__(self, model, tok):
         self.model, self.tok = model, tok

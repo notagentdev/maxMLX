@@ -22,7 +22,7 @@ mt serve --model <path-or-hf-id> [options]
 `--model` is the only required flag; add `--moe-backend offload` for MoE
 checkpoints. Tool-call and reasoning parsers, sampling defaults and the
 context length resolve from the checkpoint. Environment knobs for the MLX
-backend (`MAXTOKEN_MLX_*`) are documented next to the behaviour they tune in
+backend (`MAXMLX_MLX_*`) are documented next to the behaviour they tune in
 [mlx.md](mlx.md).
 
 ### Model
@@ -53,7 +53,7 @@ See [mlx.md](mlx.md) for what each mode does and what it costs.
 | `--moe-cache-size` / `--moe-cache-rate` / `--moe-cache-auto` | — | Slot-cache budget as slots / fraction of all experts / sized from free memory (mutually exclusive); selects the SSD-backed slot cache |
 | `--kv-reserve-tokens` | 8192 | KV token floor reserved before `--moe-cache-auto` fills experts |
 | `--cache-type` | radix | `radix` (prefix reuse, hybrid-model aware) or `naive` (off) |
-| `--prefix-cache-dir` | `~/.maxtoken/prefix-cache` | SSD tier of the prefix cache: per-block KV and recurrent snapshots that survive restarts |
+| `--prefix-cache-dir` | `~/.maxmlx/prefix-cache` | SSD tier of the prefix cache: per-block KV and recurrent snapshots that survive restarts |
 | `--prefix-cache-disk-gb` | 20 | Budget of that tier; `0` disables it |
 
 ### Speculative decoding

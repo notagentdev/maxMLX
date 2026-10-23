@@ -4,7 +4,7 @@ from html.parser import HTMLParser
 
 from fastapi.testclient import TestClient
 
-from maxtoken.server.api_server import app
+from maxmlx.server.api_server import app
 
 
 class ConsoleStructure(HTMLParser):

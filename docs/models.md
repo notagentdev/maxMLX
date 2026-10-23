@@ -1,6 +1,6 @@
 # Supported models
 
-MaxToken loads MLX checkpoints — the quantized safetensors conversions that
+maxMLX loads MLX checkpoints — the quantized safetensors conversions that
 mlx-lm serves — and everything mlx-lm's model registry knows is a candidate.
 The checkpoints below are the ones this repository was measured on (a 32 GB
 M1 Max, through the real HTTP path; numbers in the README and in
@@ -10,7 +10,7 @@ M1 Max, through the real HTTP path; numbers in the README and in
 |---|---|---|
 | Ornith-1.5-35B-A3B (Qwen3.5-family hybrid MoE) | [ornith-ai/Ornith-1.5-35B-A3B-MLX-4bit](https://huggingface.co/ornith-ai/Ornith-1.5-35B-A3B-MLX-4bit) | mapped store; native MTP head as drafter |
 | Qwen3-Coder-Next-80B-A3B | [mlx-community/Qwen3-Coder-Next-4bit](https://huggingface.co/mlx-community/Qwen3-Coder-Next-4bit) | slot cache (42 GiB checkpoint on 32 GB) |
-| DeepSeek-V4-Flash (304 B, 2-bit) | [mlx-community/DeepSeek-V4-Flash-0731-OptiQ-2bit](https://huggingface.co/mlx-community/DeepSeek-V4-Flash-0731-OptiQ-2bit) | slot cache; needs `MAXTOKEN_MLX_PREIMPORT=optiq` |
+| DeepSeek-V4-Flash (304 B, 2-bit) | [mlx-community/DeepSeek-V4-Flash-0731-OptiQ-2bit](https://huggingface.co/mlx-community/DeepSeek-V4-Flash-0731-OptiQ-2bit) | slot cache; needs `MAXMLX_MLX_PREIMPORT=optiq` |
 | Qwen3-30B-A3B | [mlx-community/Qwen3-30B-A3B-4bit](https://huggingface.co/mlx-community/Qwen3-30B-A3B-4bit) | resident / mapped |
 | Qwen3.8-27B (dense hybrid) | a 4-bit conversion that ships `mtp.safetensors` | resident; `--draft-model mtp` |
 | OLMoE-1B-7B | [mlx-community/OLMoE-1B-7B-0125-Instruct-4bit](https://huggingface.co/mlx-community/OLMoE-1B-7B-0125-Instruct-4bit) | test model (small, fast) |

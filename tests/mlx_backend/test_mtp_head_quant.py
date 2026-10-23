@@ -6,7 +6,7 @@ the trunk's block for the head raised `[quantized_matmul] ... incompatible`
 on every request (2026-09-11)."""
 import numpy as np
 
-from maxtoken.mlx_backend.mtp_draft import head_quant_scheme
+from maxmlx.mlx_backend.mtp_draft import head_quant_scheme
 
 
 def _packed(out, inp, bits, group):

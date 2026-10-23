@@ -6,14 +6,14 @@ import time
 
 import pytest
 
-from maxtoken.daemon.accounting import (
+from maxmlx.daemon.accounting import (
     AccountingOutbox,
     AccountingOutboxError,
     AccountingPrepareError,
 )
-from maxtoken.daemon.logring import LogRing
-from maxtoken.daemon.pidfile import ServeState, ServeStateStore
-from maxtoken.daemon.serve_manager import Conflict, ExitInfo, ServeManager
+from maxmlx.daemon.logring import LogRing
+from maxmlx.daemon.pidfile import ServeState, ServeStateStore
+from maxmlx.daemon.serve_manager import Conflict, ExitInfo, ServeManager
 
 
 # --------------------------------------------------------------------------- test doubles

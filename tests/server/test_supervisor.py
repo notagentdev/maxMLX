@@ -4,8 +4,8 @@ import queue
 
 from queue import Empty as _Empty
 
-from maxtoken.utils import progress
-from maxtoken.server.supervisor import BackendHandle, LoadProgress, drain_ready, phase_slug
+from maxmlx.utils import progress
+from maxmlx.server.supervisor import BackendHandle, LoadProgress, drain_ready, phase_slug
 
 
 def test_drain_ready_counts_ready_acks_and_applies_progress():
@@ -59,10 +59,10 @@ def test_drain_ready_detects_worker_death_during_load():
 
     import pytest
 
-    from maxtoken.server.supervisor import WorkerDied
+    from maxmlx.server.supervisor import WorkerDied
 
     class DeadProc:
-        name = "maxtoken-TP0-scheduler"
+        name = "maxmlx-TP0-scheduler"
 
         def is_alive(self) -> bool:
             return False
@@ -80,7 +80,7 @@ def test_drain_ready_raises_the_real_reason_from_an_error_ack():
 
     import pytest
 
-    from maxtoken.server.supervisor import WorkerDied
+    from maxmlx.server.supervisor import WorkerDied
 
     q: "queue.Queue" = queue.Queue()
     q.put(("error", "ValueError: --moe-backend 'hybrid' cannot compute q4_0 experts on the CPU"))
@@ -96,7 +96,7 @@ def test_supervisor_reports_the_worker_error_reason_via_on_failure():
     import queue
 
     class DeadProc:
-        name = "maxtoken-TP0-scheduler"
+        name = "maxmlx-TP0-scheduler"
 
         def is_alive(self) -> bool:
             return False
@@ -105,7 +105,7 @@ def test_supervisor_reports_the_worker_error_reason_via_on_failure():
     q.put(("error", "ValueError: bad checkpoint config"))
     handle = BackendHandle(ack_queue=q, processes=[DeadProc()], expected_acks=1)
     seen: dict = {}
-    from maxtoken.server.supervisor import run_backend_supervisor
+    from maxmlx.server.supervisor import run_backend_supervisor
 
     run_backend_supervisor(
         handle,
@@ -122,7 +122,7 @@ def test_supervisor_reports_failure_on_startup_death():
     import queue
 
     class DeadProc:
-        name = "maxtoken-detokenizer-0"
+        name = "maxmlx-detokenizer-0"
 
         def is_alive(self) -> bool:
             return False
@@ -130,7 +130,7 @@ def test_supervisor_reports_failure_on_startup_death():
     q: "queue.Queue" = queue.Queue()
     handle = BackendHandle(ack_queue=q, processes=[DeadProc()], expected_acks=1)
     seen: dict = {}
-    from maxtoken.server.supervisor import run_backend_supervisor
+    from maxmlx.server.supervisor import run_backend_supervisor
 
     run_backend_supervisor(
         handle,
@@ -147,7 +147,7 @@ def test_supervisor_detects_post_ready_death():
     import queue
 
     class Proc:
-        name = "maxtoken-TP0-scheduler"
+        name = "maxmlx-TP0-scheduler"
 
         def __init__(self) -> None:
             self._alive = True
@@ -160,7 +160,7 @@ def test_supervisor_detects_post_ready_death():
     q.put("scheduler ready")
     handle = BackendHandle(ack_queue=q, processes=[proc], expected_acks=1)
     seen: dict = {}
-    from maxtoken.server.supervisor import run_backend_supervisor
+    from maxmlx.server.supervisor import run_backend_supervisor
 
     def on_ready() -> None:
         seen["ready"] = True
@@ -181,7 +181,7 @@ def test_supervisor_silent_on_post_ready_death_during_shutdown():
     import queue
 
     class Proc:
-        name = "maxtoken-TP0-scheduler"
+        name = "maxmlx-TP0-scheduler"
 
         def __init__(self) -> None:
             self._alive = True
@@ -195,7 +195,7 @@ def test_supervisor_silent_on_post_ready_death_during_shutdown():
     handle = BackendHandle(ack_queue=q, processes=[proc], expected_acks=1)
     seen: dict = {}
     shutting_down = {"v": False}
-    from maxtoken.server.supervisor import run_backend_supervisor
+    from maxmlx.server.supervisor import run_backend_supervisor
 
     def on_ready() -> None:
         seen["ready"] = True
@@ -217,7 +217,7 @@ def test_supervisor_silent_on_startup_death_during_shutdown():
     import queue
 
     class DeadProc:
-        name = "maxtoken-detokenizer-0"
+        name = "maxmlx-detokenizer-0"
 
         def is_alive(self) -> bool:
             return False
@@ -225,7 +225,7 @@ def test_supervisor_silent_on_startup_death_during_shutdown():
     q: "queue.Queue" = queue.Queue()  # never receives a ready ack
     handle = BackendHandle(ack_queue=q, processes=[DeadProc()], expected_acks=1)
     seen: dict = {}
-    from maxtoken.server.supervisor import run_backend_supervisor
+    from maxmlx.server.supervisor import run_backend_supervisor
 
     run_backend_supervisor(
         handle,

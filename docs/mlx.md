@@ -1,6 +1,6 @@
 # macOS / Apple silicon (MLX backend)
 
-MaxToken serves models through [MLX](https://github.com/ml-explore/mlx) on the Metal
+maxMLX serves models through [MLX](https://github.com/ml-explore/mlx) on the Metal
 GPU, via [mlx-lm](https://github.com/ml-explore/mlx-lm). The upstream CUDA engine was
 removed in 0.0.1 (untestable on this platform, and it forced a torch dependency on
 every install), so this is the only backend: API server, tokenizer workers, terminal
@@ -30,13 +30,13 @@ The backend has three serving modes:
   a start 13.6 s TTFT and ~72 GB of compressions per start with `"c"`; 0.3 s
   TTFT and zero compressions with `"r"`, warm decode unchanged within the
   prompt-to-prompt spread. The repack lives under
-  `~/.cache/maxtoken/mlx-ftw/` (`MAXTOKEN_MLX_FTW_DIR` overrides) and costs
+  `~/.cache/maxmlx/mlx-ftw/` (`MAXMLX_MLX_FTW_DIR` overrides) and costs
   one streaming copy of the expert weights on first serve.
-  `MAXTOKEN_MLX_MLOCK=1` pins the whole store into memory (use only when it
+  `MAXMLX_MLX_MLOCK=1` pins the whole store into memory (use only when it
   fits with headroom): the first prefill starts fully warm (measured 2× faster
   server warm-up on Ornith-35B, 11 s → 5.2 s) and expert pages can never be
   evicted under memory pressure — at the price of the store's elasticity.
-  `MAXTOKEN_MLX_PREFETCH=1` (experimental madvise read-ahead before big
+  `MAXMLX_MLX_PREFETCH=1` (experimental madvise read-ahead before big
   prefills, inspired by llama.cpp's second-stream expert uploads) measured
   net-negative on this hardware and stays off by default.
 
@@ -51,7 +51,7 @@ The backend has three serving modes:
   and Ornith fell to 3 tok/s beside ~12 GB of apps, with cold starts of 6–9
   minutes in the first forward.
 
-  `MAXTOKEN_MLX_EXPERT_RESIDENCY=expert` (opt-in) imports one buffer per
+  `MAXMLX_MLX_EXPERT_RESIDENCY=expert` (opt-in) imports one buffer per
   expert instead. Each MoE block reads its routing to the host (one sync per
   layer), stacks only the selected experts and gathers over that stack, so
   only experts actually used are made resident (`8 of 256 MiB` in the same
@@ -64,7 +64,7 @@ The backend has three serving modes:
   3 tok/s when it does not. The per-layer sync and the per-layer stack copy
   are the cost.
 - **expert slot cache** (`--moe-backend offload` plus an explicit
-  `--moe-cache-size`/`--moe-cache-rate`): MaxToken's core idea on Apple
+  `--moe-cache-size`/`--moe-cache-rate`): maxMLX's core idea on Apple
   silicon. Only the dense weights stay resident; the MoE experts are served from a
   per-layer LRU **slot cache** (`mx.gather_qmm` over the slots — the same kernel as
   resident serving, validated bit-identical), with misses fetched from the
@@ -94,8 +94,8 @@ ecosystem (torch, triton, flashlib) is installed.
 **Settings** (model, memory/performance, server and integrations), and **Chat**
 (streaming with TTFT / tok/s / `cached_tokens` per response).
 
-Settings are saved atomically to `~/.maxtoken/settings.json`, per model except
-for global network options. `--settings-file` / `MAXTOKEN_SETTINGS_FILE` overrides
+Settings are saved atomically to `~/.maxmlx/settings.json`, per model except
+for global network options. `--settings-file` / `MAXMLX_SETTINGS_FILE` overrides
 the location; explicit CLI flags take precedence at startup. A single **Save**
 button below all categories persists the modified sections and applies live
 generation, reasoning, context and slot-cache edits. MTP, serving mode,
@@ -115,7 +115,7 @@ clients only, and the UI offers local-only network binds.
 downloads folder and the Hugging Face cache. **Load** relaunches the workers on
 the same port (`POST /admin/models/load`). The running server's flags carry
 over, and each model's own flags (draft model, draft depth, parsers) are
-remembered per checkpoint in `~/.maxtoken/launch-profiles.json`. A model
+remembered per checkpoint in `~/.maxmlx/launch-profiles.json`. A model
 without a remembered launch drafts with its own MTP head when it ships one (k=2
 on MoE, k=3 on dense). A model that fails to load hands the port back to the
 one it replaced.
@@ -147,7 +147,7 @@ chat makes short clips with sound:
   `GET /admin/videos/<id>`). The message stores the job id, so the chat keeps
   working meanwhile and a reload resumes watching.
 - Each job runs in a worker process of its own that exits afterwards, returning
-  all its memory. With less than `MAXTOKEN_VIDEO_STREAM_BELOW_GB` (20) free at
+  all its memory. With less than `MAXMLX_VIDEO_STREAM_BELOW_GB` (20) free at
   the start, the transformer streams its blocks from disk.
 - ltx-2-mlx reports ~12 min for a 10 s 576×1024 clip on an M1 Max (q8,
   distilled, image to video).
@@ -157,11 +157,11 @@ chat makes short clips with sound:
   *Unload* control it by hand.
 - Clients use the OpenAI endpoint `POST /v1/images/generations` (plus `seed`,
   `steps`); files are served from `/admin/images/files/<id>.png` and stored
-  under `~/.maxtoken/images`.
+  under `~/.maxmlx/images`.
 
 Rendering runs in its own worker process via [mflux](https://github.com/filipstrand/mflux)
 (`pip install -e .[images]`). The worker starts on the first image and exits
-after `MAXTOKEN_IMAGE_IDLE_S` (600 s) idle, so its ~10 GB go back to the
+after `MAXMLX_IMAGE_IDLE_S` (600 s) idle, so its ~10 GB go back to the
 language model. On the M1 Max, Klein 4B at 4-bit:
 
 | | Time |
@@ -184,7 +184,7 @@ models pick a quantized `mlx-community/...-4bit` checkpoint that fits your unifi
 memory.
 
 To serve a MoE model **larger than the memory you want to commit to it**, enable
-expert offload (this is what MaxToken is for):
+expert offload (this is what maxMLX is for):
 
 ```bash
 # Zero-copy mapped store (default): resident-speed serving, experts live in
@@ -246,13 +246,13 @@ scales with the budget: 5.3 / 6.4 / 8.4 / 8.6 tok/s engine-level at 5 / 10 /
 past 20%; through the HTTP server 7.6 tok/s at 20%. Every prefill chunk
 past the bank streams every expert layer — a full 40 GiB pass (~8 s with a
 partly warm page cache, ~12 s cold from the SSD) — so a prompt costs one
-pass per chunk. The chunk is 2048 tokens (`MAXTOKEN_MLX_OFFLOAD_PREFILL_CHUNK`);
+pass per chunk. The chunk is 2048 tokens (`MAXMLX_MLX_OFFLOAD_PREFILL_CHUNK`);
 for a while it was silently clamped to the 256-token snapshot boundary,
 which made a 1710-token prompt seven passes: TTFT 55.9 s, against 21.0 s
 with one (same server, same prompt, back to back). Snapshots now land at
 chunk ends plus the last boundary before the prompt's end, so the next
 turn's restore point stays fine-grained. Chunks of
-≤ 32 tokens (`MAXTOKEN_MLX_BANK_TOKENS`) — the short rest-prompt after a
+≤ 32 tokens (`MAXMLX_MLX_BANK_TOKENS`) — the short rest-prompt after a
 prefix-cache restore — are served from a transient bank of only the routed
 non-resident experts: a chat follow-up's TTFT drops from ~7 s to ~2 s and
 now scales with the remainder, not with the model. The 32-token gate is
@@ -264,12 +264,12 @@ a tool result) correctly stay on the streamed path at ~5–10 s per 2k
 tokens, and raising the gate would make them slower, not faster. On that path a
 cross-layer read-ahead additionally overlaps the next layer's fetches with
 the current layer's compute (layer L+1's gate scores layer L's hidden,
-re-based to L+1's RMSNorm — recall 0.946 measured; `MAXTOKEN_MLX_XLAYER=0`
+re-based to L+1's RMSNorm — recall 0.946 measured; `MAXMLX_MLX_XLAYER=0`
 disables): banked TTFT −23%. The same machinery measured *negative* on the
 single-token decode path (the ~1 ms compute window cannot hide what the
 extra python/graph breaks cost), so decode deliberately stays clean.
 Between requests the scheduler also rebalances the slot budget by observed
-per-layer miss pressure (`MAXTOKEN_MLX_REBALANCE=0` disables) — layers
+per-layer miss pressure (`MAXMLX_MLX_REBALANCE=0` disables) — layers
 differ widely in routing diversity, and an even split starves the diverse
 ones. A layer's share is capped at its expert count and the clamped
 overflow is handed on to the layers still under the cap (it used to be
@@ -279,7 +279,7 @@ log printed the pre-clamp total).
 ⁴ **304 B parameters, an 86 GiB checkpoint — 2.7x this machine's RAM.** The
 mixed 2-bit quant is `mlx-community/DeepSeek-V4-Flash-0731-OptiQ-2bit`
 (experts 2-bit, attention/embeddings 6–8 bit). Two things are needed beyond
-the usual: `MAXTOKEN_MLX_PREIMPORT=optiq` (mlx-lm ships no `deepseek_v4`;
+the usual: `MAXMLX_MLX_PREIMPORT=optiq` (mlx-lm ships no `deepseek_v4`;
 the `mlx-optiq` package registers it on import), and a load path that does
 not build-then-quantize — stock `mlx_lm.load` materializes a transient near
 the FULL model size before `load_weights` overwrites it, which OS-kills the
@@ -302,7 +302,7 @@ sampler and the per-token reply):
   or few tens of MB and the GPU idles at each boundary; the worker sets
   `MLX_MAX_OPS_PER_BUFFER=400` and `MLX_MAX_MB_PER_BUFFER=1024` unless the
   environment already has them (`metal_env.py`): 14.5 → 12.2 ms in-process.
-- **A paced prefill** (`prefill_pacing.py`, `MAXTOKEN_MLX_PREFILL_PACE`,
+- **A paced prefill** (`prefill_pacing.py`, `MAXMLX_MLX_PREFILL_PACE`,
   default 4): everything an uncompleted command buffer references stays
   wired, a 2 048-token chunk allocates gigabytes, and the encoder runs far
   ahead of the GPU — so a prefill evaluates its hidden state every four
@@ -379,8 +379,8 @@ uses.
   and the mapped store's madvise sweep holding the GIL 96 ms per 256 MB
   chunk (now 32 MB chunks with a yield). Remaining, real and bounded: the
   prefix tier's writer thread costs ~10-15% aggregate at 2-4 streams (GIL
-  over large snapshot serializations). Diagnosis knobs: `MAXTOKEN_MLX_TRACE=1`
-  (per-round timings), `MAXTOKEN_MLX_PROFILE=<path>` (cProfile of the
+  over large snapshot serializations). Diagnosis knobs: `MAXMLX_MLX_TRACE=1`
+  (per-round timings), `MAXMLX_MLX_PROFILE=<path>` (cProfile of the
   scheduler loop).
   Greedy requests keep the batched argmax fast path even when sampling
   defaults fill in top-p/top-k. The slot-cache offload path remains
@@ -405,13 +405,13 @@ uses.
   the original cache alive (a cold recompute can differ in bf16 rounding —
   inherent to chunked prefill, as in every serving engine's prefix cache).
   Snapshots are copy-on-write references, budgeted at 15% of unified memory
-  (`MAXTOKEN_MLX_PREFIX_CACHE_MB` overrides), LRU-evicted. Report the reuse
+  (`MAXMLX_MLX_PREFIX_CACHE_MB` overrides), LRU-evicted. Report the reuse
   per request with `--enable-cache-report` (usage `cached_tokens`). Measured
   on Ornith-1.5-35B with a 2.4k-token system prompt: first request 19.5 s,
   follow-ups **1.0 s** (`cached_tokens=2304`).
 - **Prefix cache on the SSD** (`mlx_backend/prefix_disk.py`; on by default,
   `--prefix-cache-disk-gb 0` disables, `--prefix-cache-dir` relocates from
-  `~/.maxtoken/prefix-cache`): the RAM store dies with the process, and the
+  `~/.maxmlx/prefix-cache`): the RAM store dies with the process, and the
   prompt that repeats across runs — an agent's fixed system prompt, ~9k tokens
   and ~75 s of compute-bound prefill on the 27B — was paid again after every
   restart and every reload. The disk tier keeps boundary snapshots of prompts
@@ -566,8 +566,8 @@ uses.
   |---|---|---|
   | mtplx, MTP off | 17.18 | 1.03 |
   | mtplx, MTP on (turbo) | **26.60** | 2.04 |
-  | MaxToken, plain decode | 17.77 | 1.00 |
-  | MaxToken, MTP k=1 | 11.58 | 1.52 |
+  | maxMLX, plain decode | 17.77 | 1.00 |
+  | maxMLX, MTP k=1 | 11.58 | 1.52 |
 
   (Counting SSE chunks would have read mtplx as 12.8 tok/s — a speculative
   decoder emits several tokens per chunk. Take the token count from
@@ -711,7 +711,7 @@ uses.
   token. The hidden-size projections (gate/up, q/k/v/o, the gated-delta's
   in/out) now dequantize to fp16 once per chunk and run a plain fp16 GEMM
   (9.0 TFLOPS on the same shapes, `prefill_gemm.py`,
-  `MAXTOKEN_MLX_PREFILL_GEMM=0` disables); the down projection stays
+  `MAXMLX_MLX_PREFILL_GEMM=0` disables); the down projection stays
   quantized (no gain at K=17408). A lone prefill takes 2048-token chunks
   that still end on the prefix store's 256-token boundaries; with another
   request active it narrows to 512 so that request keeps decoding (eight
@@ -780,7 +780,7 @@ uses.
   continuation request; the prefix cache serves the prompt, only the reasoning
   is read again). Guards against a model looping in `<think>` until its whole
   output budget is gone and answering nothing (seen on research-grade MoEs).
-  `MAXTOKEN_REASONING_BUDGET_MODE=stop` restores the old behavior: the request
+  `MAXMLX_REASONING_BUDGET_MODE=stop` restores the old behavior: the request
   ends there with `finish_reason: "length"` and no answer. Tokens in the answer never count against it; unlimited by default.
   Adjustable at runtime without a restart — the console has a slider for it,
   or `POST /admin/cache/rebuild {"max_reasoning_tokens": N}` (0 = no cap). It
@@ -796,14 +796,14 @@ uses.
 - **Structured output** (`response_format` on `/v1/chat/completions`):
   `{"type": "json_object"}` and `{"type": "json_schema", "json_schema":
   {"schema": {...}}}` are decoded under a grammar (`mlx_backend/grammar.py`,
-  xgrammar; `pip install 'maxtoken[grammar]'`): every step masks the logits to
+  xgrammar; `pip install 'maxmlx[grammar]'`): every step masks the logits to
   the tokens the schema allows, so the answer is valid JSON matching the schema
   by construction. A thinking model thinks freely and is constrained from the
   token after `</think>`. Whitespace between JSON tokens is capped at 16
   characters (unbounded whitespace let random logits run to max_tokens). Such
   requests decode token by token (no speculative window) and are refused with
   the expert slot cache and together with tools.
-- **Prompt lookup** (`MAXTOKEN_MLX_LOOKUP=1`, opt-in, with `--draft-model` on
+- **Prompt lookup** (`MAXMLX_MLX_LOOKUP=1`, opt-in, with `--draft-model` on
   an MTP head in mapped/resident serving): when the answer repeats an earlier
   stretch of its context (code edits, quoted input, tool-call JSON), the verify
   window may be filled with the tokens that followed that stretch instead of
@@ -812,9 +812,9 @@ uses.
   with the lookup's first token. A cost model then takes it when its expected
   tokens per ms beat the MTP window's, learned online from measured round times
   and acceptance. Verification is unchanged, so the output is too: a lookup
-  draft is a point mass in the rejection rule. `MAXTOKEN_MLX_LOOKUP_MAX_WINDOW`
+  draft is a point mass in the rejection rule. `MAXMLX_MLX_LOOKUP_MAX_WINDOW`
   lets a lookup window grow past the speculative window (the verify kernels
-  compile for 4 rows by default, see `MAXTOKEN_VERIFY_QMM_MROWS`). The
+  compile for 4 rows by default, see `MAXMLX_VERIFY_QMM_MROWS`). The
   periodic `speculative accept` line reports `lookup rounds N (drafts a/b
   accepted)`. Not yet measured on this machine.
 - Remaining CUDA-specific flags (`--attention-backend`, `--cuda-graph-*`,
@@ -823,7 +823,7 @@ uses.
 - Offload decode cost is bounded by miss *density*, not I/O bandwidth: every miss
   needs a CPU-side routing decision (file reads cannot be issued from the GPU
   graph), so a fine-grained MoE routing ~25+ fresh experts per token pays either
-  per-layer syncs or speculative re-runs. `MAXTOKEN_MLX_ADMIT_FILTER=1` enables
+  per-layer syncs or speculative re-runs. `MAXMLX_MLX_ADMIT_FILTER=1` enables
   an experimental admission filter (inline-serve first-offense misses) that helps
   small expert pools with tight caches and hurts long-tail pools — measure before
   keeping it on.

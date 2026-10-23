@@ -1,6 +1,6 @@
 <div align="center">
 
-# MaxToken
+# maxMLX
 
 **Serve MoE models bigger than your memory — on the Mac you already own.**
 
@@ -12,7 +12,7 @@ maximum tokens out of minimum memory.
 
 ## What it does
 
-MaxToken serves Mixture-of-Experts models whose weights do not fit the memory you
+maxMLX serves Mixture-of-Experts models whose weights do not fit the memory you
 want to give them. On Apple silicon it executes via [MLX](https://github.com/ml-explore/mlx),
 keeping only the dense core resident and serving the routed experts from an
 elastic, hard-budgeted slot cache backed by direct SSD reads — or, when the model
@@ -34,7 +34,7 @@ Measured on a 32 GB M1 Max (all through the real HTTP serving path):
 The Niwaki row is the newest and the least finished: Qwen's `qwen4_exp`
 preview architecture (a 51 B-parameter n-gram "phrase book" beside the MoE
 brain) does not load through mlx-lm, so `benchmarks/qwen4_exp/` runs
-mlx-vlm's implementation with MaxToken's stores attached — the 13 GiB
+mlx-vlm's implementation with maxMLX's stores attached — the 13 GiB
 n-gram table gathered row by row from disk, the routed experts from the
 mapped store — behind a small OpenAI-style server. Upstream FreeToken pins
 every expert in RAM and cannot run this family on 32 GB at all; integration
@@ -72,9 +72,9 @@ runtimes grill at 100 °C.
 
 > **An informal experiment, not a controlled benchmark:** we copied the same
 > two checkpoints into LM Studio (a resident-only MLX runtime) on the same
-> machine. The 35B served, about 10 tok/s slower than MaxToken; the 42 GiB 80B
+> machine. The 35B served, about 10 tok/s slower than maxMLX; the 42 GiB 80B
 > could not be loaded at all — resident-only runtimes need the entire model
-> inside Metal's working-set limit, which is exactly the constraint MaxToken's
+> inside Metal's working-set limit, which is exactly the constraint maxMLX's
 > expert offload removes. One run, default settings on both sides; read it as
 > an illustration of the category difference, not as a measured comparison.
 
@@ -106,7 +106,7 @@ whole-MoE verify kernels harvest — is largely spent):
   measured the honest substitutes (madvise read-ahead, cross-layer prediction
   on the decode path, wider speculative windows) and documented the ones that
   LOST in [docs/mlx.md](docs/mlx.md) rather than shipping them.
-- The one structural advantage the Mac has is the one MaxToken is built
+- The one structural advantage the Mac has is the one maxMLX is built
   around: unified memory lets file-backed weights be mapped zero-copy and
   residency be OS-elastic — a shape of elasticity a discrete-VRAM GPU cannot
   offer at all. The mapping mode decides whether that holds: the expert
@@ -122,7 +122,7 @@ whole-MoE verify kernels harvest — is largely spent):
 ## Quick start
 
 ```bash
-git clone https://github.com/notagentdev/maxtoken.git && cd maxtoken
+git clone https://github.com/notagentdev/maxMLX.git && cd maxmlx
 python3 -m venv .venv && source .venv/bin/activate
 pip install -e .
 
@@ -160,14 +160,14 @@ The single **Save** button below the settings saves all modified sections in one
 request and applies live options. Engine changes wait for an explicit
 **Apply saved settings & restart** action. That action restarts model
 workers, clears caches and aborts active requests. Host/port changes require a
-full server restart. Files are written atomically to `~/.maxtoken/settings.json`:
+full server restart. Files are written atomically to `~/.maxmlx/settings.json`:
 model settings are scoped by model path/ID, network settings are global. Override
-the file with `--settings-file` or `MAXTOKEN_SETTINGS_FILE`. Explicit CLI flags
+the file with `--settings-file` or `MAXMLX_SETTINGS_FILE`. Explicit CLI flags
 win over saved settings at startup. Settings mutations are restricted to
 same-origin loopback clients; the UI does not enable unauthenticated LAN binds.
 A static HTML preview cannot save settings or perform inference.
 
-MaxToken is Apple-silicon only. The upstream CUDA engine was removed in 0.0.1:
+maxMLX is Apple-silicon only. The upstream CUDA engine was removed in 0.0.1:
 it could not be built or tested on the target platform, and carrying it forced
 a torch dependency on every install. What remains — server, tokenizer workers,
 scheduler, shell, MLX backend — is ~22k lines that all run here. Installing
@@ -175,7 +175,7 @@ pulls no CUDA ecosystem: no torch, no triton, no flashlib.
 
 ## Relationship to FreeToken
 
-MaxToken began as the upstream FreeToken engine and diverged into its own
+maxMLX began as the upstream FreeToken engine and diverged into its own
 project: the MLX backend, the FTW-MLX zero-copy mapped store (v2 writes gate
 and up interleaved per expert, so both run as one gather from a mapped view),
 the MLX expert slot cache with speculate-and-verify decode, the hybrid-capable
@@ -185,7 +185,7 @@ batching on MLX, banked short-chunk prefill with cross-layer read-ahead,
 miss-pressure slot rebalancing, native-MTP and draft-model speculative
 decoding with whole-MoE verify kernels, idle re-warming of evicted
 file-backed weights, and the web console were developed here. Distribution and
-import package are `maxtoken`; the module layout follows upstream FreeToken's
+import package are `maxmlx`; the module layout follows upstream FreeToken's
 so diffs against it remain readable.
 
 If you use the underlying engine for research, cite the FreeToken

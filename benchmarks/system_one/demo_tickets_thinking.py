@@ -23,7 +23,7 @@ from mlx_lm.sample_utils import make_sampler  # noqa: E402
 from mlx_lm.models.cache import make_prompt_cache  # noqa: E402
 
 from demo_tickets import QUESTIONS, TICKETS  # noqa: E402
-from maxtoken.system_one import Question, SystemOne, ece  # noqa: E402
+from maxmlx.system_one import Question, SystemOne, ece  # noqa: E402
 
 CLOSE = "</think>\n\n"
 

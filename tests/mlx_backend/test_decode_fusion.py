@@ -15,7 +15,7 @@ pytest.importorskip("mlx_lm.models.qwen3_5_moe", reason="needs mlx-lm's qwen3_5_
 
 from mlx_lm.models.cache import make_prompt_cache  # noqa: E402
 
-from maxtoken.mlx_backend import decode_fusion  # noqa: E402
+from maxmlx.mlx_backend import decode_fusion  # noqa: E402
 
 
 def _tiny_model():
@@ -139,7 +139,7 @@ def test_uninstall_restores_the_classes(model):
 
 
 def test_dispatch_defaults_do_not_override_the_user(monkeypatch):
-    from maxtoken.mlx_backend import metal_env
+    from maxmlx.mlx_backend import metal_env
 
     monkeypatch.delenv("MLX_MAX_OPS_PER_BUFFER", raising=False)
     monkeypatch.setenv("MLX_MAX_MB_PER_BUFFER", "77")
@@ -149,7 +149,7 @@ def test_dispatch_defaults_do_not_override_the_user(monkeypatch):
 
 
 def test_prefix_store_budget_comes_from_headroom():
-    from maxtoken.mlx_backend.worker import prefix_store_budget
+    from maxmlx.mlx_backend.worker import prefix_store_budget
 
     gib = 1 << 30
     # 32 GB machine, 18 GB model: a quarter of (32 - 18 - 6) = 2 GB, not 4.8.
@@ -164,7 +164,7 @@ def test_paced_prefill_matches_the_stock_forward(model):
     """A prefill evaluated every two layers must produce the same logits and
     the same caches as the unpaced forward; a single-position forward takes
     the original path untouched."""
-    from maxtoken.mlx_backend import prefill_pacing
+    from maxmlx.mlx_backend import prefill_pacing
 
     ids = mx.array([[1, 7, 3, 9, 12, 5, 8, 2]])
     cache_a, cache_b = make_prompt_cache(model), make_prompt_cache(model)

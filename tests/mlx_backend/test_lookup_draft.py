@@ -10,8 +10,8 @@ distributed exactly as the target's ``p``.
 
 import numpy as np
 
-from maxtoken.mlx_backend import spec_sample
-from maxtoken.mlx_backend.lookup_draft import DraftPolicy, SuffixDrafter
+from maxmlx.mlx_backend import spec_sample
+from maxmlx.mlx_backend.lookup_draft import DraftPolicy, SuffixDrafter
 
 
 # -- the suffix drafter ----------------------------------------------------------

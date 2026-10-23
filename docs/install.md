@@ -1,6 +1,6 @@
 # Install
 
-MaxToken runs on Apple silicon via [MLX](https://github.com/ml-explore/mlx).
+maxMLX runs on Apple silicon via [MLX](https://github.com/ml-explore/mlx).
 There is no Linux or CUDA build: the upstream CUDA engine was removed in
 0.0.1 (see the README).
 
@@ -17,7 +17,7 @@ There is no Linux or CUDA build: the upstream CUDA engine was removed in
 ## Install from source
 
 ```bash
-git clone https://github.com/notagentdev/maxtoken.git && cd maxtoken
+git clone https://github.com/notagentdev/maxMLX.git && cd maxmlx
 python3 -m venv .venv && source .venv/bin/activate
 pip install -e .
 ```

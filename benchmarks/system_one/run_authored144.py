@@ -16,7 +16,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "python"))
 
-from maxtoken.system_one import SystemOne  # noqa: E402
+from maxmlx.system_one import SystemOne  # noqa: E402
 
 GOLD = Path("/Users/dev/projects/semif/benchmarks/data/authored144.jsonl")
 

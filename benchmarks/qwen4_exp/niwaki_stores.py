@@ -1,5 +1,5 @@
 """Load a Niwaki qwen4_exp checkpoint (mlx-vlm >= 0.7.0rc0 + the checkpoint's
-own ``niwaki_flash_load.py``) with MaxToken's stores attached BEFORE anything
+own ``niwaki_flash_load.py``) with maxMLX's stores attached BEFORE anything
 is evaluated:
 
   * the PLE n-gram table stays on disk — a numpy memmap over the safetensors
@@ -87,7 +87,7 @@ class MemmapShardedEmbedding:
 
 
 def install_memmap_ple(model, model_dir: str, index, log=print) -> int:
-    from maxtoken.mlx_backend.offload import _iter_modules
+    from maxmlx.mlx_backend.offload import _iter_modules
 
     cfg = json.load(open(os.path.join(model_dir, "config.json")))
     tc = cfg.get("text_config", cfg)
@@ -112,10 +112,10 @@ def install_memmap_ple(model, model_dir: str, index, log=print) -> int:
 
 
 def load_niwaki_with_stores(model_dir: str, *, cache_rate: float | None = None, log=print):
-    """(model, processor) with the PLE on disk and the experts on MaxToken's store."""
+    """(model, processor) with the PLE on disk and the experts on maxMLX's store."""
     import mlx.core as mx
 
-    from maxtoken.mlx_backend.offload import SafetensorsIndex
+    from maxmlx.mlx_backend.offload import SafetensorsIndex
 
     model_dir = os.path.abspath(model_dir)
     if model_dir not in sys.path:
@@ -128,16 +128,16 @@ def load_niwaki_with_stores(model_dir: str, *, cache_rate: float | None = None, 
     if install_memmap_ple(model, model_dir, index, log) == 0:
         raise RuntimeError("no PLE shards found in the checkpoint")
     if cache_rate:
-        from maxtoken.mlx_backend.offload import attach_expert_offload
+        from maxmlx.mlx_backend.offload import attach_expert_offload
 
         state = attach_expert_offload(model, model_dir, 1)
         mx.eval(model.parameters())
         per_layer = max(1, int(float(cache_rate) * state.glus[0].store.num_experts))
         total = state.resize_total(per_layer * len(state.glus))
         log(f"slot cache: {total} slots over {len(state.glus)} layers ({state.cache_bytes()/2**30:.2f} GiB)")
-        model._maxtoken_offload_state = state
+        model._maxmlx_offload_state = state
     else:
-        from maxtoken.mlx_backend.ftw_mlx import attach_mapped_experts
+        from maxmlx.mlx_backend.ftw_mlx import attach_mapped_experts
 
         attach_mapped_experts(model, model_dir)
         mx.eval(model.parameters())

@@ -6,7 +6,7 @@ import json
 
 import pytest
 
-from maxtoken.server.args import parse_args
+from maxmlx.server.args import parse_args
 
 
 def _parse(model_path: str):

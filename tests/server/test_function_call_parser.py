@@ -4,7 +4,7 @@ import json
 
 import pytest
 
-from maxtoken.server.function_call_parser import FunctionCallParser, SUPPORTED_TOOL_CALL_PARSERS
+from maxmlx.server.function_call_parser import FunctionCallParser, SUPPORTED_TOOL_CALL_PARSERS
 
 
 TOOLS = [

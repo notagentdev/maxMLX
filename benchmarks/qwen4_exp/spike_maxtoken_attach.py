@@ -1,9 +1,9 @@
-"""Qwen3.8-Flash-Next (Niwaki, qwen4_exp) on MaxToken's stores, in-process:
+"""Qwen3.8-Flash-Next (Niwaki, qwen4_exp) on maxMLX's stores, in-process:
 loads through niwaki_stores.load_niwaki_with_stores (PLE on disk, experts
 from the mapped store or the slot cache) and streams a generation under the
 memory watchdog, printing TTFT, decode rate and the wired peak.
 
-    ~/.venvs/qwen4-spike/bin/python spike_maxtoken_attach.py <model_dir> [max_tokens]
+    ~/.venvs/qwen4-spike/bin/python spike_maxmlx_attach.py <model_dir> [max_tokens]
     MOE_CACHE_RATE=0.3   slot cache instead of the mapped store
     LONG_PROMPT=1500     a ~1.5k-token prompt (prefill measurement)
     PREFILL_STEP=256     mlx-vlm's chunked prefill step

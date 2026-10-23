@@ -5,8 +5,8 @@ The per-uid offsets advance once per message, but the batched decode read every
 message's slices from the pre-batch state, so a request whose tokens queued up
 (speculative commits, or a second concurrent stream) had its text re-appended:
 `{"reviewreviewerreviewerId...` (2026-09-12, second of two parallel requests)."""
-from maxtoken.message import DetokenizeMsg
-from maxtoken.tokenizer.detokenize import DetokenizeManager
+from maxmlx.message import DetokenizeMsg
+from maxmlx.tokenizer.detokenize import DetokenizeManager
 
 
 class _CharTokenizer:

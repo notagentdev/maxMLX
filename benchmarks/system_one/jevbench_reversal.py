@@ -21,7 +21,7 @@ sys.path.insert(0, str(BENCH))
 from jevbench.scoring import score_task  # noqa: E402
 from jevbench.tasks import load_jsonl  # noqa: E402
 
-from maxtoken.system_one import SystemOne  # noqa: E402
+from maxmlx.system_one import SystemOne  # noqa: E402
 
 sys.path.insert(0, str(Path(__file__).parent))
 from run_jevbench import load_head, options_for  # noqa: E402

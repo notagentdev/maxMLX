@@ -14,7 +14,7 @@ import pytest
 
 mx = pytest.importorskip("mlx.core", reason="acceptance runs on mx arrays")
 
-from maxtoken.mlx_backend.worker import MlxScheduler  # noqa: E402
+from maxmlx.mlx_backend.worker import MlxScheduler  # noqa: E402
 
 
 def _sched():

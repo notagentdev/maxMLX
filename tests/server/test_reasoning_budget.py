@@ -10,9 +10,9 @@ from __future__ import annotations
 import asyncio
 from types import SimpleNamespace
 
-from maxtoken.core import SamplingParams
-from maxtoken.message import UserReply
-from maxtoken.server.generation import (
+from maxmlx.core import SamplingParams
+from maxmlx.message import UserReply
+from maxmlx.server.generation import (
     ContentDelta,
     GenDone,
     GenSpec,
@@ -208,7 +208,7 @@ def test_exhausted_budget_answers_on_the_non_streaming_path():
 
 
 def test_stop_mode_keeps_the_truncation(monkeypatch):
-    monkeypatch.setenv("MAXTOKEN_REASONING_BUDGET_MODE", "stop")
+    monkeypatch.setenv("MAXMLX_REASONING_BUDGET_MODE", "stop")
     state = _ContinuingState(["think "] * 10, ["The ", "answer."], max_reasoning_tokens=4)
     state.new_user()
     events = _run(generate_events(42, _spec(), state))

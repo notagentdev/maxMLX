@@ -4,7 +4,7 @@
 layout with the gate rows first, like mlx-lm's own qwen3_5_moe sanitize."""
 import numpy as np
 
-from maxtoken.mlx_backend.mtp_draft import _split_fused_experts
+from maxmlx.mlx_backend.mtp_draft import _split_fused_experts
 
 
 def _fused(E=4, inter=8, hidden=16):
@@ -45,7 +45,7 @@ def test_per_expert_layout_passes_through():
 
 
 def test_norm_leaf_and_candidates():
-    from maxtoken.mlx_backend.mtp_draft import _norm_candidates, _norm_leaf
+    from maxmlx.mlx_backend.mtp_draft import _norm_candidates, _norm_leaf
 
     assert _norm_leaf("layers.0.post_attention_layernorm.weight") == "post_attention_layernorm"
     assert _norm_leaf("norm.weight") == "norm"
@@ -61,7 +61,7 @@ def test_norm_leaf_and_candidates():
 
 
 def test_offset_norms_only_and_all():
-    from maxtoken.mlx_backend.mtp_draft import _offset_norms
+    from maxmlx.mlx_backend.mtp_draft import _offset_norms
 
     w = {"layers.0.post_attention_layernorm.weight": np.zeros(4), "norm.weight": np.zeros(4),
          "fc.weight": np.zeros((2, 4))}

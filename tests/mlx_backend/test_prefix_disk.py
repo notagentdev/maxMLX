@@ -19,8 +19,8 @@ import pytest
 
 mx = pytest.importorskip("mlx.core", reason="the tier stores mx arrays")
 
-from maxtoken.mlx_backend import prefix_disk as pd  # noqa: E402
-from maxtoken.mlx_backend.prefix_disk import (  # noqa: E402
+from maxmlx.mlx_backend import prefix_disk as pd  # noqa: E402
+from maxmlx.mlx_backend.prefix_disk import (  # noqa: E402
     DiskPrefixStore,
     chain_hashes,
     restore_blocks,
@@ -345,8 +345,8 @@ def test_model_key_tracks_the_weights():
 
 
 def test_the_scheduler_takes_the_deeper_tier(tmp_path):
-    from maxtoken.mlx_backend.prefix_cache import PrefixStore
-    from maxtoken.mlx_backend.worker import MlxScheduler
+    from maxmlx.mlx_backend.prefix_cache import PrefixStore
+    from maxmlx.mlx_backend.worker import MlxScheduler
 
     sched = MlxScheduler.__new__(MlxScheduler)
     sched.model = SimpleNamespace(make_cache=lambda: fresh(("kv",)))
@@ -373,7 +373,7 @@ def test_the_scheduler_takes_the_deeper_tier(tmp_path):
 
 
 def test_the_prefill_ends_a_chunk_where_the_tier_asks(monkeypatch):
-    from maxtoken.mlx_backend.worker import MlxScheduler
+    from maxmlx.mlx_backend.worker import MlxScheduler
 
     widths = []
 

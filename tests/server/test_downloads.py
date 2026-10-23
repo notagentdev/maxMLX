@@ -12,16 +12,16 @@ from types import SimpleNamespace
 import pytest
 from fastapi.testclient import TestClient
 
-from maxtoken.server import api_server as api
-from maxtoken.server.downloader import config as dlconfig
-from maxtoken.server.downloader.hf import DownloadStatus, DownloadTask, HFDownloader
+from maxmlx.server import api_server as api
+from maxmlx.server.downloader import config as dlconfig
+from maxmlx.server.downloader.hf import DownloadStatus, DownloadTask, HFDownloader
 
 
 @pytest.fixture(autouse=True)
 def isolated_files(tmp_path, monkeypatch):
-    monkeypatch.setenv("MAXTOKEN_DOWNLOADS_FILE", str(tmp_path / "downloads.json"))
-    monkeypatch.setenv("MAXTOKEN_DOWNLOAD_TASKS_FILE", str(tmp_path / "tasks.json"))
-    monkeypatch.delenv("MAXTOKEN_MODELS_DIR", raising=False)
+    monkeypatch.setenv("MAXMLX_DOWNLOADS_FILE", str(tmp_path / "downloads.json"))
+    monkeypatch.setenv("MAXMLX_DOWNLOAD_TASKS_FILE", str(tmp_path / "tasks.json"))
+    monkeypatch.delenv("MAXMLX_MODELS_DIR", raising=False)
 
 
 @pytest.fixture
@@ -84,11 +84,11 @@ def test_models_folder_prefers_setting_then_served_model_then_home(tmp_path, mon
     served = tmp_path / "library" / "model-a"
     served.mkdir(parents=True)
     assert dlconfig.resolve_models_dir(str(served)) == served.parent.resolve()
-    assert str(dlconfig.resolve_models_dir(None)).endswith("/.maxtoken/models")
-    assert str(dlconfig.resolve_models_dir(str(tmp_path / "missing"))).endswith("/.maxtoken/models")
+    assert str(dlconfig.resolve_models_dir(None)).endswith("/.maxmlx/models")
+    assert str(dlconfig.resolve_models_dir(str(tmp_path / "missing"))).endswith("/.maxmlx/models")
     dlconfig.save_config({"models_dir": str(tmp_path / "chosen")})
     assert dlconfig.resolve_models_dir(str(served)) == tmp_path / "chosen"
-    monkeypatch.setenv("MAXTOKEN_MODELS_DIR", str(tmp_path / "forced"))
+    monkeypatch.setenv("MAXMLX_MODELS_DIR", str(tmp_path / "forced"))
     assert dlconfig.resolve_models_dir(str(served)) == tmp_path / "forced"
 
 

@@ -8,16 +8,16 @@ import { once } from 'node:events';
 import test from 'node:test';
 
 // Uses an existing Chromium browser and Node's native CDP WebSocket client.
-// Override MAXTOKEN_BROWSER_EXECUTABLE for Chrome/Chromium on other systems.
-const executable = process.env.MAXTOKEN_BROWSER_EXECUTABLE
+// Override MAXMLX_BROWSER_EXECUTABLE for Chrome/Chromium on other systems.
+const executable = process.env.MAXMLX_BROWSER_EXECUTABLE
   || '/Applications/Brave Browser.app/Contents/MacOS/Brave Browser';
 const available = await access(executable).then(() => true, () => false);
 
 test('dashboard, settings and chat work in a real browser', { skip: !available, timeout: 60000 }, async () => {
-  const page = await readFile(new URL('../../python/maxtoken/server/console.html', import.meta.url));
+  const page = await readFile(new URL('../../python/maxmlx/server/console.html', import.meta.url));
   const mutations = [];
   let serving = true, failSettings = false, delaySettings = 0;
-  const values = {temperature: 0.7, top_k: 20, top_p: 0.95, max_output_tokens: 4096, max_reasoning_tokens: 0, thinking: 'model', max_seq_len_override: 16384, moe_backend: 'offload', moe_cache_size: 128, moe_cache_rate: null, moe_cache_auto: false, memory_ratio: 0.9, max_running_req: 4, max_extend_tokens: 8192, draft_model: null, draft_tokens: 3, cache_type: 'radix', prefix_cache_dir: '~/.maxtoken/prefix-cache', prefix_cache_disk_gb: 20, enable_cache_report: true, served_model_name: 'fixture-model', tool_call_parser: 'qwen25', reasoning_parser: 'qwen3', server_host: '127.0.0.1', server_port: 1919};
+  const values = {temperature: 0.7, top_k: 20, top_p: 0.95, max_output_tokens: 4096, max_reasoning_tokens: 0, thinking: 'model', max_seq_len_override: 16384, moe_backend: 'offload', moe_cache_size: 128, moe_cache_rate: null, moe_cache_auto: false, memory_ratio: 0.9, max_running_req: 4, max_extend_tokens: 8192, draft_model: null, draft_tokens: 3, cache_type: 'radix', prefix_cache_dir: '~/.maxmlx/prefix-cache', prefix_cache_disk_gb: 20, enable_cache_report: true, served_model_name: 'fixture-model', tool_call_parser: 'qwen25', reasoning_parser: 'qwen3', server_host: '127.0.0.1', server_port: 1919};
   const active = {...values};
   const live = new Set(['temperature', 'top_k', 'top_p', 'max_output_tokens', 'max_reasoning_tokens', 'thinking', 'max_seq_len_override', 'moe_cache_size']);
   const settingsDoc = () => ({model: '/fixture/model', settings_file: '/fixture/settings.json', values: {...values}, active: {...active}, pending_restart: Object.keys(values).filter(key => !live.has(key) && values[key] !== active[key]), model_defaults: {temperature: 0.7, top_k: 20, top_p: 0.95, max_output_tokens: 32768, thinking: 'model'}});
@@ -75,7 +75,7 @@ test('dashboard, settings and chat work in a real browser', { skip: !available, 
   server.listen(0, '127.0.0.1');
   await once(server, 'listening');
   const base = `http://127.0.0.1:${server.address().port}`;
-  const profile = await mkdtemp(join(tmpdir(), 'maxtoken-ui-'));
+  const profile = await mkdtemp(join(tmpdir(), 'maxmlx-ui-'));
   const browser = spawn(executable, ['--headless=new', '--no-first-run', '--no-default-browser-check', '--remote-debugging-port=0', `--user-data-dir=${profile}`, 'about:blank'], { stdio: ['ignore', 'ignore', 'pipe'] });
   let socket;
   try {
@@ -126,7 +126,7 @@ test('dashboard, settings and chat work in a real browser', { skip: !available, 
       assert.fail(`Timed out: ${expression}`);
     };
     const screenshot = async name => {
-      const directory = process.env.MAXTOKEN_UI_SCREENSHOT_DIR;
+      const directory = process.env.MAXMLX_UI_SCREENSHOT_DIR;
       if (!directory) return;
       const { data } = await command('Page.captureScreenshot', { format: 'png' });
       await writeFile(join(directory, name + '.png'), Buffer.from(data, 'base64'));

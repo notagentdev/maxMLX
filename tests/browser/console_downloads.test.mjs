@@ -7,7 +7,7 @@ const GIB = 1024 ** 3;
 const model = (id, extra = {}) => ({ repo_id: id, name: id.split('/').pop(), downloads: 1500, likes: 12, trending_score: 1, size: 4 * GIB, size_formatted: '4.0 GB', params: 7e9, params_formatted: '7.0B', ...extra });
 
 test('downloads tab browses, searches, queues and configures', { skip: !browserAvailable, timeout: 60000 }, async () => {
-  const page = await readFile(new URL('../../python/maxtoken/server/console.html', import.meta.url));
+  const page = await readFile(new URL('../../python/maxmlx/server/console.html', import.meta.url));
   const requests = [];
   let tasks = [];
   let msAvailable = true;

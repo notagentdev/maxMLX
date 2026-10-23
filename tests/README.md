@@ -1,15 +1,15 @@
-# MaxToken test suite
+# maxMLX test suite
 
-Directories mirror the `python/maxtoken/` subsystem a test primarily exercises —
+Directories mirror the `python/maxmlx/` subsystem a test primarily exercises —
 put a new test next to the module it protects.
 
 | directory      | subsystem under test |
 |----------------|----------------------|
-| `mlx_backend/` | `maxtoken.mlx_backend` — the MLX scheduler, expert offload (slot cache, rebalance, read-ahead), the mapped FTW store, prefix cache and its SSD tier, decode fusion, speculative decoding, the offload prefill plan |
-| `server/`      | `maxtoken.server` — OpenAI/Anthropic/Responses APIs, streaming, tool-call and reasoning parsers, accounting, reload/maintenance state, supervisor |
-| `tokenizer/`   | `maxtoken.tokenizer` — tokenize/detokenize request plumbing, thinking-mode resolution |
-| `daemon/`      | `maxtoken.daemon` — supervisor import safety, serve manager |
-| `shell/`       | `maxtoken.shell` — the terminal chat client |
+| `mlx_backend/` | `maxmlx.mlx_backend` — the MLX scheduler, expert offload (slot cache, rebalance, read-ahead), the mapped FTW store, prefix cache and its SSD tier, decode fusion, speculative decoding, the offload prefill plan |
+| `server/`      | `maxmlx.server` — OpenAI/Anthropic/Responses APIs, streaming, tool-call and reasoning parsers, accounting, reload/maintenance state, supervisor |
+| `tokenizer/`   | `maxmlx.tokenizer` — tokenize/detokenize request plumbing, thinking-mode resolution |
+| `daemon/`      | `maxmlx.daemon` — supervisor import safety, serve manager |
+| `shell/`       | `maxmlx.shell` — the terminal chat client |
 
 The CLI surface itself is not unit-tested: `mt` dispatch, `mt ctl` and
 `mt launch` are thin and change often, and a test written after the fact only
@@ -32,7 +32,7 @@ checkpoint is set:
 
 | env var                   | used by |
 |---------------------------|---------|
-| `MAXTOKEN_TEST_MLX_MODEL` | `mlx_backend/test_prefix_cache_weights.py` — a local MLX checkpoint directory; exercises prefix-cache restores against a real model |
+| `MAXMLX_TEST_MLX_MODEL` | `mlx_backend/test_prefix_cache_weights.py` — a local MLX checkpoint directory; exercises prefix-cache restores against a real model |
 
 Anything that measures throughput lives in `benchmarks/`, not here: a
 performance claim in this repository is an A/B measured back to back on the

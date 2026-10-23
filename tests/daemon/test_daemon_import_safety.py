@@ -1,6 +1,6 @@
 """Guard the daemon's single most important rule: it must never import torch / CUDA /
 flashinfer / sgl_kernel / transformers, directly or transitively. A future "small" refactor that
-grabs a helper from ``maxtoken.server`` or ``maxtoken.utils`` would silently pull torch and only
+grabs a helper from ``maxmlx.server`` or ``maxmlx.utils`` would silently pull torch and only
 fail on a CUDA-less box at startup. This test makes that a red test instead.
 
 The check runs in a *fresh* interpreter (subprocess): a same-process test would diff sys.modules
@@ -17,20 +17,20 @@ import sys
 FORBIDDEN = ("torch", "transformers", "flashinfer", "sgl_kernel", "triton")
 
 DAEMON_MODULES = [
-    "maxtoken.daemon",
-    "maxtoken.daemon.version",
-    "maxtoken.daemon.accounting",
-    "maxtoken.daemon.logfmt",
-    "maxtoken.daemon.logring",
-    "maxtoken.daemon.osproc",
-    "maxtoken.daemon.pidfile",
-    "maxtoken.daemon.metrics",
-    "maxtoken.daemon.proxy",
-    "maxtoken.daemon.tailer",
-    "maxtoken.daemon.serve_manager",
-    "maxtoken.daemon.app",
-    "maxtoken.daemon.client",
-    "maxtoken.daemon.server",
+    "maxmlx.daemon",
+    "maxmlx.daemon.version",
+    "maxmlx.daemon.accounting",
+    "maxmlx.daemon.logfmt",
+    "maxmlx.daemon.logring",
+    "maxmlx.daemon.osproc",
+    "maxmlx.daemon.pidfile",
+    "maxmlx.daemon.metrics",
+    "maxmlx.daemon.proxy",
+    "maxmlx.daemon.tailer",
+    "maxmlx.daemon.serve_manager",
+    "maxmlx.daemon.app",
+    "maxmlx.daemon.client",
+    "maxmlx.daemon.server",
 ]
 
 # Runs in the child interpreter. FORBIDDEN / DAEMON_MODULES are prepended as literals so the
@@ -59,7 +59,7 @@ try:
     for _mod in DAEMON_MODULES:
         importlib.import_module(_mod)
     # Also exercise app assembly, where a stray pydantic/route import could sneak torch in.
-    from maxtoken.daemon.app import build_app
+    from maxmlx.daemon.app import build_app
 
     class _Mgr:
         def status(self):
@@ -70,7 +70,7 @@ try:
 
     build_app(
         manager=_Mgr(),
-        ring=importlib.import_module("maxtoken.daemon.logring").LogRing(),
+        ring=importlib.import_module("maxmlx.daemon.logring").LogRing(),
         probe=None,
         footprint_fn=lambda pid: {},
         lifecycle_pool=ThreadPoolExecutor(1),

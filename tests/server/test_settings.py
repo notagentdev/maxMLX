@@ -10,15 +10,15 @@ import pytest
 from fastapi.testclient import TestClient
 from pydantic import ValidationError
 
-from maxtoken.server import api_server as api
-from maxtoken.server.args import ServerArgs, parse_args
-from maxtoken.server.settings import SettingsPatch, SettingsStore
+from maxmlx.server import api_server as api
+from maxmlx.server.args import ServerArgs, parse_args
+from maxmlx.server.settings import SettingsPatch, SettingsStore
 
 
 @pytest.fixture
 def store(tmp_path, monkeypatch):
     path = tmp_path / "settings.json"
-    monkeypatch.setenv("MAXTOKEN_SETTINGS_FILE", str(path))
+    monkeypatch.setenv("MAXMLX_SETTINGS_FILE", str(path))
     return SettingsStore(path)
 
 
@@ -74,7 +74,7 @@ def test_invalid_values_are_rejected(patch):
 
 
 def test_saved_values_load_at_startup_but_explicit_cli_wins(store, monkeypatch):
-    monkeypatch.setattr("maxtoken.utils.cached_load_hf_config", lambda _: SimpleNamespace(to_dict=lambda: {"max_position_embeddings": 32768}))
+    monkeypatch.setattr("maxmlx.utils.cached_load_hf_config", lambda _: SimpleNamespace(to_dict=lambda: {"max_position_embeddings": 32768}))
     store.save("/models/test", {"temperature": 0.8, "top_p": 0.9, "server_port": 2020, "draft_model": "mtp", "max_seq_len_override": 8192})
     args, _ = parse_args(["--model", "/models/test", "--dtype", "bfloat16"])
     assert (args.temperature, args.top_p, args.server_port, args.draft_model) == (0.8, 0.9, 2020, "mtp")
@@ -84,7 +84,7 @@ def test_saved_values_load_at_startup_but_explicit_cli_wins(store, monkeypatch):
 
 
 def test_abbreviated_cli_options_and_cache_mode_override_saved_values(store, monkeypatch):
-    monkeypatch.setattr("maxtoken.utils.cached_load_hf_config", lambda _: SimpleNamespace(to_dict=lambda: {"max_position_embeddings": 32768}))
+    monkeypatch.setattr("maxmlx.utils.cached_load_hf_config", lambda _: SimpleNamespace(to_dict=lambda: {"max_position_embeddings": 32768}))
     store.save("/models/test", {"temperature": 0.8, "server_port": 2020, "moe_backend": "fused"})
     args, _ = parse_args(["--model", "/models/test", "--dtype", "bfloat16", "--temperat=0.4", "--por", "3030", "--moe-cache-rate", "0.4"])
     assert args.temperature == 0.4 and args.server_port == 3030
@@ -163,7 +163,7 @@ def test_settings_mutations_reject_remote_origins_and_dns_rebinding(running, sto
 def test_reload_activates_saved_engine_config_without_rebinding_server(running, store, monkeypatch):
     state, client = running
     store.save(state.config.model_path, {"draft_model": "mtp", "draft_tokens": 2, "max_running_req": 2, "server_port": 2020})
-    monkeypatch.setattr("maxtoken.utils.cached_load_hf_config", lambda _: SimpleNamespace(to_dict=lambda: {"max_position_embeddings": 32768}))
+    monkeypatch.setattr("maxmlx.utils.cached_load_hf_config", lambda _: SimpleNamespace(to_dict=lambda: {"max_position_embeddings": 32768}))
     captured = []
     async def reload(state, config=None):
         captured.append(config)
@@ -190,14 +190,14 @@ def test_live_resize_failure_is_reported_as_saved_not_applied(running, store, mo
 
 
 def test_automatic_slot_budget_uses_slot_cache_not_mapped_path(tmp_path, monkeypatch):
-    from maxtoken.mlx_backend.worker import MlxScheduler
+    from maxmlx.mlx_backend.worker import MlxScheduler
     scheduler = MlxScheduler.__new__(MlxScheduler)
     scheduler.model = SimpleNamespace(parameters=lambda: {})
     scheduler._mx = SimpleNamespace(eval=lambda *args: None, get_active_memory=lambda: 10)
     state = SimpleNamespace(glus=[object()], resize_total=lambda slots: slots, cache_bytes=lambda: 1024)
     called = []
-    monkeypatch.setattr("maxtoken.mlx_backend.offload.attach_expert_offload", lambda *args: (called.append("slots") or state))
-    monkeypatch.setattr("maxtoken.mlx_backend.ftw_mlx.attach_mapped_experts", lambda *args: called.append("mapped"))
+    monkeypatch.setattr("maxmlx.mlx_backend.offload.attach_expert_offload", lambda *args: (called.append("slots") or state))
+    monkeypatch.setattr("maxmlx.mlx_backend.ftw_mlx.attach_mapped_experts", lambda *args: called.append("mapped"))
     scheduler._resolve_slots_per_layer = lambda *args: 16
     scheduler._attach_offload(ServerArgs(model_path=str(tmp_path), moe_cache_auto=True))
     assert called == ["slots"]

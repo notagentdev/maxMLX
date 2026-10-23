@@ -1,7 +1,7 @@
 """Both spellings of the entry point must reach the same commands.
 
-``python -m maxtoken`` was once the server itself, so it took serve flags and
-ignored a subcommand: ``python -m maxtoken serve --model ...`` failed with
+``python -m maxmlx`` was once the server itself, so it took serve flags and
+ignored a subcommand: ``python -m maxmlx serve --model ...`` failed with
 "unrecognized arguments: serve" while every document showed ``mt serve``. Those
 two spellings have to agree, and the old flags-first form has to keep working —
 it is in shells and scripts that predate the dispatcher.
@@ -15,7 +15,7 @@ import pytest
 
 def _run(args):
     return subprocess.run(
-        [sys.executable, "-m", "maxtoken", *args],
+        [sys.executable, "-m", "maxmlx", *args],
         capture_output=True,
         text=True,
         timeout=120,

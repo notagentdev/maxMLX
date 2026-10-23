@@ -143,7 +143,7 @@ def main() -> None:
     from mlx_lm import load
     from mlx_lm.models.cache import make_prompt_cache
 
-    from maxtoken.mlx_backend import archs
+    from maxmlx.mlx_backend import archs
 
     archs.register_all()
 
@@ -157,7 +157,7 @@ def main() -> None:
     print(f"loaded in {time.perf_counter() - t:.1f}s, active {mx.get_active_memory() / 2**30:.1f} GiB, "
           f"wired {vm_gb()[0]:.1f} GB available {vm_gb()[1]:.1f} GB", flush=True)
     if args.fusion:
-        from maxtoken.mlx_backend import decode_fusion
+        from maxmlx.mlx_backend import decode_fusion
 
         print("fusion:", decode_fusion.install(model), flush=True)
 

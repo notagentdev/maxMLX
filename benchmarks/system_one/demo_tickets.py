@@ -12,7 +12,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "python"))
 
-from maxtoken.system_one import SystemOne, ece, fit_temperature  # noqa: E402
+from maxmlx.system_one import SystemOne, ece, fit_temperature  # noqa: E402
 
 QUESTIONS = {
     "category": {

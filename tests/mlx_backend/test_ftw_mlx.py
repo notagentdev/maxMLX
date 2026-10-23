@@ -1,7 +1,7 @@
 """FTW-MLX zero-copy expert store: repack roundtrip for both disk layouts.
 
 Needs mlx (the store imports mapped tensors via DLPack); the repack itself is
-exercised through a crafted checkpoint in tmp_path, with MAXTOKEN_MLX_FTW_DIR
+exercised through a crafted checkpoint in tmp_path, with MAXMLX_MLX_FTW_DIR
 pointing the cache there too.
 """
 
@@ -13,7 +13,7 @@ import pytest
 
 mlx = pytest.importorskip("mlx.core", reason="mapped store needs mlx")
 
-from maxtoken.mlx_backend.ftw_mlx import (  # noqa: E402 -- after importorskip
+from maxmlx.mlx_backend.ftw_mlx import (  # noqa: E402 -- after importorskip
     MappedExpertStore,
     _PAGE,
     repack_experts,
@@ -34,8 +34,8 @@ write_safetensors = _helpers.write_safetensors
 @pytest.mark.parametrize("packed", [True, False], ids=["packed", "classic"])
 @pytest.mark.parametrize("stacked", [True, False], ids=["stacked", "per-expert"])
 def test_repack_and_mapped_views_roundtrip(tmp_path, monkeypatch, stacked, packed):
-    monkeypatch.setenv("MAXTOKEN_MLX_FTW_DIR", str(tmp_path / "ftw-cache"))
-    monkeypatch.setenv("MAXTOKEN_MLX_FTW_PACK", "1" if packed else "0")
+    monkeypatch.setenv("MAXMLX_MLX_FTW_DIR", str(tmp_path / "ftw-cache"))
+    monkeypatch.setenv("MAXMLX_MLX_FTW_PACK", "1" if packed else "0")
     model_dir = tmp_path / "model"
     model_dir.mkdir()
     rng = np.random.default_rng(1)
@@ -116,8 +116,8 @@ def test_per_expert_switch_glu_matches_the_stacked_gather():
     import mlx.core as mx
     from mlx_lm.models.switch_layers import SwiGLU
 
-    from maxtoken.mlx_backend.ftw_mlx import _ExpertViews, _per_expert_switch_glu
-    from maxtoken.mlx_backend.moe_pack import classes
+    from maxmlx.mlx_backend.ftw_mlx import _ExpertViews, _per_expert_switch_glu
+    from maxmlx.mlx_backend.moe_pack import classes
 
     E, D, H, K = 16, 128, 64, 4
     mx.random.seed(0)

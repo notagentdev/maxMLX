@@ -7,7 +7,7 @@ import asyncio
 
 import pytest
 
-from maxtoken.server.generation import ClientGone, until_disconnect
+from maxmlx.server.generation import ClientGone, until_disconnect
 
 
 class _Request:
@@ -66,6 +66,6 @@ def test_without_a_request_object_it_is_a_plain_await():
 
 
 def test_the_error_reads_as_a_generation_error_for_the_adapters():
-    from maxtoken.server.generation import GenerationError
+    from maxmlx.server.generation import GenerationError
 
     assert issubclass(ClientGone, GenerationError)

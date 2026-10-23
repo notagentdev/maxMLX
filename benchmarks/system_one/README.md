@@ -1,6 +1,6 @@
 # System One decisions — head and benchmarks
 
-`python/maxtoken/system_one.py` answers typed questions about a state by
+`python/maxmlx/system_one.py` answers typed questions about a state by
 scoring **only the allowed answers** and softmaxing over that set. No token is
 generated, so a structured-output error is impossible by construction and a
 decision costs one forward pass instead of an answer sentence.

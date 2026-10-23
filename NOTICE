@@ -1,4 +1,4 @@
-MaxToken
+maxMLX
 Copyright (c) 2026 notagentdev
 
 Licensed under the Apache License, Version 2.0 (see LICENSE).
@@ -13,23 +13,23 @@ decoding paths and the web console were developed in this fork.
 This product includes software developed by third parties:
 
 - MTPLX (https://github.com/youssofal/MTPLX), Apache License 2.0.
-  python/maxtoken/mlx_backend/_a3b_whole_moe_kernels.py is vendored verbatim
+  python/maxmlx/mlx_backend/_a3b_whole_moe_kernels.py is vendored verbatim
   from mtplx/kernels/a3b_whole_moe.py. The small-row verify kernel, the
   whole-MoE stages and the packed gate/up projection are inspired by MTPLX.
 
 - vLLM (https://github.com/vllm-project/vllm), Apache License 2.0,
   Copyright contributors to the vLLM project.
-  python/maxtoken/server/anthropic_models.py and anthropic_api.py are adapted
+  python/maxmlx/server/anthropic_models.py and anthropic_api.py are adapted
   from vllm/entrypoints/anthropic.
 
 - LightLLM (https://github.com/ModelTC/lightllm), Apache License 2.0,
   Copyright 2025 ModelTC Team, and SGLang (https://github.com/sgl-project/sglang),
   Apache License 2.0, Copyright 2023-2024 SGLang Team.
-  python/maxtoken/server/function_call_parser.py and reasoning_parser.py are
+  python/maxmlx/server/function_call_parser.py and reasoning_parser.py are
   adapted from their function-call and reasoning parsers.
 
 - oMLX (https://github.com/jundot/omlx), Apache License 2.0.
-  python/maxtoken/server/downloader/hf.py, ms.py and hf_worker.py are adapted
+  python/maxmlx/server/downloader/hf.py, ms.py and hf_worker.py are adapted
   from omlx/admin/hf_downloader.py, ms_downloader.py and omlx/_hf_download_worker.py;
   the console's Downloads tab follows the functionality of oMLX's downloader tab.
 

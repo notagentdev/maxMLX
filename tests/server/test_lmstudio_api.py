@@ -10,7 +10,7 @@ from types import SimpleNamespace
 
 from fastapi.testclient import TestClient
 
-import maxtoken.server.api_server as api
+import maxmlx.server.api_server as api
 
 
 def _state(**over):

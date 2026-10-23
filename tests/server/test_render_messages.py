@@ -1,6 +1,6 @@
 """render_messages normalizes what clients send into what chat templates accept."""
 
-from maxtoken.server.generation import render_messages
+from maxmlx.server.generation import render_messages
 
 
 def test_developer_role_is_rendered_as_system():

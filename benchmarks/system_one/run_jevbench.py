@@ -25,7 +25,7 @@ from jevbench.scoring import score_task  # noqa: E402
 from jevbench.summarize import summarize  # noqa: E402
 from jevbench.tasks import load_jsonl  # noqa: E402
 
-from maxtoken.system_one import SystemOne  # noqa: E402
+from maxmlx.system_one import SystemOne  # noqa: E402
 
 SPLITS = ("easy", "original", "hard")
 

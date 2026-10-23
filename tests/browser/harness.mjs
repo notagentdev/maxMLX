@@ -7,8 +7,8 @@ import { join } from 'node:path';
 import { once } from 'node:events';
 
 // Uses an existing Chromium browser and Node's native CDP WebSocket client.
-// Override MAXTOKEN_BROWSER_EXECUTABLE for Chrome/Chromium on other systems.
-export const executable = process.env.MAXTOKEN_BROWSER_EXECUTABLE
+// Override MAXMLX_BROWSER_EXECUTABLE for Chrome/Chromium on other systems.
+export const executable = process.env.MAXMLX_BROWSER_EXECUTABLE
   || '/Applications/Brave Browser.app/Contents/MacOS/Brave Browser';
 export const browserAvailable = await access(executable).then(() => true, () => false);
 
@@ -19,7 +19,7 @@ export async function withBrowser(handler, run) {
   server.listen(0, '127.0.0.1');
   await once(server, 'listening');
   const base = `http://127.0.0.1:${server.address().port}`;
-  const profile = await mkdtemp(join(tmpdir(), 'maxtoken-ui-'));
+  const profile = await mkdtemp(join(tmpdir(), 'maxmlx-ui-'));
   const browser = spawn(executable, ['--headless=new', '--no-first-run', '--no-default-browser-check', '--remote-debugging-port=0', `--user-data-dir=${profile}`, 'about:blank'], { stdio: ['ignore', 'ignore', 'pipe'] });
   let socket;
   try {

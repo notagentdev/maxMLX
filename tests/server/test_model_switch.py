@@ -7,7 +7,7 @@ import json
 
 import pytest
 
-from maxtoken.server import model_switch as ms
+from maxmlx.server import model_switch as ms
 
 LAUNCH = [
     "--model-path", "ornith-ai/Ornith-1.5-35B-A3B-MLX-4bit", "--moe-backend", "offload",
@@ -28,7 +28,7 @@ def test_split_keeps_server_flags_and_takes_model_flags_in_both_spellings():
 @pytest.fixture
 def profiles_file(tmp_path, monkeypatch):
     path = tmp_path / "profiles.json"
-    monkeypatch.setenv("MAXTOKEN_LAUNCH_PROFILES", str(path))
+    monkeypatch.setenv("MAXMLX_LAUNCH_PROFILES", str(path))
     return path
 
 

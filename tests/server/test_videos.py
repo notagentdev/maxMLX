@@ -11,7 +11,7 @@ import time
 
 import pytest
 
-from maxtoken.server import videos as vd
+from maxmlx.server import videos as vd
 
 
 def test_frames_follow_the_8k_plus_1_grid():
@@ -108,7 +108,7 @@ def _fake_spawn(log, *, fail=False, slow=False):
 
 @pytest.fixture
 def pack(tmp_path, monkeypatch):
-    monkeypatch.setenv("MAXTOKEN_VIDEO_DIR", str(tmp_path / "out"))
+    monkeypatch.setenv("MAXMLX_VIDEO_DIR", str(tmp_path / "out"))
     d = tmp_path / "models" / "ltx-2.3-mlx-q4"
     d.mkdir(parents=True)
     (d / "transformer-distilled-1.1.safetensors").write_bytes(b"x")

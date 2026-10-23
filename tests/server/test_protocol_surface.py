@@ -12,7 +12,7 @@ under ``/admin``.
 
 import pytest
 
-from maxtoken.server.api_server import app
+from maxmlx.server.api_server import app
 
 OPENAI = {
     "/v1",

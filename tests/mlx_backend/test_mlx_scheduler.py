@@ -12,8 +12,8 @@ from typing import Iterator, List
 import numpy as np
 import pytest
 
-from maxtoken.core import SamplingParams
-from maxtoken.message import (
+from maxmlx.core import SamplingParams
+from maxmlx.message import (
     AbortBackendMsg,
     BatchBackendMsg,
     CacheRebuildBackendMsg,
@@ -24,7 +24,7 @@ from maxtoken.message import (
     PromptAdmittedMsg,
     UserMsg,
 )
-from maxtoken.mlx_backend.worker import MlxScheduler, _filter_kwargs
+from maxmlx.mlx_backend.worker import MlxScheduler, _filter_kwargs
 
 
 EOS = 99
@@ -243,7 +243,7 @@ def test_filter_kwargs_drops_unknown_only():
 def test_the_cuda_only_flags_are_gone():
     """There is one execution backend now, so its flags are not options to get
     wrong. A flag that parses but reaches nothing is worse than no flag."""
-    from maxtoken.server.args import parse_args
+    from maxmlx.server.args import parse_args
 
     for flag, value in (
         ("--backend", "cuda"),
@@ -375,7 +375,7 @@ def test_a_prefilling_request_yields_the_step_to_the_others():
 def test_decoding_requests_get_several_rounds_per_prefill_chunk():
     """One chunk of prefill is seconds, one decode round a tenth of that: while
     request 1 is on its prompt, request 2 is not held to one token per chunk."""
-    from maxtoken.mlx_backend.worker import DECODE_ROUNDS_WHILE_PREFILLING
+    from maxmlx.mlx_backend.worker import DECODE_ROUNDS_WHILE_PREFILLING
 
     sched = make_scheduler({2: [22] * 40})
     long_gen = iter([None] * 5 + [(11, None), (EOS, None)])

@@ -1,6 +1,6 @@
-# Contributing to MaxToken
+# Contributing to maxMLX
 
-Thanks for helping make MaxToken better. This page covers how to report
+Thanks for helping make maxMLX better. This page covers how to report
 issues and how to submit pull requests.
 
 ## Reporting issues
@@ -10,7 +10,7 @@ we cannot fix, so include:
 
 - your Mac: chip, unified memory, macOS version, and how much memory was
   free when it happened (`vm_stat` or Activity Monitor);
-- the MaxToken version (`mt --version`) and, when building from source, the
+- the maxMLX version (`mt --version`) and, when building from source, the
   commit (`git rev-parse --short HEAD`);
 - the exact checkpoint (the Hugging Face id, e.g.
   `ornith-ai/Ornith-1.5-35B-A3B-MLX-4bit`, not just the model name);
@@ -48,7 +48,7 @@ were not actually measured, are closed without review.
 ## Development setup
 
 ```bash
-git clone https://github.com/notagentdev/maxtoken.git && cd maxtoken
+git clone https://github.com/notagentdev/maxMLX.git && cd maxmlx
 python3 -m venv .venv && source .venv/bin/activate
 pip install -e ".[dev]"
 python -m pytest tests/ -q
@@ -82,5 +82,5 @@ docs: the batch-server mystery's resolution and the unclamped numbers
 
 ## License
 
-By contributing to MaxToken, you agree that your contributions will be
+By contributing to maxMLX, you agree that your contributions will be
 licensed under the [LICENSE](LICENSE) in the root of this repository.

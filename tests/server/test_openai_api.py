@@ -6,8 +6,8 @@ from types import SimpleNamespace
 
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
-from maxtoken.message import TokenizeMsg, UserReply
-from maxtoken.server.openai_api import (
+from maxmlx.message import TokenizeMsg, UserReply
+from maxmlx.server.openai_api import (
     ChatCompletionRequest,
     CompletionRequest,
     chat_request_to_genspec,
@@ -210,7 +210,7 @@ def test_chat_reasoning_effort_broadcasts_every_toggle_spelling():
 def test_glm_reasoning_parser_honors_disabled_thinking_with_tools():
     # The parse side must match the encode side: thinking off + tools present
     # must not start the parser inside a think block.
-    from maxtoken.server.generation import _make_reasoning_parser
+    from maxmlx.server.generation import _make_reasoning_parser
 
     state = FakeState([], reasoning_parser="glm")
     off = chat_request_to_genspec(chat_request(reasoning_effort="none"), {})
@@ -392,7 +392,7 @@ def test_completion_forwards_length_finish_reason():
 
 
 def test_omitted_max_tokens_defaults_to_hardcoded_32k():
-    from maxtoken.server.generation import DEFAULT_MAX_OUTPUT_TOKENS
+    from maxmlx.server.generation import DEFAULT_MAX_OUTPUT_TOKENS
 
     chat_state = FakeState([UserReply(uid=42, incremental_output="hi", finished=True)])
     run(handle_chat_completion(
@@ -492,7 +492,7 @@ async def _collect(generator):
 
 
 # --------------------------------------------------------------- dsv4 reasoning
-from maxtoken.server.reasoning_parser import DSML_TOKEN  # noqa: E402
+from maxmlx.server.reasoning_parser import DSML_TOKEN  # noqa: E402
 
 _TC_OPEN = f"<{DSML_TOKEN}tool_calls>"
 _DSV4_TOOL_BLOCK = (
@@ -726,8 +726,8 @@ def test_silent_stream_carries_sse_keepalives(monkeypatch):
     carry an SSE comment now and then so the client knows the server is alive."""
     import asyncio
 
-    from maxtoken.server import openai_api
-    from maxtoken.server.generation import GenDone
+    from maxmlx.server import openai_api
+    from maxmlx.server.generation import GenDone
 
     async def slow_events(uid, spec, state, source=None):
         await asyncio.sleep(0.12)

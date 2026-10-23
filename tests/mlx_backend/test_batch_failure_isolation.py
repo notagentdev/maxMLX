@@ -16,9 +16,9 @@ from typing import List
 import numpy as np
 import pytest
 
-from maxtoken.core import SamplingParams
-from maxtoken.message import DetokenizeMsg, ErrorReplyMsg, UserMsg
-from maxtoken.mlx_backend.worker import MlxScheduler
+from maxmlx.core import SamplingParams
+from maxmlx.message import DetokenizeMsg, ErrorReplyMsg, UserMsg
+from maxmlx.mlx_backend.worker import MlxScheduler
 
 
 class _ExplodingBatcher:

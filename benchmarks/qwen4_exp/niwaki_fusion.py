@@ -16,7 +16,7 @@ per layer and for the decode shape only (one row, batch 1):
         -> mlp(mixed) -> hyper2 + inject(branch2, w2)    -> h'
 
 are each ``mx.compile``d with the layer's weights as trace constants (the
-same pattern as maxtoken's decode_fusion for Ornith's MoE blocks). The
+same pattern as maxmlx's decode_fusion for Ornith's MoE blocks). The
 stateful mixers (gated delta net, QSA attention with its caches) and the PLE
 layer (a host gather) keep the eager path, as does every prefill shape.
 The final 4-stream mixer and the LM head are compiled together.
@@ -205,7 +205,7 @@ def fuse_gdn_projections(model) -> int:
     import mlx.core as mx
     import mlx.nn as nn
 
-    from maxtoken.mlx_backend.decode_fusion import _fusable, _fuse_linears
+    from maxmlx.mlx_backend.decode_fusion import _fusable, _fuse_linears
 
     class _Holder:
         def __init__(self, fused, splits):

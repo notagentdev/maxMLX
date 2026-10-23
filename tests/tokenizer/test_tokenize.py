@@ -5,9 +5,9 @@ import json
 import pytest
 import numpy as np
 
-from maxtoken.core import SamplingParams
-from maxtoken.message import TokenizeMsg
-from maxtoken.tokenizer.tokenize import TokenizeManager, _dsv4_arguments_str
+from maxmlx.core import SamplingParams
+from maxmlx.message import TokenizeMsg
+from maxmlx.tokenizer.tokenize import TokenizeManager, _dsv4_arguments_str
 
 
 class FakeTokenizer:

@@ -16,7 +16,7 @@ from types import SimpleNamespace
 
 from fastapi.testclient import TestClient
 
-from maxtoken.server.supervisor import BackendHandle, LoadProgress, run_backend_supervisor
+from maxmlx.server.supervisor import BackendHandle, LoadProgress, run_backend_supervisor
 
 
 class _FakeProc:
@@ -104,7 +104,7 @@ def _wire(state):
 
 
 def _run_reload(state):
-    from maxtoken.server.api_server import reload_backend
+    from maxmlx.server.api_server import reload_backend
 
     return asyncio.run(reload_backend(state))
 
@@ -140,7 +140,7 @@ def test_reload_relaunches_under_a_new_generation_and_reopens_the_gate():
 
 
 def test_in_flight_requests_get_a_terminal_error_reply():
-    from maxtoken.server.stats import StatsTracker
+    from maxmlx.server.stats import StatsTracker
 
     state = _state(stats=StatsTracker())
     _wire(state)
@@ -150,7 +150,7 @@ def test_in_flight_requests_get_a_terminal_error_reply():
     async def run():
         state.ack_map[7] = []
         state.event_map[7] = event
-        return await __import__("maxtoken.server.api_server", fromlist=["reload_backend"]).reload_backend(state)
+        return await __import__("maxmlx.server.api_server", fromlist=["reload_backend"]).reload_backend(state)
 
     body, status = asyncio.run(run())
     assert status == 200
@@ -173,7 +173,7 @@ def test_reload_is_refused_while_loading_or_rebuilding_and_without_a_launcher():
 
 
 def test_route_answers_through_the_app():
-    import maxtoken.server.api_server as api
+    import maxmlx.server.api_server as api
 
     state = _state(maintenance_state="rebuilding")
     prev = api._GLOBAL_STATE
@@ -190,7 +190,7 @@ def test_reload_starts_the_launch_counters_over():
     """The console's "This launch" / "Tokens processed" cards count from the
     relaunch, like the uptime — before this they carried the old workers'
     totals across the reload."""
-    from maxtoken.server.stats import StatsTracker
+    from maxmlx.server.stats import StatsTracker
 
     state = _state()
     _wire(state)

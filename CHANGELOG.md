@@ -1,6 +1,6 @@
 # Changelog
 
-All notable changes to MaxToken. The project forked from
+All notable changes to maxMLX (named MaxToken until 2026-10-23). The project forked from
 [FreeToken](https://github.com/FlashML-org/FreeToken) on 2026-08-23; the
 history before that is upstream's. `0.0.1` was the fork's working version
 before its first tagged release.
@@ -8,6 +8,14 @@ before its first tagged release.
 ## [Unreleased]
 
 ### Changed
+
+- **Renamed to maxMLX**: the package is `maxmlx`, the environment variables
+  `MAXMLX_*`, the state directories `~/.maxmlx` and `~/.cache/maxmlx`, the
+  repository `notagentdev/maxMLX`. The old names keep working: `import
+  maxtoken` returns the `maxmlx` modules, `MAXTOKEN_*` variables configure
+  their `MAXMLX_*` successors (the new name wins), the `maxtoken` command
+  stays, and the first start moves `~/.maxtoken` and `~/.cache/maxtoken`
+  (a rename, no copy) and leaves symlinks behind. `mt` is unchanged.
 
 - **Chat rebuilt after oMLX's chat**: a conversation list with search, pin,
   rename and delete; per-message copy, edit (rewrites from that message),

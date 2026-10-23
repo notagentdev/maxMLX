@@ -12,7 +12,7 @@ import time
 
 import pytest
 
-from maxtoken.server import images as im
+from maxmlx.server import images as im
 
 
 def test_parse_size():
@@ -92,7 +92,7 @@ def _fake_spawn(log, *, fail_load=False, die=False):
 
 @pytest.fixture
 def model_dir(tmp_path, monkeypatch):
-    monkeypatch.setenv("MAXTOKEN_IMAGE_DIR", str(tmp_path / "out"))
+    monkeypatch.setenv("MAXMLX_IMAGE_DIR", str(tmp_path / "out"))
     d = tmp_path / "models" / "flux2-klein-4b-mflux-q4"
     for part in ("transformer", "text_encoder", "vae"):
         (d / part).mkdir(parents=True)
@@ -206,7 +206,7 @@ def _png(width, height, color=(200, 30, 30)):
 
 def test_uploads_are_reencoded_bounded_and_addressable(tmp_path, monkeypatch):
     pytest.importorskip("PIL")
-    monkeypatch.setenv("MAXTOKEN_IMAGE_DIR", str(tmp_path))
+    monkeypatch.setenv("MAXMLX_IMAGE_DIR", str(tmp_path))
     small = im.save_upload(_png(300, 200))
     assert (small["width"], small["height"]) == (300, 200)
     assert small["url"] == f"/admin/images/files/{small['id']}.png"
@@ -243,7 +243,7 @@ def test_transparent_uploads_are_flattened_onto_white(tmp_path, monkeypatch):
 
     from PIL import Image
 
-    monkeypatch.setenv("MAXTOKEN_IMAGE_DIR", str(tmp_path))
+    monkeypatch.setenv("MAXMLX_IMAGE_DIR", str(tmp_path))
     sprite = Image.new("RGBA", (40, 40), (0, 0, 0, 0))
     sprite.paste((200, 20, 20, 255), (10, 10, 30, 30))
     buf = io.BytesIO()

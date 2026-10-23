@@ -6,15 +6,15 @@ import json
 import pytest
 from fastapi.testclient import TestClient
 
-from maxtoken.server import api_server as api
-from maxtoken.server import chat_store
-from maxtoken.server.chat_store import ChatStore
+from maxmlx.server import api_server as api
+from maxmlx.server import chat_store
+from maxmlx.server.chat_store import ChatStore
 
 
 @pytest.fixture(autouse=True)
 def isolated(tmp_path, monkeypatch):
-    monkeypatch.setenv("MAXTOKEN_CHATS_DIR", str(tmp_path / "chats"))
-    monkeypatch.setenv("MAXTOKEN_CHAT_PROFILES_FILE", str(tmp_path / "profiles.json"))
+    monkeypatch.setenv("MAXMLX_CHATS_DIR", str(tmp_path / "chats"))
+    monkeypatch.setenv("MAXMLX_CHAT_PROFILES_FILE", str(tmp_path / "profiles.json"))
 
 
 @pytest.fixture

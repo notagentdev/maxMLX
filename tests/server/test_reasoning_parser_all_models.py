@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from maxtoken.server.reasoning_parser import ReasoningParser
+from maxmlx.server.reasoning_parser import ReasoningParser
 
 
 def _stream(parser: ReasoningParser, chunks):
@@ -127,7 +127,7 @@ def test_gemma_thought_split():
 # ------------------------------------------------------- build_reasoning_parser
 from types import SimpleNamespace
 
-from maxtoken.server.reasoning_parser import build_reasoning_parser
+from maxmlx.server.reasoning_parser import build_reasoning_parser
 
 
 def test_build_reasoning_parser_returns_none_when_unset():

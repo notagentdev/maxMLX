@@ -10,12 +10,12 @@ from types import SimpleNamespace
 
 from fastapi.testclient import TestClient
 
-import maxtoken.server.api_server as api
-from maxtoken.server.generation import DEFAULT_MAX_OUTPUT_TOKENS, resolve_sampling
+import maxmlx.server.api_server as api
+from maxmlx.server.generation import DEFAULT_MAX_OUTPUT_TOKENS, resolve_sampling
 
 
 def _state(**over):
-    from maxtoken.server.stats import StatsTracker
+    from maxmlx.server.stats import StatsTracker
 
     s = SimpleNamespace(
         maintenance_state="serving",
@@ -107,14 +107,14 @@ def test_resolve_sampling_takes_the_cap_from_the_defaults_but_the_request_wins()
 # request that carries none of its own.
 
 def _spec(**ctk):
-    from maxtoken.server.generation import GenSpec, SamplingParams
+    from maxmlx.server.generation import GenSpec, SamplingParams
 
     return GenSpec(messages=[{"role": "user", "content": "hi"}],
                    sampling_params=SamplingParams(), chat_template_kwargs=dict(ctk))
 
 
 def test_thinking_default_is_the_checkpoints_until_the_console_says_otherwise():
-    from maxtoken.server.generation import apply_thinking_default
+    from maxmlx.server.generation import apply_thinking_default
 
     state = _state()
     prev = _with_state(state)
@@ -151,8 +151,8 @@ def test_thinking_default_is_the_checkpoints_until_the_console_says_otherwise():
 
 
 def test_thinking_flag_seeds_the_default_and_the_console_overrides_it():
-    from maxtoken.server.args import ServerArgs
-    from maxtoken.server.generation import apply_thinking_default, thinking_default
+    from maxmlx.server.args import ServerArgs
+    from maxmlx.server.generation import apply_thinking_default, thinking_default
 
     assert ServerArgs.thinking is None
     state = _state(config=SimpleNamespace(max_seq_len=8192, max_output_tokens=None,
@@ -166,7 +166,7 @@ def test_thinking_flag_seeds_the_default_and_the_console_overrides_it():
 def test_model_card_reads_config_json_for_mlx_lm_only_models(tmp_path):
     import json
 
-    from maxtoken.server.stats import derive_model_card
+    from maxmlx.server.stats import derive_model_card
 
     (tmp_path / "config.json").write_text(json.dumps({"text_config": {
         "num_experts": 256, "layer_types": ["linear_attention"] * 3 + ["full_attention"]}}))
@@ -186,12 +186,12 @@ def test_model_card_reads_config_json_for_mlx_lm_only_models(tmp_path):
 def test_thinking_cli_flag_parses():
     from unittest.mock import patch
 
-    from maxtoken.server.args import parse_args
+    from maxmlx.server.args import parse_args
 
     class _Config:
         def to_dict(self):
             return {"architectures": ["Qwen3ForCausalLM"], "model_type": "qwen3"}
 
-    with patch("maxtoken.utils.cached_load_hf_config", lambda _p: _Config()):
+    with patch("maxmlx.utils.cached_load_hf_config", lambda _p: _Config()):
         assert parse_args(["--model", "/models/anon", "--thinking", "off"])[0].thinking == "off"
         assert parse_args(["--model", "/models/anon"])[0].thinking is None

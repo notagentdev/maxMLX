@@ -25,7 +25,7 @@ mx.set_default_device(mx.gpu)
 from vision_artifact import load_vl_model  # noqa: E402
 
 import demo_tickets  # noqa: E402
-from maxtoken.system_one import SystemOne  # noqa: E402
+from maxmlx.system_one import SystemOne  # noqa: E402
 
 
 class PackTokenizer:

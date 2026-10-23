@@ -9,11 +9,11 @@ import { browserAvailable, withBrowser } from './harness.mjs';
 const PNG = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==', 'base64');
 
 test('chat creates images in image mode and with /image, and keeps them in the conversation', { skip: !browserAvailable, timeout: 90000 }, async () => {
-  const page = await readFile(new URL('../../python/maxtoken/server/console.html', import.meta.url));
+  const page = await readFile(new URL('../../python/maxmlx/server/console.html', import.meta.url));
   const store = new Map();
   const generations = [], completions = [], cancels = [], uploads = [], videoJobs = [];
   const videoPolls = new Map();
-  const refFile = join(await mkdtemp(join(tmpdir(), 'maxtoken-ref-')), 'ref.png');
+  const refFile = join(await mkdtemp(join(tmpdir(), 'maxmlx-ref-')), 'ref.png');
   await writeFile(refFile, PNG);
   let job = null;
 

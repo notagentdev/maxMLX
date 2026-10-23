@@ -1,5 +1,5 @@
 """Step 2 of the qwen4_exp spike: STOCK mlx-vlm + the checkpoint's own Niwaki
-loader, no MaxToken code. Measures whether the 34 GiB model loads on this
+loader, no maxMLX code. Measures whether the 34 GiB model loads on this
 32 GB machine at all, and if so its prefill/decode speed — under the same
 memory watchdog benchmarks/bench_mlx_decode.py uses, because the alternative
 on a machine this size is a swap storm or a GPU-driver panic.

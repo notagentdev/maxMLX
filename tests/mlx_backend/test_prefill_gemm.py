@@ -6,7 +6,7 @@ import pytest
 mx = pytest.importorskip("mlx.core", reason="needs Metal")
 nn = pytest.importorskip("mlx.nn")
 
-from maxtoken.mlx_backend import prefill_gemm  # noqa: E402
+from maxmlx.mlx_backend import prefill_gemm  # noqa: E402
 
 
 def _rel_error(a, b):

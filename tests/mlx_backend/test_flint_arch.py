@@ -1,4 +1,4 @@
-"""The vendored Flint architecture and what MaxToken layers on top of it.
+"""The vendored Flint architecture and what maxMLX layers on top of it.
 
 A tiny random Flint (two dense layers, two MoE layers, full + sliding-window
 attention with a 9-token window, attention sinks) stands in for the 40B: it
@@ -15,7 +15,7 @@ pytest.importorskip("mlx_lm")
 
 from mlx_lm.models.cache import make_prompt_cache  # noqa: E402
 
-from maxtoken.mlx_backend import archs, decode_fusion, prefill_pacing  # noqa: E402
+from maxmlx.mlx_backend import archs, decode_fusion, prefill_pacing  # noqa: E402
 
 archs.register_all()
 
@@ -54,14 +54,14 @@ def _tiny_model():
 def test_mlx_lm_resolves_flint_to_the_vendored_model():
     from mlx_lm.utils import _get_classes
 
-    from maxtoken.mlx_backend.archs import flint
+    from maxmlx.mlx_backend.archs import flint
 
     model_cls, args_cls = _get_classes({"model_type": "flint"})
     assert model_cls is flint.Model and args_cls is flint.ModelArgs
 
 
 def test_fused_router_matches_the_reference_router():
-    from maxtoken.mlx_backend.archs.kernels import expert_routing
+    from maxmlx.mlx_backend.archs.kernels import expert_routing
 
     mx.random.seed(1)
     logits = mx.random.normal((16, 256)) * 3

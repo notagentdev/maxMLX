@@ -1,38 +1,41 @@
-"""MaxToken inference runtime."""
+"""The pre-rename import name: ``maxtoken`` is maxMLX.
 
-import os as _os
+``import maxtoken.x.y`` returns the very module ``maxmlx.x.y`` (one module
+object under two names, not a second copy with its own state), so scripts
+and pickles written against the old name keep working.
+"""
 
-# Before anything imports transformers (and with it torch): cap the native
-# BLAS/OpenMP thread pools. Nothing in this runtime does torch compute, but
-# libomp's default busy-wait worker pool steals cores from the MLX worker's
-# graph encode -- measured on an M1 Max: single-stream decode 73 -> 85 tok/s
-# and four concurrent streams 91 -> 129 just from pinning these. setdefault:
-# an operator who really wants torch parallelism can still override.
-for _var, _val in (
-    ("OMP_NUM_THREADS", "1"),
-    ("MKL_NUM_THREADS", "1"),
-    ("KMP_BLOCKTIME", "0"),
-):
-    _os.environ.setdefault(_var, _val)
+import importlib
+import importlib.abc
+import importlib.util
+import sys
 
-from maxtoken.version import __version__
+import maxmlx
+
+_OLD, _NEW = "maxtoken", "maxmlx"
 
 
-def _adopt_legacy_env() -> None:
-    """Let a ``FREETOKEN_*`` variable still configure its ``MAXTOKEN_*`` successor.
+class _AliasLoader(importlib.abc.Loader):
+    def __init__(self, target: str):
+        self._target = target
 
-    The environment names are a public contract — anything a user put in a shell
-    profile, a launch script, or a service unit. The rename would have broken all
-    of it silently, which is the worst way for a rename to fail: the process
-    starts, the setting is simply ignored. Doing this once at import covers every
-    read site, and the new name always wins where both are set.
-    """
-    for name, value in list(_os.environ.items()):
-        if not name.startswith("FREETOKEN_"):
-            continue
-        _os.environ.setdefault("MAXTOKEN_" + name[len("FREETOKEN_"):], value)
+    def create_module(self, spec):
+        return importlib.import_module(self._target)
+
+    def exec_module(self, module):
+        pass
 
 
-_adopt_legacy_env()
+class _AliasFinder(importlib.abc.MetaPathFinder):
+    def find_spec(self, fullname, path=None, target=None):
+        if not fullname.startswith(_OLD + "."):
+            return None
+        new = _NEW + fullname[len(_OLD):]
+        if importlib.util.find_spec(new) is None:
+            return None
+        return importlib.util.spec_from_loader(fullname, _AliasLoader(new))
 
-__all__ = ["__version__"]
+
+if not any(isinstance(f, _AliasFinder) for f in sys.meta_path):
+    sys.meta_path.insert(0, _AliasFinder())
+sys.modules[_OLD] = maxmlx
