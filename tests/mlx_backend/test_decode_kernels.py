@@ -3,8 +3,9 @@
 router_gate (bf16 matvec in fp32), moe_decode (a routed SwitchGLU row in two
 launches, 3- and 4-bit), decode_attention (split-K over a main buffer plus a
 tail, with sinks and padded GQA groups) and TailKVCache (decode writes in a
-tail, folded for everything else) must agree with the stock MLX paths; the
-tiny Flint must decode the same tokens with the tail path forced on.
+tail, folded for everything else) must agree with the stock MLX paths; tiny
+Flint and Qwen3-Next models must decode the same logits with the tail path
+forced on.
 """
 
 import pytest
@@ -57,7 +58,7 @@ def test_moe_decode_matches_switch_glu(bits):
     assert mx.abs(got - ref).max().item() <= 2e-2 * mx.abs(ref).max().item()
 
 
-@pytest.mark.parametrize("hq,hk,d", [(32, 4, 128), (12, 2, 64), (8, 8, 128)])
+@pytest.mark.parametrize("hq,hk,d", [(32, 4, 128), (12, 2, 64), (8, 8, 128), (16, 2, 256)])
 @pytest.mark.parametrize("tail", [0, 1, 37])
 def test_decode_attention_matches_sdpa(hq, hk, d, tail):
     mx.random.seed(2)
@@ -122,6 +123,13 @@ def _tiny_flint():
     return model
 
 
+def _reference_attention(q, k, v, *, scale, sinks=None, tail=None):
+    if tail is not None:
+        k = mx.concatenate([k, tail[0]], axis=2)
+        v = mx.concatenate([v, tail[1]], axis=2)
+    return mx.fast.scaled_dot_product_attention(q, k, v, scale=scale, sinks=sinks)
+
+
 def test_tiny_flint_tail_path_is_the_stock_attention(monkeypatch):
     # The integration (tail cache, folds, path choice) is checked exactly: the
     # kernel is swapped for MLX's sdpa over the same main + tail contents, so
@@ -131,12 +139,6 @@ def test_tiny_flint_tail_path_is_the_stock_attention(monkeypatch):
     model = _tiny_flint()
     prompt = mx.array([[(7 * i) % 251 for i in range(40)]])
     tokens = [(11 * i + 3) % 251 for i in range(24)]
-
-    def reference(q, k, v, *, scale, sinks=None, tail=None):
-        if tail is not None:
-            k = mx.concatenate([k, tail[0]], axis=2)
-            v = mx.concatenate([v, tail[1]], axis=2)
-        return mx.fast.scaled_dot_product_attention(q, k, v, scale=scale, sinks=sinks)
 
     def logits_along():
         cache = make_prompt_cache(model)
@@ -150,7 +152,50 @@ def test_tiny_flint_tail_path_is_the_stock_attention(monkeypatch):
         ref, _ = logits_along()
         monkeypatch.setattr(decode_attention, "MIN_KEYS", 16)
         monkeypatch.setattr(decode_attention.TailKVCache, "TAIL", 8)  # fold mid-run
-        monkeypatch.setattr(decode_attention, "decode_attention", reference)
+        monkeypatch.setattr(decode_attention, "decode_attention", _reference_attention)
+        got, cache = logits_along()
+        assert any(isinstance(c, decode_attention.TailKVCache) and c._tail_n for c in cache)
+    finally:
+        decode_fusion.uninstall()
+    for a, b in zip(ref, got):
+        assert mx.array_equal(a, b)
+
+
+def test_tiny_qwen3_next_tail_path_is_the_stock_attention(monkeypatch):
+    # Ornith's attention (Qwen3-Next: gated output, partial RoPE), checked the
+    # same way as Flint's above.
+    from mlx_lm.models.qwen3_next import Model, ModelArgs
+
+    args = ModelArgs(
+        model_type="qwen3_next", hidden_size=128, num_hidden_layers=4, intermediate_size=128,
+        num_attention_heads=4, linear_num_value_heads=2, linear_num_key_heads=2,
+        linear_key_head_dim=32, linear_value_head_dim=32, linear_conv_kernel_dim=4,
+        num_experts=8, num_experts_per_tok=2, decoder_sparse_step=1,
+        shared_expert_intermediate_size=64, mlp_only_layers=[], moe_intermediate_size=64,
+        rms_norm_eps=1e-6, vocab_size=256, num_key_value_heads=2, rope_theta=10000.0,
+        partial_rotary_factor=0.25, max_position_embeddings=512, head_dim=64,
+    )
+    mx.random.seed(5)
+    model = Model(args)
+    model.set_dtype(mx.bfloat16)
+    mx.eval(model.parameters())
+    prompt = mx.array([[(5 * i) % 251 for i in range(40)]])
+    tokens = [(13 * i + 1) % 251 for i in range(24)]
+
+    def logits_along():
+        cache = make_prompt_cache(model)
+        model(prompt, cache=cache)
+        rows = [model(mx.array([[t]]), cache=cache)[0, -1] for t in tokens]
+        mx.eval(rows)
+        return rows, cache
+
+    try:
+        assert decode_fusion.install(model)["attn_tail"] == 1
+        monkeypatch.setattr(decode_attention, "MIN_KEYS", 1 << 30)  # stock path first
+        ref, _ = logits_along()
+        monkeypatch.setattr(decode_attention, "MIN_KEYS", 16)
+        monkeypatch.setattr(decode_attention.TailKVCache, "TAIL", 8)
+        monkeypatch.setattr(decode_attention, "decode_attention", _reference_attention)
         got, cache = logits_along()
         assert any(isinstance(c, decode_attention.TailKVCache) and c._tail_n for c in cache)
     finally:

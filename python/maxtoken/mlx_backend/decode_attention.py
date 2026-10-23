@@ -274,11 +274,20 @@ _pass2 = mx.fast.metal_kernel(
 # Below this many positions MLX's kernel and the plain cache write are as fast
 # (measured; at 1k MLX's kernel alone is faster).
 MIN_KEYS = 2048
+# Heads of 256 (Qwen3-Next attention): the kernel holds twice the accumulators
+# and streams at ~130 GB/s, so the tail path pays from ~3k positions on
+# (measured on Ornith's shape, 16 query / 2 KV heads, 10 layers pipelined).
+MIN_KEYS_WIDE = 3072
 # Simdgroups in flight: chunks are sized so (KV heads x chunks) reaches this.
 TARGET_GROUPS = 128
 MIN_CHUNK = 32
 # Keys per simdgroup in the (short) tail segment.
 TAIL_CHUNK = 64
+
+
+def min_keys(head_dim: int) -> int:
+    """Context length from which the tail path is worth it at this head size."""
+    return MIN_KEYS if head_dim <= 128 else MIN_KEYS_WIDE
 
 
 def supported(queries: mx.array, keys: mx.array, mask) -> bool:

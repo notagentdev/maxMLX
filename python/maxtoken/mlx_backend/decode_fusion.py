@@ -265,7 +265,7 @@ def _make_attention_call(original):
         if (
             isinstance(cache, decode_attention.TailKVCache)
             and mask is None
-            and cache.offset >= decode_attention.MIN_KEYS
+            and cache.offset >= decode_attention.min_keys(queries.shape[-1])
             and decode_attention.supported(queries, keys, None)
         ):
             # Long context: the position goes to the cache's tail (no copy of
@@ -331,6 +331,80 @@ def _fuse_attention(model) -> int:
             if cls not in originals:
                 originals[cls] = cls.__call__
                 cls.__call__ = _make_attention_call(cls.__call__)
+    return count
+
+
+# -- attention tail path (Qwen3-Next / Qwen3.5 / Ornith) ------------------------
+
+
+def _make_gated_attention_call(original):
+    """Qwen3-Next's gated attention with long-context decode on the tail cache
+    + split-K kernel (decode_attention.py); the projections, norms, RoPE and
+    output gate are the stock forward's. Everything else -- prefill, verify
+    windows, masks, short contexts -- is the stock call."""
+    import mlx.core as mx
+
+    from . import decode_attention
+
+    def patched(self, x, mask=None, cache=None):
+        if (
+            not isinstance(cache, decode_attention.TailKVCache)
+            or mask is not None
+            or x.shape[:2] != (1, 1)
+            or cache.offset < decode_attention.min_keys(self.head_dim)
+        ):
+            return original(self, x, mask, cache)
+        B, L, _ = x.shape
+        queries, gate = mx.split(
+            self.q_proj(x).reshape(B, L, self.num_attention_heads, -1), 2, axis=-1
+        )
+        gate = gate.reshape(B, L, -1)
+        keys, values = self.k_proj(x), self.v_proj(x)
+        queries = self.q_norm(queries).transpose(0, 2, 1, 3)
+        keys = self.k_norm(keys.reshape(B, L, self.num_key_value_heads, -1)).transpose(0, 2, 1, 3)
+        values = values.reshape(B, L, self.num_key_value_heads, -1).transpose(0, 2, 1, 3)
+        queries = self.rope(queries, offset=cache.offset)
+        keys = self.rope(keys, offset=cache.offset)
+        if decode_attention.supported(queries, keys, None):
+            main_k, main_v, tail_k, tail_v = cache.append_decode(keys, values)
+            output = decode_attention.decode_attention(
+                queries, main_k, main_v, scale=self.scale, tail=(tail_k, tail_v)
+            )
+        else:
+            keys, values = cache.update_and_fetch(keys, values)
+            output = mx.fast.scaled_dot_product_attention(
+                queries, keys, values, scale=self.scale
+            )
+        output = output.transpose(0, 2, 1, 3).reshape(B, L, -1)
+        return self.o_proj(output * mx.sigmoid(gate))
+
+    return patched
+
+
+def _tail_gated_attention(model) -> int:
+    """Long-context decode for Qwen3-Next attention layers: under the
+    engine's pipelined decode their KVCache copied the whole buffer every
+    token (measured at Ornith's shape: 5.7 -> 2.6 ms per token over the ten
+    attention layers at 16k positions, 9.3 -> 4.3 at 32k).
+    MAXTOKEN_MLX_TAIL_CACHE=0 keeps the stock cache and kernel."""
+    import os
+
+    if os.environ.get("MAXTOKEN_MLX_TAIL_CACHE", "1") == "0":
+        return 0
+    try:
+        from mlx_lm.models.qwen3_next import Qwen3NextAttention
+    except Exception:  # noqa: BLE001 -- mlx-lm without the architecture
+        return 0
+    count = sum(
+        isinstance(getattr(layer, "self_attn", None), Qwen3NextAttention)
+        for layer in _layers(model)
+    )
+    if count:
+        _use_tail_caches(model)
+        originals = _PATCHED.setdefault("attn_originals", {})
+        if Qwen3NextAttention not in originals:
+            originals[Qwen3NextAttention] = Qwen3NextAttention.__call__
+            Qwen3NextAttention.__call__ = _make_gated_attention_call(Qwen3NextAttention.__call__)
     return count
 
 
@@ -520,6 +594,7 @@ def install(model) -> Dict[str, int]:
         "moe_decode": _bind_moe_decode(model),
         "gdn_fused": _fuse_gdn_projections(model),
         "attn_fused": _fuse_attention(model),
+        "attn_tail": _tail_gated_attention(model),
         "moe_compiled": _compile_moe_blocks(model),
         "shared_packed": shared_packed,
         "whole_moe": whole_moe.install(model),
