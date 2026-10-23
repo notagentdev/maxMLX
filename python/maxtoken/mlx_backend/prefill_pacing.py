@@ -25,8 +25,9 @@ throughput on the 27B-class models measured, against a step that no longer
 takes the machine down.
 
 Installed by patching the text model's ``__call__`` for the families whose
-layer loop is known (the Qwen 3.5 / 3.8 hybrids); a model this cannot pace is
-left alone and reported.
+layer loop is known (the Qwen 3.5 / 3.8 hybrids, and full + sliding-window
+attention stacks such as Flint); a model this cannot pace is left alone and
+reported.
 """
 
 from __future__ import annotations
@@ -61,11 +62,19 @@ def _text_model(model):
     return getattr(model, "language_model", model)
 
 
-def _paceable(inner) -> bool:
-    return all(hasattr(inner, name) for name in ("embed_tokens", "layers", "norm", "fa_idx", "ssm_idx"))
+def _family(inner) -> str | None:
+    """Which layer loop ``inner`` runs: "ssm" (gated-delta hybrids), "swa"
+    (full + sliding-window attention), or None."""
+    if not all(hasattr(inner, name) for name in ("embed_tokens", "layers", "norm", "fa_idx")):
+        return None
+    if hasattr(inner, "ssm_idx"):
+        return "ssm"
+    if hasattr(inner, "swa_idx") and hasattr(getattr(inner, "args", None), "sliding_window"):
+        return "swa"
+    return None
 
 
-def _make_paced_call(original, pace: int):
+def _make_paced_call(original, pace: int, family: str):
     import mlx.core as mx
     from mlx_lm.models.base import create_attention_mask, create_ssm_mask
 
@@ -79,9 +88,18 @@ def _make_paced_call(original, pace: int):
             return original(self, inputs, cache=cache, input_embeddings=input_embeddings)
         h = self.embed_tokens(inputs)
         fa_mask = create_attention_mask(h, cache[self.fa_idx])
-        ssm_mask = create_ssm_mask(h, cache[self.ssm_idx])
+        if family == "ssm":
+            other_mask = create_ssm_mask(h, cache[self.ssm_idx])
+        else:
+            other_mask = create_attention_mask(
+                h, cache[self.swa_idx], window_size=self.args.sliding_window
+            )
         for i, (layer, c) in enumerate(zip(self.layers, cache)):
-            h = layer(h, mask=ssm_mask if layer.is_linear else fa_mask, cache=c)
+            if family == "ssm":
+                mask = other_mask if layer.is_linear else fa_mask
+            else:
+                mask = other_mask if layer.use_sliding else fa_mask
+            h = layer(h, mask=mask, cache=c)
             if (i + 1) % pace == 0:
                 mx.eval(h)
         return self.norm(h)
@@ -96,14 +114,15 @@ def install(model, pace: int | None = None) -> int:
     if pace <= 0:
         return 0
     inner = getattr(_text_model(model), "model", None)
-    if inner is None or not _paceable(inner):
+    family = _family(inner) if inner is not None else None
+    if family is None:
         logger.info("prefill pacing: model family unknown, prefill left unpaced")
         return 0
     cls = type(inner)
     if "original" not in _PATCHED:
         _PATCHED["original"] = cls.__call__
         _PATCHED["class"] = cls
-        cls.__call__ = _make_paced_call(cls.__call__, pace)
+        cls.__call__ = _make_paced_call(cls.__call__, pace, family)
     _PATCHED["pace"] = pace
     logger.info("prefill pacing: hidden state evaluated every %d layers during prefill", pace)
     return pace

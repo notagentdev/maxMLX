@@ -1921,11 +1921,15 @@ def _preimport_architectures() -> None:
     architecture it does not ship cannot be served — even when a third-party
     package implements it. Those packages register themselves on import (e.g.
     ``import optiq`` adds deepseek_v4); naming them here makes their models
-    loadable without vendoring anyone's model code.
+    loadable without vendoring anyone's model code. The few architectures we
+    do vendor (``archs/``) register first, unless mlx-lm already ships them.
     """
     import importlib
     import os
 
+    from . import archs
+
+    archs.register_all()
     for name in os.environ.get("MAXTOKEN_MLX_PREIMPORT", "").split(","):
         name = name.strip()
         if not name:

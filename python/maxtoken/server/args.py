@@ -170,6 +170,9 @@ def parse_args(
             return "deepseekv32"
         if "glm" in marker:
             return "glm47"
+        if "flint" in marker:
+            # Recursive Flint writes GLM-4.7's <arg_key>/<arg_value> tool calls.
+            return "glm47"
         if "mistral" in marker:
             return "mistral"
         return "llama3"
@@ -245,6 +248,8 @@ def parse_args(
             return "qwen3"
         if "glm" in marker:
             return "glm"
+        if "flint" in marker:
+            return "flint"
         # M3 first ("minimax" is a substring): <mm:think> tags + 3 thinking gears,
         # not M2's always-on implicit <think>.
         if "minimax_m3" in marker or "minimax-m3" in marker or "minimaxm3" in marker:

@@ -143,6 +143,10 @@ def main() -> None:
     from mlx_lm import load
     from mlx_lm.models.cache import make_prompt_cache
 
+    from maxtoken.mlx_backend import archs
+
+    archs.register_all()
+
     if args.wired_gb is not None:
         mx.set_wired_limit(int(args.wired_gb * 2**30))
     if args.cache_limit_gb is not None:

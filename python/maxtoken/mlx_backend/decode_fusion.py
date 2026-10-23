@@ -201,6 +201,139 @@ def _fuse_gdn_projections(model) -> int:
     return len(fused_by_id)
 
 
+# -- attention input side (Flint) ----------------------------------------------
+
+_ATTN: Dict[int, Any] = {}  # id(attention) -> compiled decode pre-cache forward
+
+
+def _attention_classes():
+    classes = []
+    try:
+        from mlx_lm.models.flint import Attention as FlintAttention
+
+        classes.append(FlintAttention)
+    except Exception:  # noqa: BLE001 -- not registered (archs.register_all) or not shipped
+        pass
+    return classes
+
+
+def _make_attention_pre(attn, fused, splits):
+    """q, k, v of one decode step up to the KV cache: the three projections as
+    ONE quantized matmul, the per-head QK norms, and RoPE at the cache offset
+    (an array input, so one trace serves every position)."""
+    import mlx.core as mx
+
+    n_heads, n_kv = attn.n_heads, attn.n_kv_heads
+    q_norm, k_norm = attn.q_norm, attn.k_norm
+    rope = attn.rope
+
+    def pre(x, offset):
+        B, L, _ = x.shape
+        q, k, v = mx.split(fused(x), splits, axis=-1)
+        q = q_norm(q.reshape(B, L, n_heads, -1)).transpose(0, 2, 1, 3)
+        k = k_norm(k.reshape(B, L, n_kv, -1)).transpose(0, 2, 1, 3)
+        v = v.reshape(B, L, n_kv, -1).transpose(0, 2, 1, 3)
+        if rope is not None:
+            q = mx.fast.rope(q, rope.dims, traditional=rope.traditional, base=rope.base,
+                             scale=rope.scale, offset=offset)
+            k = mx.fast.rope(k, rope.dims, traditional=rope.traditional, base=rope.base,
+                             scale=rope.scale, offset=offset)
+        return q, k, v
+
+    return mx.compile(pre)
+
+
+def _make_attention_call(original):
+    import mlx.core as mx
+    from mlx_lm.models.base import scaled_dot_product_attention
+
+    from . import decode_attention
+
+    def patched(self, x, mask=None, cache=None):
+        pre = _ATTN.get(id(self))
+        if (
+            pre is None
+            or cache is None
+            or x.ndim != 3
+            or x.shape[1] != 1
+            or x.shape[0] > MAX_COMPILED_BATCH
+            or hasattr(cache, "bits")
+        ):
+            return original(self, x, mask, cache)
+        B, L, _ = x.shape
+        queries, keys, values = pre(x, mx.array(cache.offset, dtype=mx.int32))
+        if (
+            isinstance(cache, decode_attention.TailKVCache)
+            and mask is None
+            and cache.offset >= decode_attention.MIN_KEYS
+            and decode_attention.supported(queries, keys, None)
+        ):
+            # Long context: the position goes to the cache's tail (no copy of
+            # the whole buffer) and the split-K kernel reads both parts.
+            main_k, main_v, tail_k, tail_v = cache.append_decode(keys, values)
+            output = decode_attention.decode_attention(
+                queries, main_k, main_v, scale=self.scale,
+                sinks=self.softmax_offset, tail=(tail_k, tail_v),
+            )
+        else:
+            keys, values = cache.update_and_fetch(keys, values)
+            output = scaled_dot_product_attention(
+                queries, keys, values, cache=cache, scale=self.scale, mask=mask,
+                sinks=self.softmax_offset,
+            )
+        return self.o_proj(output.transpose(0, 2, 1, 3).reshape(B, L, -1))
+
+    return patched
+
+
+def _use_tail_caches(model) -> None:
+    """New prompt caches get TailKVCache for their full-attention layers
+    (sliding-window layers keep their rotating cache)."""
+    from mlx_lm.models.cache import KVCache
+
+    from .decode_attention import TailKVCache
+
+    make = getattr(model, "make_cache", None)
+    if make is None or "make_cache" in _PATCHED:
+        return
+
+    def make_cache():
+        return [TailKVCache() if type(c) is KVCache else c for c in make()]
+
+    _PATCHED["make_cache"] = (model, make)
+    object.__setattr__(model, "make_cache", make_cache)
+
+
+def _fuse_attention(model) -> int:
+    """Flint's q/k/v projections into one linear, the decode-side input path
+    of every attention block compiled, and long-context decode on the tail
+    cache + split-K kernel (decode_attention.py). Prefill keeps the stock
+    forward."""
+    classes = tuple(_attention_classes())
+    if not classes:
+        return 0
+    count = 0
+    for layer in _layers(model):
+        attn = getattr(layer, "self_attn", None)
+        if not isinstance(attn, classes):
+            continue
+        lins = [attn.q_proj, attn.k_proj, attn.v_proj]
+        if not _fusable(lins):
+            continue
+        sizes = [int(lin.weight.shape[0]) for lin in lins]
+        splits = [sizes[0], sizes[0] + sizes[1]]
+        _ATTN[id(attn)] = _make_attention_pre(attn, _fuse_linears(lins), splits)
+        count += 1
+    if count:
+        _use_tail_caches(model)
+        originals = _PATCHED.setdefault("attn_originals", {})
+        for cls in classes:
+            if cls not in originals:
+                originals[cls] = cls.__call__
+                cls.__call__ = _make_attention_call(cls.__call__)
+    return count
+
+
 # -- MoE blocks ----------------------------------------------------------------
 
 
@@ -211,6 +344,12 @@ def _moe_classes():
 
         classes.append(Qwen3NextSparseMoeBlock)
     except Exception:  # noqa: BLE001 -- an mlx-lm without this family
+        pass
+    try:
+        from mlx_lm.models.flint import SparseMoeBlock as FlintSparseMoeBlock
+
+        classes.append(FlintSparseMoeBlock)
+    except Exception:  # noqa: BLE001 -- not registered (archs.register_all) or not shipped
         pass
     return classes
 
@@ -322,6 +461,46 @@ def _tune_switch_sort() -> int:
     return threshold
 
 
+# -- router gates --------------------------------------------------------------
+
+
+def _bind_router_gates(model) -> int:
+    """bf16 router gates evaluated in fp32 (Flint) through router_gate.py's
+    decode kernel; MAXTOKEN_MLX_ROUTER_KERNEL=0 keeps MLX's cast + matvec.
+    Before the MoE blocks are compiled: the trace bakes in the kernel."""
+    import os
+
+    if os.environ.get("MAXTOKEN_MLX_ROUTER_KERNEL", "1") == "0":
+        return 0
+    from . import router_gate
+
+    classes = tuple(_moe_classes())
+    blocks = [
+        layer.mlp for layer in _layers(model)
+        if isinstance(getattr(layer, "mlp", None), classes)
+    ]
+    return router_gate.install(blocks)
+
+
+def _bind_moe_decode(model) -> int:
+    """Single-row routed experts through moe_decode.py's two kernels;
+    MAXTOKEN_MLX_MOE_DECODE=0 keeps MLX's gather_qmm path. Before the MoE
+    blocks are compiled, for the same reason as the router gates."""
+    import os
+
+    if os.environ.get("MAXTOKEN_MLX_MOE_DECODE", "1") == "0":
+        return 0
+    from . import moe_decode
+
+    classes = tuple(_moe_classes())
+    switches = [
+        layer.mlp.switch_mlp for layer in _layers(model)
+        if isinstance(getattr(layer, "mlp", None), classes)
+        and not getattr(getattr(layer.mlp, "switch_mlp", None), "per_expert", False)
+    ]
+    return moe_decode.install(switches)
+
+
 # -- entry points --------------------------------------------------------------
 
 
@@ -337,7 +516,10 @@ def install(model) -> Dict[str, int]:
 
     shared_packed = moe_pack.pack_shared_experts(model)
     report = {
+        "router_gate": _bind_router_gates(model),
+        "moe_decode": _bind_moe_decode(model),
         "gdn_fused": _fuse_gdn_projections(model),
+        "attn_fused": _fuse_attention(model),
         "moe_compiled": _compile_moe_blocks(model),
         "shared_packed": shared_packed,
         "whole_moe": whole_moe.install(model),
@@ -363,5 +545,15 @@ def uninstall() -> None:
         sl.SwitchGLU.__call__ = switch_original
     for moe_cls, original in (_PATCHED.pop("moe_originals", None) or {}).items():
         moe_cls.__call__ = original
+    for attn_cls, original in (_PATCHED.pop("attn_originals", None) or {}).items():
+        attn_cls.__call__ = original
+    patched_model, _ = _PATCHED.pop("make_cache", (None, None))
+    if patched_model is not None:
+        object.__delattr__(patched_model, "make_cache")
+    from . import moe_decode, router_gate
+
+    router_gate.uninstall()
+    moe_decode.uninstall()
     _PATCHED.clear()
     _COMPILED.clear()
+    _ATTN.clear()

@@ -19,7 +19,7 @@ LIVE_FIELDS = frozenset({
     "thinking", "max_seq_len_override", "moe_cache_size",
 })
 TOOL_PARSERS = ("auto", "llama3", "qwen", "qwen25", "qwen3_coder", "mistral", "deepseekv32", "gemma4", "glm47", "minimax", "minimax_m3", "muse_glimmer", "gpt_oss", "gpt-oss")
-REASONING_PARSERS = ("auto", "off", "deepseekv32", "gpt_oss", "qwen3", "glm", "minimax", "minimax_m3", "muse_glimmer", "gemma4")
+REASONING_PARSERS = ("auto", "off", "deepseekv32", "gpt_oss", "qwen3", "glm", "flint", "minimax", "minimax_m3", "muse_glimmer", "gemma4")
 
 
 class SettingsPatch(BaseModel):
